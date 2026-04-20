@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="关于" description="关于这个中文个人博客。" canonicalPath="/about/">
+  <section class="hero">
+    <p class="eyebrow">About</p>
+    <h1>关于这里</h1>
+    <p class="lead">
+      这是一个以内容为中心的个人博客，主要记录技术实践、工具选择、阅读笔记和项目复盘。
+    </p>
+  </section>
+
+  <section class="prose">
+    <h2>写作原则</h2>
+    <p>文章优先追求清楚、可复用和可回看。比起复杂设计，这里更重视稳定的结构、轻量的页面和长期维护成本。</p>
+
+    <h2>技术栈</h2>
+    <p>博客使用 Astro 构建，文章通过 Markdown/MDX 和 content collections 管理，部署目标是 Vercel。</p>
+
+    <h2>联系</h2>
+    <p>你可以把这里当作一个持续整理的公开笔记本。后续可以补充 RSS、评论、搜索或订阅功能。</p>
+  </section>
+</BaseLayout>
