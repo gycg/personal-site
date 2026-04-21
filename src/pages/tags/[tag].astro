@@ -33,7 +33,7 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
       <section class="hero">
         <p class="eyebrow">分类</p>
         <h1>#{tag}</h1>
-        <p class="lead">这个分类下共有 {posts.length} 篇文章。适合从同一主题连续往下读。</p>
+        <p class="lead">{posts.length} 篇文章</p>
       </section>
 
       <ul class="post-list">
@@ -50,14 +50,13 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
     </div>
 
     <PageSidebar
-      title="浏览提示"
-      intro="先确定主题，再点进文章，会比一篇篇翻更快。"
+      title="分类"
       sections={[
         {
           title: '继续浏览',
           items: [
-            { label: '全部文章', href: '/posts/', text: '回到完整归档。' },
-            { label: '返回首页', href: '/', text: '从首页继续浏览其他入口。' },
+            { label: '全部文章', href: '/posts/' },
+            { label: '返回首页', href: '/' },
           ],
         },
       ]}

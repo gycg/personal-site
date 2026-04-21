@@ -4,7 +4,6 @@ interface SidebarSection {
   items: Array<{
     label: string;
     href?: string;
-    text?: string;
   }>;
 }
 
@@ -33,7 +32,6 @@ const { title = '侧栏', intro, sections = [] } = Astro.props;
           {section.items.map((item) => (
             <li>
               {item.href ? <a class="sidebar-link" href={item.href}>{item.label}</a> : <span>{item.label}</span>}
-              {item.text && <p>{item.text}</p>}
             </li>
           ))}
         </ul>

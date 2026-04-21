@@ -21,8 +21,8 @@
 
 html {
   font-family:
-    "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui,
-    sans-serif;
+    "Inter", "SF Pro Text", "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
+    system-ui, sans-serif;
   background:
     linear-gradient(180deg, #f8f7f2 0%, #f5f4ef 220px, #f5f4ef 100%);
   color: var(--text);
@@ -142,6 +142,10 @@ h2,
 h3 {
   line-height: 1.25;
   margin: 0 0 16px;
+  font-family:
+    "Iowan Old Style", "Palatino Linotype", "Noto Serif SC", "Songti SC",
+    "Source Han Serif SC", serif;
+  font-weight: 600;
 }
 
 h1 {
@@ -270,6 +274,7 @@ p {
 .prose {
   max-width: 760px;
   font-size: 1.02rem;
+  line-height: 1.92;
 }
 
 .prose > * + * {
@@ -319,7 +324,7 @@ p {
 }
 
 .article-header h1 {
-  font-size: clamp(2rem, 7vw, 3.6rem);
+  font-size: 3.15rem;
 }
 
 .tag-cloud {
@@ -408,11 +413,6 @@ p {
 
 .sidebar-link:hover {
   color: var(--accent-strong);
-}
-
-.sidebar-list p {
-  font-size: 0.88rem;
-  margin: 0;
 }
 
 .project-list {
@@ -525,6 +525,14 @@ p {
 }
 
 @media (max-width: 900px) {
+  h1 {
+    font-size: 2.9rem;
+  }
+
+  .article-header h1 {
+    font-size: 2.6rem;
+  }
+
   .page-grid {
     grid-template-columns: 1fr;
     gap: 28px;
@@ -575,5 +583,15 @@ p {
   .back-to-top {
     right: 16px;
     bottom: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: 2.35rem;
+  }
+
+  .article-header h1 {
+    font-size: 2.1rem;
   }
 }

@@ -72,16 +72,16 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
     </div>
 
     <PageSidebar
-      title="作者"
+      title="长坡厚雪"
       intro="长坡厚雪。主要研究 AI、股票，以及 AI 怎样真正进入研究和决策流程。"
       sections={[
         {
           title: '站内导航',
           items: [
-            { label: '文章归档', href: '/posts/', text: '按时间和主题看全部文章。' },
-            { label: '分类浏览', href: '/categories/', text: '先按主题筛选，再进入具体内容。' },
-            { label: '项目页', href: '/projects/', text: '集中查看代表作品、链接和截图。' },
-            { label: '关于页', href: '/about/', text: '了解我在写什么，也知道后面会补什么。' },
+            { label: '文章归档', href: '/posts/' },
+            { label: '分类浏览', href: '/categories/' },
+            { label: '项目页', href: '/projects/' },
+            { label: '关于页', href: '/about/' },
           ],
         },
         {
@@ -89,7 +89,6 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
           items: posts.slice(0, 1).map((post) => ({
             label: post.data.title,
             href: getPostUrl(post),
-            text: dateFormatter.format(post.data.pubDate),
           })),
         },
       ]}

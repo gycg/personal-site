@@ -18,7 +18,6 @@ const categories = Array.from(new Set(posts.flatMap((post) => post.data.tags)))
       <section class="hero">
         <p class="eyebrow">分类</p>
         <h1>方便用户快速找到同类内容</h1>
-        <p class="lead">这里按主题整理内容入口。方向先定下来，阅读路径会清楚很多。</p>
       </section>
 
       <ul class="post-list">
@@ -34,15 +33,14 @@ const categories = Array.from(new Set(posts.flatMap((post) => post.data.tags)))
     </div>
 
     <PageSidebar
-      title="分类说明"
-      intro="分类页是站内最快的入口之一，尤其适合后续文章变多之后使用。"
+      title="入口"
       sections={[
         {
           title: '页面入口',
           items: [
-            { label: '首页', href: '/', text: '回到首页看最新内容。' },
-            { label: '文章页', href: '/posts/', text: '按时间归档浏览。' },
-            { label: '项目页', href: '/projects/', text: '查看当前公开的作品。' },
+            { label: '首页', href: '/' },
+            { label: '文章页', href: '/posts/' },
+            { label: '项目页', href: '/projects/' },
           ],
         },
       ]}

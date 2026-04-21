@@ -9,9 +9,7 @@ import PageSidebar from '../components/PageSidebar.astro';
       <section class="hero">
         <p class="eyebrow">关于</p>
         <h1>关于长坡厚雪</h1>
-        <p class="lead">
-          我主要关注 AI、炒股，以及 AI 和投研结合时真正有价值的部分。这个博客是公开的工作台，也是长期写作的起点。
-        </p>
+        <p class="lead">我主要关注 AI、炒股，以及 AI 和投研结合时真正有价值的部分。</p>
       </section>
 
       <h2>你是谁</h2>
@@ -25,14 +23,13 @@ import PageSidebar from '../components/PageSidebar.astro';
     </section>
 
     <PageSidebar
-      title="作者卡"
-      intro="如果你是第一次来，可以先看项目页和建站文章，会更快知道这个博客现在的形状。"
+      title="入口"
       sections={[
         {
-          title: '推荐入口',
+          title: '推荐阅读',
           items: [
-            { label: '项目页', href: '/projects/', text: '先看正在公开展示的内容。' },
-            { label: '建站文章', href: '/posts/building-this-blog/', text: '了解博客为什么长成现在这个样子。' },
+            { label: '项目页', href: '/projects/' },
+            { label: '建站文章', href: '/posts/building-this-blog/' },
           ],
         },
       ]}
