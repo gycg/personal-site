@@ -20,7 +20,7 @@ const { title = '侧栏', intro, sections = [] } = Astro.props;
 <aside class="page-sidebar" aria-label={title}>
   {intro && (
     <section class="sidebar-panel">
-      <h2>{title}</h2>
+      <p class="sidebar-kicker">{title}</p>
       <p>{intro}</p>
     </section>
   )}
@@ -28,11 +28,11 @@ const { title = '侧栏', intro, sections = [] } = Astro.props;
   {
     sections.map((section) => (
       <section class="sidebar-panel">
-        <h2>{section.title}</h2>
+        <p class="sidebar-kicker">{section.title}</p>
         <ul class="sidebar-list">
           {section.items.map((item) => (
             <li>
-              {item.href ? <a href={item.href}>{item.label}</a> : <span>{item.label}</span>}
+              {item.href ? <a class="sidebar-link" href={item.href}>{item.label}</a> : <span>{item.label}</span>}
               {item.text && <p>{item.text}</p>}
             </li>
           ))}

@@ -20,9 +20,9 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   <div class="page-grid">
     <div>
       <section class="hero">
-        <p class="eyebrow">文章页</p>
+        <p class="eyebrow">文章</p>
         <h1>按时间或主题浏览</h1>
-        <p class="lead">文章不追求数量，重点是把研究过程、判断依据和结果整理清楚。</p>
+        <p class="lead">这里按时间归档，也保留主题入口。内容会慢一点，但会尽量把过程、依据和结论都写完整。</p>
       </section>
 
       <ul class="post-list">
@@ -42,21 +42,22 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
     </div>
 
     <PageSidebar
-      title="文章侧栏"
-      intro="如果想快速筛选内容，可以直接按主题走；如果想顺着更新节奏看，文章页本身就是时间归档。"
+      title="浏览方式"
+      intro="文章页保留最直接的两种用法：顺着时间看，或者直接按主题筛。"
       sections={[
         {
-          title: '按主题浏览',
+          title: '按主题',
           items: tags.map((tag) => ({
             label: tag,
             href: `/tags/${tag}/`,
+            text: `查看与 ${tag} 相关的文章。`,
           })),
         },
         {
-          title: '相关入口',
+          title: '相关页面',
           items: [
-            { label: '分类页', href: '/categories/' },
-            { label: '项目页', href: '/projects/' },
+            { label: '分类页', href: '/categories/', text: '从分类入口快速找到同类内容。' },
+            { label: '项目页', href: '/projects/', text: '如果想先看成型内容，可以直接去项目页。' },
           ],
         },
       ]}

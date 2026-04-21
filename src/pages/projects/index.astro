@@ -7,9 +7,9 @@ import PageSidebar from '../../components/PageSidebar.astro';
   <div class="page-grid">
     <div>
       <section class="hero">
-        <p class="eyebrow">项目页</p>
+        <p class="eyebrow">项目</p>
         <h1>代表作品</h1>
-        <p class="lead">这里集中展示当前对外可看的项目，包含链接、截图预览和简短说明。</p>
+        <p class="lead">这里集中放当前对外可看的项目。先看成型结果，再决定要不要继续读细节。</p>
       </section>
 
       <section class="project-list" aria-label="项目列表">
@@ -36,15 +36,15 @@ import PageSidebar from '../../components/PageSidebar.astro';
     </div>
 
     <PageSidebar
-      title="项目侧栏"
-      intro="项目页会持续更新，后续有新的研究工具或公开作品时，会优先补到这里。"
+      title="项目说明"
+      intro="后续有新的研究工具或公开作品，会优先补到这里。"
       sections={[
         {
           title: '相关页面',
           items: [
-            { label: '首页', href: '/' },
-            { label: '文章页', href: '/posts/' },
-            { label: '关于页', href: '/about/' },
+            { label: '首页', href: '/', text: '回到首页查看最新更新。' },
+            { label: '文章页', href: '/posts/', text: '看项目背后的写作和记录。' },
+            { label: '关于页', href: '/about/', text: '了解作者和写作方向。' },
           ],
         },
       ]}

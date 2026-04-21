@@ -43,18 +43,19 @@ const pubYear = String(post.data.pubDate.getFullYear());
     </article>
 
     <PageSidebar
-      title="按时间或主题浏览"
-      intro="这篇文章放在长期研究的档案里，适合按年份回看，也适合顺着主题继续读。"
+      title="浏览方式"
+      intro="如果你是从单篇文章进来的，可以顺着时间回看，也可以直接按主题继续读。"
       sections={[
         {
           title: '按时间',
-          items: [{ label: `${pubYear} 年发布`, href: '/posts/' }],
+          items: [{ label: `${pubYear} 年归档`, href: '/posts/', text: '回到文章页继续浏览。' }],
         },
         {
           title: '按主题',
           items: post.data.tags.map((tag) => ({
             label: tag,
             href: `/tags/${tag}/`,
+            text: `查看 ${tag} 相关内容。`,
           })),
         },
       ]}

@@ -8,8 +8,6 @@ import { getPostUrl } from '../lib/posts';
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 5);
-
-const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort();
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
   month: 'long',
@@ -21,10 +19,10 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   <div class="page-grid">
     <div>
       <section class="hero">
-        <p class="eyebrow">首页</p>
-        <h1>长坡厚雪，主要做 AI、炒股，以及 AI + 炒股方向研究。</h1>
+        <p class="eyebrow">长坡厚雪</p>
+        <h1>在 AI、市场和长期判断之间，慢慢把研究写清楚。</h1>
         <p class="lead">
-          这里放的是持续更新的研究记录、建站过程、项目整理和一些值得反复回看的判断框架。
+          这里主要写 AI、炒股，以及 AI + 炒股方向的研究笔记，也会放一些项目进展、工具尝试和建站记录。
         </p>
       </section>
 
@@ -53,37 +51,45 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
         <div class="section-head">
           <h2 id="featured-content">精选内容</h2>
         </div>
-        <ul class="post-list">
-          {
-            posts.slice(0, 2).map((post) => (
-              <li class="post-card">
-                <h3><a href={getPostUrl(post)}>{post.data.title}</a></h3>
-                <p>{post.data.description}</p>
-              </li>
-            ))
-          }
-        </ul>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <p class="post-meta">建站记录</p>
+            <h3><a href="/posts/building-this-blog/">这个博客是如何被搭建出来的</a></h3>
+            <p>把第一版博客搭起来时做过的取舍、页面结构和部署方式，都整理在这篇文章里。</p>
+          </article>
+          <article class="feature-card">
+            <p class="post-meta">项目入口</p>
+            <h3><a href="/projects/">项目页</a></h3>
+            <p>对外可看的项目、截图预览和后续会继续补充的公开作品，都从这里进入。</p>
+          </article>
+          <article class="feature-card">
+            <p class="post-meta">作者说明</p>
+            <h3><a href="/about/">关于长坡厚雪</a></h3>
+            <p>如果你想先了解这个博客会写什么、往哪里走，从这里开始会更合适。</p>
+          </article>
+        </div>
       </section>
     </div>
 
     <PageSidebar
-      title="右侧导航"
-      intro="首页把重点内容收在右边，方便先认识作者，再决定从文章、分类还是项目开始看。"
+      title="作者"
+      intro="长坡厚雪。主要研究 AI、股票，以及 AI 怎样真正进入研究和决策流程。"
       sections={[
         {
-          title: '快速入口',
+          title: '站内导航',
           items: [
-            { label: '文章归档', href: '/posts/' },
-            { label: '分类浏览', href: '/categories/' },
-            { label: '项目展示', href: '/projects/' },
-            { label: '关于作者', href: '/about/' },
+            { label: '文章归档', href: '/posts/', text: '按时间和主题看全部文章。' },
+            { label: '分类浏览', href: '/categories/', text: '先按主题筛选，再进入具体内容。' },
+            { label: '项目页', href: '/projects/', text: '集中查看代表作品、链接和截图。' },
+            { label: '关于页', href: '/about/', text: '了解我在写什么，也知道后面会补什么。' },
           ],
         },
         {
-          title: '研究主题',
-          items: tags.map((tag) => ({
-            label: tag,
-            href: `/tags/${tag}/`,
+          title: '最近更新',
+          items: posts.slice(0, 1).map((post) => ({
+            label: post.data.title,
+            href: getPostUrl(post),
+            text: dateFormatter.format(post.data.pubDate),
           })),
         },
       ]}
