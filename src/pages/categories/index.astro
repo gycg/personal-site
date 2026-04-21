@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const categories = Array.from(new Set(posts.flatMap((post) => post.data.tags)))
+  .sort()
+  .map((tag) => ({
+    tag,
+    count: posts.filter((post) => post.data.tags.includes(tag)).length,
+  }));
+---
+
+<BaseLayout title="分类" description="按主题快速找到同类内容。" canonicalPath="/categories/">
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">分类页</p>
+        <h1>方便用户快速找到同类内容</h1>
+        <p class="lead">这里按主题整理内容入口，适合先确定方向，再进入具体文章。</p>
+      </section>
+
+      <ul class="post-list">
+        {
+          categories.map((category) => (
+            <li class="post-card">
+              <h2><a href={`/tags/${category.tag}/`}>#{category.tag}</a></h2>
+              <p>{category.count} 篇内容，适合按同一主题连续阅读。</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <PageSidebar
+      title="分类侧栏"
+      intro="如果内容变多，分类页会是最快的入口。"
+      sections={[
+        {
+          title: '页面入口',
+          items: [
+            { label: '首页', href: '/' },
+            { label: '文章页', href: '/posts/' },
+            { label: '项目页', href: '/projects/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+</BaseLayout>

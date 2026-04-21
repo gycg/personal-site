@@ -52,7 +52,7 @@ npm run preview
 
 ## 新增文章
 
-复制 `src/content/posts/_template.md`，改成新的文件名，例如：
+复制 `docs/post-template.md`，改成新的文件名，例如：
 
 ```txt
 src/content/posts/my-new-post.md
@@ -108,4 +108,4 @@ src/
 
 - 首页：`src/pages/index.astro`
 - 内容目录：`src/content/posts/`
-- 文章模板：`src/content/posts/_template.md`
+- 文章模板：`docs/post-template.md`

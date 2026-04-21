@@ -1,0 +1,43 @@
+---
+interface SidebarSection {
+  title: string;
+  items: Array<{
+    label: string;
+    href?: string;
+    text?: string;
+  }>;
+}
+
+interface Props {
+  title?: string;
+  intro?: string;
+  sections?: SidebarSection[];
+}
+
+const { title = '侧栏', intro, sections = [] } = Astro.props;
+---
+
+<aside class="page-sidebar" aria-label={title}>
+  {intro && (
+    <section class="sidebar-panel">
+      <h2>{title}</h2>
+      <p>{intro}</p>
+    </section>
+  )}
+
+  {
+    sections.map((section) => (
+      <section class="sidebar-panel">
+        <h2>{section.title}</h2>
+        <ul class="sidebar-list">
+          {section.items.map((item) => (
+            <li>
+              {item.href ? <a href={item.href}>{item.label}</a> : <span>{item.label}</span>}
+              {item.text && <p>{item.text}</p>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</aside>

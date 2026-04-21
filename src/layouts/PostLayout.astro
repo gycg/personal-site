@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
+import PageSidebar from '../components/PageSidebar.astro';
 import { getPostUrl } from '../lib/posts';
 
 interface Props {
@@ -13,6 +14,8 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   month: 'long',
   day: 'numeric',
 });
+
+const pubYear = String(post.data.pubDate.getFullYear());
 ---
 
 <BaseLayout
@@ -21,20 +24,40 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   type="article"
   canonicalPath={getPostUrl(post)}
 >
-  <article>
-    <header class="article-header">
-      <p class="post-meta">
-        {dateFormatter.format(post.data.pubDate)}
-        {post.data.updatedDate && ` · 更新于 ${dateFormatter.format(post.data.updatedDate)}`}
-      </p>
-      <h1>{post.data.title}</h1>
-      <p class="lead">{post.data.description}</p>
-      <div class="tags" aria-label="文章标签">
-        {post.data.tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
+  <div class="page-grid">
+    <article>
+      <header class="article-header">
+        <p class="post-meta">
+          {dateFormatter.format(post.data.pubDate)}
+          {post.data.updatedDate && ` · 更新于 ${dateFormatter.format(post.data.updatedDate)}`}
+        </p>
+        <h1>{post.data.title}</h1>
+        <p class="lead">{post.data.description}</p>
+        <div class="tags" aria-label="文章标签">
+          {post.data.tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
+        </div>
+      </header>
+      <div class="prose">
+        <slot />
       </div>
-    </header>
-    <div class="prose">
-      <slot />
-    </div>
-  </article>
+    </article>
+
+    <PageSidebar
+      title="按时间或主题浏览"
+      intro="这篇文章放在长期研究的档案里，适合按年份回看，也适合顺着主题继续读。"
+      sections={[
+        {
+          title: '按时间',
+          items: [{ label: `${pubYear} 年发布`, href: '/posts/' }],
+        },
+        {
+          title: '按主题',
+          items: post.data.tags.map((tag) => ({
+            label: tag,
+            href: `/tags/${tag}/`,
+          })),
+        },
+      ]}
+    />
+  </div>
 </BaseLayout>

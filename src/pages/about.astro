@@ -1,24 +1,41 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageSidebar from '../components/PageSidebar.astro';
 ---
 
 <BaseLayout title="关于" description="关于这个中文个人博客。" canonicalPath="/about/">
-  <section class="hero">
-    <p class="eyebrow">About</p>
-    <h1>关于这里</h1>
-    <p class="lead">
-      这是一个以内容为中心的个人博客，主要记录技术实践、工具选择、阅读笔记和项目复盘。
-    </p>
-  </section>
+  <div class="page-grid">
+    <section class="prose">
+      <section class="hero">
+        <p class="eyebrow">关于页</p>
+        <h1>关于长坡厚雪</h1>
+        <p class="lead">
+          我主要做 AI、炒股，以及 AI + 炒股方向的研究。这个博客用来沉淀判断框架、建站过程、项目记录和阶段性总结。
+        </p>
+      </section>
 
-  <section class="prose">
-    <h2>写作原则</h2>
-    <p>文章优先追求清楚、可复用和可回看。比起复杂设计，这里更重视稳定的结构、轻量的页面和长期维护成本。</p>
+      <h2>你是谁</h2>
+      <p>我是长坡厚雪，关注长期有效的研究方法。这里的内容会尽量写得具体，方便回看，也方便后续继续扩展。</p>
 
-    <h2>技术栈</h2>
-    <p>博客使用 Astro 构建，文章通过 Markdown/MDX 和 content collections 管理，部署目标是 Vercel。</p>
+      <h2>写什么</h2>
+      <p>目前重点是三类内容：AI 相关工具和工作流、股票研究与交易思考、以及 AI 如何真正帮助投研和决策。</p>
 
-    <h2>联系</h2>
-    <p>你可以把这里当作一个持续整理的公开笔记本。后续可以补充 RSS、评论、搜索或订阅功能。</p>
-  </section>
+      <h2>在哪联系你</h2>
+      <p>现在先把这里作为公开的个人入口。后续会补上更明确的联系渠道、评论模块和订阅方式。</p>
+    </section>
+
+    <PageSidebar
+      title="关于侧栏"
+      intro="如果你是第一次来到这里，建议先看项目页和建站文章，会更快理解这个博客准备往哪里走。"
+      sections={[
+        {
+          title: '先看这里',
+          items: [
+            { label: '项目页', href: '/projects/' },
+            { label: '建站文章', href: '/posts/building-this-blog/' },
+          ],
+        },
+      ]}
+    />
+  </div>
 </BaseLayout>

@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
 import { getPostUrl } from '../../lib/posts';
 
 export async function getStaticPaths() {
@@ -27,21 +28,39 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
 ---
 
 <BaseLayout title={`标签：${tag}`} description={`标签 ${tag} 下的文章。`} canonicalPath={`/tags/${tag}/`}>
-  <section class="hero">
-    <p class="eyebrow">Tag</p>
-    <h1>#{tag}</h1>
-    <p class="lead">这个标签下共有 {posts.length} 篇文章。</p>
-  </section>
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">分类页</p>
+        <h1>#{tag}</h1>
+        <p class="lead">方便用户快速找到同类内容。这个分类下共有 {posts.length} 篇文章。</p>
+      </section>
 
-  <ul class="post-list">
-    {
-      posts.map((post) => (
-        <li class="post-card">
-          <p class="post-meta">{dateFormatter.format(post.data.pubDate)}</p>
-          <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
-          <p>{post.data.description}</p>
-        </li>
-      ))
-    }
-  </ul>
+      <ul class="post-list">
+        {
+          posts.map((post) => (
+            <li class="post-card">
+              <p class="post-meta">{dateFormatter.format(post.data.pubDate)}</p>
+              <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
+              <p>{post.data.description}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <PageSidebar
+      title="分类导航"
+      intro="分类页的作用是缩短查找路径，先锁定主题，再进入具体文章。"
+      sections={[
+        {
+          title: '继续浏览',
+          items: [
+            { label: '全部文章', href: '/posts/' },
+            { label: '返回首页', href: '/' },
+          ],
+        },
+      ]}
+    />
+  </div>
 </BaseLayout>

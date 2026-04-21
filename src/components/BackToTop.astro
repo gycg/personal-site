@@ -1,0 +1,19 @@
+<button class="back-to-top" type="button" aria-label="回到顶部" data-back-to-top>
+  回到顶部
+</button>
+
+<script>
+  const button = document.querySelector('[data-back-to-top]');
+
+  if (button instanceof HTMLButtonElement) {
+    const toggleVisibility = () => {
+      button.classList.toggle('is-visible', window.scrollY > 280);
+    };
+
+    toggleVisibility();
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
+    button.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+</script>

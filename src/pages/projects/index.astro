@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+---
+
+<BaseLayout title="项目" description="展示代表作品、链接、截图和简介。" canonicalPath="/projects/">
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">项目页</p>
+        <h1>代表作品</h1>
+        <p class="lead">这里集中展示当前对外可看的项目，包含链接、截图预览和简短说明。</p>
+      </section>
+
+      <section class="project-list" aria-label="项目列表">
+        <article class="project-card">
+          <img
+            src="/project-personal-blog.svg"
+            alt="个人博客项目截图预览"
+            width="1200"
+            height="720"
+          />
+          <div class="project-copy">
+            <p class="post-meta">Astro / Markdown / Vercel</p>
+            <h2>个人博客</h2>
+            <p>
+              这是当前对外发布的核心项目，用来沉淀 AI、炒股，以及 AI + 炒股方向的研究和实践。结构上保持轻量，方便长期维护和持续写作。
+            </p>
+            <div class="project-links">
+              <a class="tag" href="/">在线查看</a>
+              <a class="tag" href="/posts/building-this-blog/">建站记录</a>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <PageSidebar
+      title="项目侧栏"
+      intro="项目页会持续更新，后续有新的研究工具或公开作品时，会优先补到这里。"
+      sections={[
+        {
+          title: '相关页面',
+          items: [
+            { label: '首页', href: '/' },
+            { label: '文章页', href: '/posts/' },
+            { label: '关于页', href: '/about/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+</BaseLayout>
