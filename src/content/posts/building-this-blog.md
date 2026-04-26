@@ -1,16 +1,16 @@
 ---
 title: "这个博客是如何被搭建出来的"
-description: "记录我把个人研究博客搭起来的过程：为什么这样选技术、页面怎么组织、部署时做了哪些取舍。"
+description: "记录个人研究博客的搭建过程：技术选择、页面组织、部署方式和维护取舍。"
 pubDate: 2026-04-20
 tags: ["建站", "Astro", "个人博客"]
 draft: false
 ---
 
-这个博客上线之后，我想把搭建过程先记下来。原因很简单：以后肯定还会继续改版、加栏目、补功能，先把第一版为什么这么做写清楚，后面回头看会省很多时间。
+这个博客上线之后，搭建过程也值得先记下来。原因很简单：以后肯定还会继续改版、加栏目、补功能，先把第一版为什么这么做写清楚，后面回头看会省很多时间。
 
 ## 为什么选择 Astro + Markdown/MDX + Vercel
 
-我想要的是一个轻一点、稳一点的个人博客，写文章时别被工具链拖住，部署时也别加太多维护负担。基于这个目标，Astro 是很合适的选择。
+目标是做一个轻一点、稳一点的个人博客，写文章时别被工具链拖住，部署时也别加太多维护负担。基于这个目标，Astro 是很合适的选择。
 
 Astro 默认就适合内容型站点。文章页在构建时生成，访问快，部署简单，也不需要单独维护服务端。对个人博客来说，这一套足够用了。
 
@@ -27,7 +27,7 @@ package.json
 astro.config.mjs
 tsconfig.json
 src/consts.ts
-src/content/config.ts
+src/content.config.ts
 ```
 
 `package.json` 里只保留必要脚本：`dev`、`build`、`preview` 和 `astro`。依赖也控制在最少范围：Astro、MDX 集成、sitemap 集成和 TypeScript。
@@ -55,9 +55,9 @@ public/
   favicon.svg
 src/
   content/
-    config.ts
     posts/
       building-this-blog.md
+  content.config.ts
   layouts/
     BaseLayout.astro
     PostLayout.astro
@@ -90,7 +90,7 @@ README.md
 
 SEO 放在 `BaseLayout.astro` 里统一处理。每个页面传入 `title`、`description`、`type` 和 `canonicalPath` 后，布局会生成 `title`、`description`、canonical、Open Graph 和 Twitter card 基础信息。
 
-文章页使用 Astro 的 content collections。`src/content/config.ts` 定义了文章 frontmatter 的 schema，避免文章元信息随意增长或字段拼错。详情页通过动态路由读取集合内容，然后渲染 Markdown/MDX 正文。
+文章页使用 Astro 的 content collections。`src/content.config.ts` 定义了文章 frontmatter 的 schema，避免文章元信息随意增长或字段拼错。详情页通过动态路由读取集合内容，然后渲染 Markdown/MDX 正文。
 
 页面布局用了统一的右侧栏结构。首页右边放作者说明、站内导航和最近更新，文章页放按时间和按主题浏览，分类页和项目页也各自有对应的辅助信息。移动端时右侧栏会自动落到正文下方。
 

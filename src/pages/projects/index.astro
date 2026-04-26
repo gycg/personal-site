@@ -3,12 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 ---
 
-<BaseLayout title="项目" description="展示代表作品、链接、截图和简介。" canonicalPath="/projects/">
+<BaseLayout title="项目" description="正在整理和发布的项目。" canonicalPath="/projects/">
   <div class="page-grid">
     <div>
       <section class="hero">
         <p class="eyebrow">项目</p>
-        <h1>代表作品</h1>
+        <h1>项目</h1>
       </section>
 
       <section class="project-list" aria-label="项目列表">
@@ -23,14 +23,48 @@ import PageSidebar from '../../components/PageSidebar.astro';
             <p class="post-meta">Astro / Markdown / Vercel</p>
             <h2>个人博客</h2>
             <p>
-              这是当前对外发布的核心项目，用来沉淀 AI、炒股，以及 AI + 炒股方向的研究和实践。结构上保持轻量，方便长期维护和持续写作。
+              这个博客作为公开入口，用来沉淀 AI、炒股，以及 AI + 炒股方向的研究和实践。结构上尽量保持轻量，方便长期维护和持续写作。
             </p>
+            <div class="project-meta-grid">
+              <div>
+                <span>定位</span>
+                <strong>个人研究主页</strong>
+              </div>
+              <div>
+                <span>内容</span>
+                <strong>文章 / 项目 / 关于</strong>
+              </div>
+              <div>
+                <span>状态</span>
+                <strong>持续迭代中</strong>
+              </div>
+            </div>
             <div class="project-links">
-              <a class="tag" href="/">在线查看</a>
-              <a class="tag" href="/posts/building-this-blog/">建站记录</a>
+              <a class="tag" href="/">查看首页</a>
+              <a class="tag" href="/posts/building-this-blog/">阅读文章</a>
             </div>
           </div>
         </article>
+      </section>
+
+      <section class="content-section" aria-labelledby="project-notes">
+        <div class="section-head">
+          <h2 id="project-notes">项目说明</h2>
+        </div>
+        <div class="project-note-grid">
+          <article class="project-note">
+            <span>方向</span>
+            <p>用最少的依赖做一个长期可维护的中文个人博客。</p>
+          </article>
+          <article class="project-note">
+            <span>目标</span>
+            <p>把文章、项目和个人介绍整理成同一套公开入口。</p>
+          </article>
+          <article class="project-note">
+            <span>下一步</span>
+            <p>继续补文章、评论模块，以及更完整的项目展示内容。</p>
+          </article>
+        </div>
       </section>
     </div>
 

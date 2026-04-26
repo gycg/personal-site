@@ -3,23 +3,52 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageSidebar from '../components/PageSidebar.astro';
 ---
 
-<BaseLayout title="关于" description="关于这个中文个人博客。" canonicalPath="/about/">
+<BaseLayout title="关于" description="站点方向、内容边界和联系入口。" canonicalPath="/about/">
   <div class="page-grid">
     <section class="prose">
       <section class="hero">
         <p class="eyebrow">关于</p>
-        <h1>关于长坡厚雪</h1>
-        <p class="lead">我主要关注 AI、炒股，以及 AI 和投研结合时真正有价值的部分。</p>
+        <h1>站点方向与内容边界</h1>
+        <p class="lead">AI、炒股，以及 AI 和投研结合时真正有价值的部分。</p>
       </section>
 
-      <h2>你是谁</h2>
-      <p>我是长坡厚雪，更关心那些能长期复用的方法和判断框架。写下来，一方面是为了自己回看，另一方面也是想把思路整理得更结实一些。</p>
+      <h2>定位</h2>
+      <p>长坡厚雪，更关心那些能长期复用的方法和判断框架。把研究写下来，一方面方便回看，另一方面也让判断过程留得更清楚。</p>
 
       <h2>写什么</h2>
-      <p>这里会写三类内容：AI 工具和工作流，股票研究与交易思考，以及 AI 如何真正帮助投研和决策。偶尔也会写建站、项目和日常使用的工具。</p>
+      <p>三类内容会长期更新：AI 工具和工作流，股票研究与交易思考，以及 AI 如何真正帮助投研和决策。偶尔也会写项目、建站和日常使用的工具。</p>
 
-      <h2>在哪联系你</h2>
-      <p>目前先把这里作为公开入口。后面会补充更明确的联系渠道、评论模块和订阅方式。</p>
+      <h2>联系</h2>
+      <p>目前可以通过抖音和小红书继续关注后续更新。</p>
+
+      <div class="qr-grid" aria-label="社交平台二维码">
+        <figure class="qr-card">
+          <img
+            src="/images/social/douyin-qr-code.png"
+            alt="长坡厚雪抖音二维码"
+            width="1055"
+            height="1575"
+            loading="lazy"
+          />
+          <figcaption>
+            <strong>抖音</strong>
+            <span>抖音号：39826926435</span>
+          </figcaption>
+        </figure>
+        <figure class="qr-card">
+          <img
+            src="/images/social/xiaohongshu-qr-code.jpg"
+            alt="长坡厚雪小红书二维码"
+            width="987"
+            height="1347"
+            loading="lazy"
+          />
+          <figcaption>
+            <strong>小红书</strong>
+            <span>小红书号：49620714945</span>
+          </figcaption>
+        </figure>
+      </div>
     </section>
 
     <PageSidebar
@@ -30,6 +59,12 @@ import PageSidebar from '../components/PageSidebar.astro';
           items: [
             { label: '项目页', href: '/projects/' },
             { label: '建站文章', href: '/posts/building-this-blog/' },
+          ],
+        },
+        {
+          title: '社交平台',
+          items: [
+            { label: '抖音 / 小红书二维码', href: '/about/' },
           ],
         },
       ]}

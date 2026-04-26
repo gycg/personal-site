@@ -12,12 +12,12 @@ const categories = Array.from(new Set(posts.flatMap((post) => post.data.tags)))
   }));
 ---
 
-<BaseLayout title="分类" description="按主题快速找到同类内容。" canonicalPath="/categories/">
+<BaseLayout title="分类" description="按主题整理已经发布的文章。" canonicalPath="/categories/">
   <div class="page-grid">
     <div>
       <section class="hero">
         <p class="eyebrow">分类</p>
-        <h1>方便用户快速找到同类内容</h1>
+        <h1>按主题整理文章</h1>
       </section>
 
       <ul class="post-list">
@@ -25,7 +25,7 @@ const categories = Array.from(new Set(posts.flatMap((post) => post.data.tags)))
           categories.map((category) => (
             <li class="post-card">
               <h2><a href={`/tags/${category.tag}/`}>#{category.tag}</a></h2>
-              <p>{category.count} 篇内容，适合按同一主题连续阅读。</p>
+              <p>{category.count} 篇内容。</p>
             </li>
           ))
         }
