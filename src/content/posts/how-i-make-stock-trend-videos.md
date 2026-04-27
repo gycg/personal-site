@@ -14,7 +14,7 @@ draft: false
 
 下面这张图就是其中一类成片的中段画面。左边是时间推进中的主图，右边是当时的实时排名，整体更像一张会动的研究图表。
 
-![科技股市值变化视频中段画面](/images/posts/stock-trend-video-example.png)
+![科技股市值变化视频中段画面](/images/posts/how-i-make-stock-trend-videos/stock-trend-video-example.png)
 
 *一条科技股市值变化视频的中段画面。核心信息放在主图和右侧排名里，装饰尽量少。*
 
