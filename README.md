@@ -85,10 +85,10 @@ draft: false
 部署成功后，Vercel 会提供一个免费默认域名，格式通常是：
 
 ```txt
-https://your-project.vercel.app
+https://cphxnotes.com
 ```
 
-把 `astro.config.mjs` 和 `src/consts.ts` 中的 `https://example.com` 改成这个域名或你的自定义域名，然后重新部署。这样 canonical URL 和 sitemap 会使用正确站点地址。
+当前项目已配置生产域名为 `https://cphxnotes.com`。重新部署后，canonical URL 和 sitemap 会使用这个站点地址。
 
 ## 目录结构
 

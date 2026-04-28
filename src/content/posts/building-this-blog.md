@@ -98,7 +98,7 @@ SEO 放在 `BaseLayout.astro` 里统一处理。每个页面传入 `title`、`de
 
 标签功能没有单独建数据库，也没有额外配置文件。页面直接从所有文章的 `tags` 字段中收集标签，生成 `/tags/[tag]/` 页面。对个人博客来说，这样足够直接。
 
-sitemap 使用 `@astrojs/sitemap`。在 `astro.config.mjs` 中配置 `site` 和 sitemap 集成后，构建时会生成站点地图。现在 `site` 先使用 `https://example.com` 作为占位，真正部署后应该改成 Vercel 分配的域名或自定义域名。
+sitemap 使用 `@astrojs/sitemap`。在 `astro.config.mjs` 中配置 `site` 和 sitemap 集成后，构建时会生成站点地图。现在 `site` 已经配置为 `https://cphxnotes.com`。
 
 ## 遇到的问题与解决方式
 
@@ -108,7 +108,7 @@ sitemap 使用 `@astrojs/sitemap`。在 `astro.config.mjs` 中配置 `site` 和 
 
 这也是为什么 `package.json` 里有 `engines` 字段，`.nvmrc` 里也写了 `20`。个人博客虽然简单，但依赖版本和运行时版本还是应该说清楚，尤其是准备部署到 Vercel 时。
 
-另一个需要注意的点是站点 URL。sitemap 和 canonical URL 都依赖 `site` 配置。项目刚创建时还没有真实线上域名，所以先放占位值。部署到 Vercel 后，应把它改成实际的 Vercel 默认域名，例如 `https://your-project.vercel.app`。
+另一个需要注意的点是站点 URL。sitemap 和 canonical URL 都依赖 `site` 配置。项目刚创建时还没有真实线上域名，所以先放占位值。后来买了 `cphxnotes.com`，就把站点地址统一改成 `https://cphxnotes.com`。
 
 ## 本地运行方式
 
@@ -141,7 +141,7 @@ Vercel 中保持默认 Astro 配置即可：
 - Output Directory：`dist`
 - Install Command：`npm install`
 
-如果先使用 Vercel 免费默认域名，部署完成后把 `astro.config.mjs` 和 `src/consts.ts` 里的 `https://example.com` 改成 Vercel 给出的 `https://项目名.vercel.app`，然后重新部署。
+部署到 Vercel 后，在项目的 Domains 里添加 `cphxnotes.com`，再按 Vercel 给出的记录去域名服务商那里配置 DNS。项目里的 `astro.config.mjs` 和 `src/consts.ts` 已经使用 `https://cphxnotes.com`，重新部署后 sitemap 和 canonical URL 会指向正式域名。
 
 ## 总结与后续可优化方向
 
