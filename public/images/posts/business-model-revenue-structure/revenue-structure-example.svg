@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">收入结构图</title>
+  <desc id="desc">虚构公司收入由核心业务 A、成长业务 B 和新业务 C 构成，分别占 70%、20% 和 10%。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="78" width="1060" height="564" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="150" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">不要只看公司名字，要看收入主要来自哪里</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif">
+    <line x1="240" y1="532" x2="980" y2="532" stroke="#b7c6b8" stroke-width="2"/>
+    <text x="172" y="274" fill="#23352b" font-size="27" font-weight="700">核心业务 A</text>
+    <rect x="350" y="235" width="560" height="62" rx="10" fill="#2e5f49"/>
+    <text x="930" y="275" fill="#2e5f49" font-size="30" font-weight="700">70%</text>
+    <text x="172" y="382" fill="#23352b" font-size="27" font-weight="700">成长业务 B</text>
+    <rect x="350" y="343" width="160" height="62" rx="10" fill="#a2661b"/>
+    <text x="530" y="383" fill="#a2661b" font-size="30" font-weight="700">20%</text>
+    <text x="172" y="490" fill="#23352b" font-size="27" font-weight="700">新业务 C</text>
+    <rect x="350" y="451" width="80" height="62" rx="10" fill="#7d8f83"/>
+    <text x="450" y="491" fill="#7d8f83" font-size="30" font-weight="700">10%</text>
+  </g>
+  <text x="600" y="600" fill="#617166" font-family="Noto Sans SC, PingFang SC, sans-serif" font-size="24" text-anchor="middle">先找到最大收入来源，再判断增长最快的业务是否足够重要</text>
+</svg>

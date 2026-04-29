@@ -11,12 +11,13 @@ interface Props {
   title?: string;
   intro?: string;
   sections?: SidebarSection[];
+  compact?: boolean;
 }
 
-const { title = '侧栏', intro, sections = [] } = Astro.props;
+const { title = '侧栏', intro, sections = [], compact = false } = Astro.props;
 ---
 
-<aside class="page-sidebar" aria-label={title}>
+<aside class:list={['page-sidebar', compact && 'is-compact']} aria-label={title}>
   {intro && (
     <section class="sidebar-panel">
       <p class="sidebar-kicker">{title}</p>

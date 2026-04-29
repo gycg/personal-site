@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">客户类型图</title>
+  <desc id="desc">客户可以分为 To C 个人消费者、To B 企业客户、To G 政府或公共部门。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="78" width="1060" height="564" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="150" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="40" font-weight="700">客户不同，收入稳定性、回款周期和竞争方式也不同</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif">
+    <rect x="130" y="248" width="290" height="250" rx="16" fill="#e8f0e8" stroke="#92aa97"/>
+    <text x="275" y="322" fill="#2e5f49" font-size="42" font-weight="700" text-anchor="middle">To C</text>
+    <text x="275" y="378" fill="#23352b" font-size="26" font-weight="700" text-anchor="middle">个人消费者</text>
+    <text x="275" y="430" fill="#617166" font-size="21" text-anchor="middle">品牌、渠道、体验</text>
+    <rect x="455" y="248" width="290" height="250" rx="16" fill="#fff8e8" stroke="#d0a35b"/>
+    <text x="600" y="322" fill="#a2661b" font-size="42" font-weight="700" text-anchor="middle">To B</text>
+    <text x="600" y="378" fill="#23352b" font-size="26" font-weight="700" text-anchor="middle">企业客户</text>
+    <text x="600" y="430" fill="#617166" font-size="21" text-anchor="middle">销售周期、可靠性</text>
+    <rect x="780" y="248" width="290" height="250" rx="16" fill="#e8f0e8" stroke="#92aa97"/>
+    <text x="925" y="322" fill="#2e5f49" font-size="42" font-weight="700" text-anchor="middle">To G</text>
+    <text x="925" y="378" fill="#23352b" font-size="26" font-weight="700" text-anchor="middle">政府 / 公共部门</text>
+    <text x="925" y="430" fill="#617166" font-size="21" text-anchor="middle">项目周期、回款</text>
+  </g>
+</svg>

@@ -11,3 +11,19 @@ export const MAIN_NAV_ITEMS = [
   { href: '/projects/', label: '项目' },
   { href: '/about/', label: '关于' },
 ];
+
+export const GISCUS_CONFIG = {
+  enabled: false,
+  repo: '',
+  repoId: '',
+  category: '',
+  categoryId: '',
+  mapping: 'pathname',
+  strict: '0',
+  reactionsEnabled: '1',
+  emitMetadata: '0',
+  inputPosition: 'top',
+  theme: 'light',
+  lang: 'zh-CN',
+  loading: 'lazy',
+} as const;

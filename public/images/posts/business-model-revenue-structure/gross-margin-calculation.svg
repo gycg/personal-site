@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">成本与毛利率图</title>
+  <desc id="desc">营业收入 100 元，营业成本 60 元，毛利润 40 元，毛利率为 40%。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="78" width="1060" height="564" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="150" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">毛利率看的是每卖 1 元，能留下多少初步利润</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif">
+    <rect x="170" y="240" width="220" height="260" rx="14" fill="#e8f0e8" stroke="#92aa97"/>
+    <text x="280" y="320" fill="#23352b" font-size="28" font-weight="700" text-anchor="middle">营业收入</text>
+    <text x="280" y="390" fill="#2e5f49" font-size="54" font-weight="700" text-anchor="middle">100 元</text>
+    <text x="440" y="385" fill="#a2661b" font-size="52" font-weight="700" text-anchor="middle">-</text>
+    <rect x="500" y="300" width="200" height="200" rx="14" fill="#f4ede7" stroke="#bd9477"/>
+    <text x="600" y="362" fill="#23352b" font-size="27" font-weight="700" text-anchor="middle">营业成本</text>
+    <text x="600" y="430" fill="#a2661b" font-size="48" font-weight="700" text-anchor="middle">60 元</text>
+    <text x="750" y="385" fill="#2e5f49" font-size="52" font-weight="700" text-anchor="middle">=</text>
+    <rect x="810" y="360" width="200" height="140" rx="14" fill="#fff8e8" stroke="#d0a35b"/>
+    <text x="910" y="408" fill="#23352b" font-size="27" font-weight="700" text-anchor="middle">毛利润</text>
+    <text x="910" y="464" fill="#a2661b" font-size="44" font-weight="700" text-anchor="middle">40 元</text>
+    <rect x="340" y="555" width="520" height="54" rx="12" fill="#2e5f49"/>
+    <text x="600" y="591" fill="#ffffff" font-size="28" font-weight="700" text-anchor="middle">毛利率 = 40 ÷ 100 = 40%</text>
+  </g>
+</svg>

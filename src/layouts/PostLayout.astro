@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
+import Comments from '../components/Comments.astro';
 import PageSidebar from '../components/PageSidebar.astro';
 import { getPostUrl } from '../lib/posts';
 
@@ -20,7 +21,7 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
 });
 
 const pubYear = String(post.data.pubDate.getFullYear());
-const tocItems = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
+const tocItems = headings.filter((heading) => heading.depth === 2 && heading.text !== 'Footnotes');
 const keyPoints = [
   post.data.description,
   ...tocItems.slice(0, 3).map((heading) => heading.text),
@@ -104,6 +105,7 @@ const relatedSeriesPosts = seriesPosts.filter((item) => item.id !== post.id);
         <p>如果这篇文章有事实错误、表达不清或值得补充的地方，可以通过关于页的社交平台入口反馈。</p>
         <a href="/about/#contact">去反馈</a>
       </section>
+      <Comments />
     </article>
 
     <PageSidebar
@@ -114,7 +116,7 @@ const relatedSeriesPosts = seriesPosts.filter((item) => item.id !== post.id);
               {
                 title: '目录',
                 items: tocItems.map((heading) => ({
-                  label: heading.depth === 3 ? `· ${heading.text}` : heading.text,
+                  label: heading.text,
                   href: `#${heading.slug}`,
                 })),
               },

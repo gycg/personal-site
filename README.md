@@ -10,6 +10,7 @@
 - 标签归档
 - 基础 SEO：title、description、canonical、Open Graph、sitemap
 - 响应式布局，移动端可读
+- 可选 Giscus 评论模块，默认关闭
 
 ## 本地开发
 
@@ -71,6 +72,38 @@ draft: false
 ```
 
 正文使用 Markdown；如果需要组件或交互内容，可以创建 `.mdx` 文件。
+
+## 开启评论
+
+文章页底部已经接入可选的 Giscus 评论模块。默认关闭，未配置时不会渲染评论区，也不会影响构建。
+
+开启前需要准备：
+
+1. GitHub 仓库开启 Discussions。
+2. 安装 Giscus GitHub App，并授权到对应仓库。
+3. 在 `https://giscus.app` 选择仓库、Discussion 分类和页面映射方式，生成配置。
+
+然后修改 `src/consts.ts` 中的 `GISCUS_CONFIG`：
+
+```ts
+export const GISCUS_CONFIG = {
+  enabled: true,
+  repo: 'owner/repo',
+  repoId: 'your_repo_id',
+  category: 'Announcements',
+  categoryId: 'your_category_id',
+  mapping: 'pathname',
+  strict: '0',
+  reactionsEnabled: '1',
+  emitMetadata: '0',
+  inputPosition: 'top',
+  theme: 'light',
+  lang: 'zh-CN',
+  loading: 'lazy',
+} as const;
+```
+
+必要字段是 `enabled`、`repo`、`repoId`、`category`、`categoryId`。这些字段为空时，`src/components/Comments.astro` 不会输出 Giscus 脚本。
 
 ## 部署到 Vercel
 

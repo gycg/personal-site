@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">商业模式四要素图</title>
+  <desc id="desc">商业模式由产品服务、客户、收费方式和成本控制四个要素构成。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="78" width="1060" height="564" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="150" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">商业模式 = 向谁提供什么，并如何赚到钱</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif">
+    <rect x="154" y="232" width="390" height="116" rx="14" fill="#e8f0e8" stroke="#92aa97"/>
+    <text x="190" y="284" fill="#23352b" font-size="28" font-weight="700">提供什么产品或服务</text>
+    <text x="190" y="322" fill="#617166" font-size="21">解决客户的哪类问题</text>
+    <rect x="656" y="232" width="390" height="116" rx="14" fill="#fff8e8" stroke="#d0a35b"/>
+    <text x="692" y="284" fill="#23352b" font-size="28" font-weight="700">客户是谁</text>
+    <text x="692" y="322" fill="#617166" font-size="21">个人、企业或公共部门</text>
+    <rect x="154" y="420" width="390" height="116" rx="14" fill="#fff8e8" stroke="#d0a35b"/>
+    <text x="190" y="472" fill="#23352b" font-size="28" font-weight="700">如何收费</text>
+    <text x="190" y="510" fill="#617166" font-size="21">卖产品、收服务费、佣金或利息</text>
+    <rect x="656" y="420" width="390" height="116" rx="14" fill="#e8f0e8" stroke="#92aa97"/>
+    <text x="692" y="472" fill="#23352b" font-size="28" font-weight="700">如何控制成本并赚钱</text>
+    <text x="692" y="510" fill="#617166" font-size="21">成本结构决定利润空间</text>
+  </g>
+  <circle cx="600" cy="384" r="48" fill="#2e5f49"/>
+  <text x="600" y="397" fill="#ffffff" font-family="Noto Sans SC, PingFang SC, sans-serif" font-size="30" font-weight="700" text-anchor="middle">利润</text>
+</svg>
