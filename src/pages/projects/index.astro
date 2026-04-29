@@ -3,12 +3,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 ---
 
-<BaseLayout title="项目" description="正在整理和发布的项目。" canonicalPath="/projects/">
+<BaseLayout title="项目" description="投研工具、内容工作流和长期写作系统。" canonicalPath="/projects/">
   <div class="page-grid">
     <div>
       <section class="hero">
         <p class="eyebrow">项目</p>
-        <h1>项目</h1>
+        <h1>工具、流程和长期系统</h1>
+        <p class="lead">这里展示围绕投资研究、AI 工作流和内容生产搭建的项目。部分项目仍在进行中，会随着文章和工具一起迭代。</p>
       </section>
 
       <section class="project-list" aria-label="项目列表">
@@ -23,7 +24,7 @@ import PageSidebar from '../../components/PageSidebar.astro';
             <p class="post-meta">Astro / Markdown / Vercel</p>
             <h2>个人博客</h2>
             <p>
-              这个博客作为公开入口，用来沉淀 AI、炒股，以及 AI + 炒股方向的研究和实践。结构上尽量保持轻量，方便长期维护和持续写作。
+              公开写作入口，用来沉淀股票入门、公司研究、AI 投研和财务自由实验。结构上保持轻量，方便长期维护和持续写作。
             </p>
             <div class="project-meta-grid">
               <div>
@@ -45,6 +46,61 @@ import PageSidebar from '../../components/PageSidebar.astro';
             </div>
           </div>
         </article>
+
+        <article class="project-card">
+          <div class="project-copy">
+            <p class="post-meta">Research System / In Progress</p>
+            <h2>长期投资研究系统</h2>
+            <p>用于整理股票观察池、财报笔记、估值假设和后续跟踪指标。目标是让每一次研究都能沉淀成可复盘的结构化记录。</p>
+            <div class="project-meta-grid">
+              <div>
+                <span>定位</span>
+                <strong>研究底座</strong>
+              </div>
+              <div>
+                <span>内容</span>
+                <strong>公司 / 指标 / 跟踪</strong>
+              </div>
+              <div>
+                <span>状态</span>
+                <strong>进行中</strong>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card">
+          <div class="project-copy">
+            <p class="post-meta">AI Workflow / In Progress</p>
+            <h2>AI 财报阅读工作流</h2>
+            <p>用 AI 辅助整理年报、季报、公告和研报，提取关键数据和风险点。AI 负责提高效率，最终判断仍然回到原始材料和商业逻辑。</p>
+            <div class="project-meta-grid">
+              <div>
+                <span>定位</span>
+                <strong>AI 投研工具</strong>
+              </div>
+              <div>
+                <span>内容</span>
+                <strong>公告 / 财报 / 提纲</strong>
+              </div>
+              <div>
+                <span>状态</span>
+                <strong>打磨中</strong>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card">
+          <div class="project-copy">
+            <p class="post-meta">Content Pipeline</p>
+            <h2>股票趋势视频生产流程</h2>
+            <p>从选题、数据整理、脚本、图表到发布，把短视频内容做成可以复用的流水线，减少重复劳动，提高内容一致性。</p>
+            <div class="project-links">
+              <a class="tag" href="/posts/how-i-make-stock-trend-videos/">阅读记录</a>
+            </div>
+          </div>
+        </article>
       </section>
 
       <section class="content-section" aria-labelledby="project-notes">
@@ -62,7 +118,7 @@ import PageSidebar from '../../components/PageSidebar.astro';
           </article>
           <article class="project-note">
             <span>下一步</span>
-            <p>继续补文章、评论模块，以及更完整的项目展示内容。</p>
+            <p>继续补充研究系统、AI 工作流和可公开展示的工具截图。</p>
           </article>
         </div>
       </section>
@@ -76,6 +132,7 @@ import PageSidebar from '../../components/PageSidebar.astro';
           items: [
             { label: '首页', href: '/' },
             { label: '文章页', href: '/posts/' },
+            { label: '研究方法', href: '/method/' },
             { label: '关于页', href: '/about/' },
           ],
         },

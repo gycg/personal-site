@@ -20,10 +20,33 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
     <div class="main-column">
       <section class="hero">
         <p class="eyebrow">长坡厚雪</p>
-        <h1>AI、市场与长期判断</h1>
+        <h1>一个大厂程序员的长期投资研究笔记</h1>
         <p class="lead">
-          记录 AI、炒股，以及 AI + 炒股方向的研究笔记。重点放在方法、数据、工具和可复盘的判断过程。
+          用工程化方法研究股票、公司和 AI 投研工具。这里不荐股，不喊单，专注沉淀可复盘的研究过程、投资框架和通往财务自由的长期实验。
         </p>
+      </section>
+
+      <section class="content-section" aria-labelledby="reading-paths">
+        <div class="section-head">
+          <h2 id="reading-paths">阅读路径</h2>
+        </div>
+        <div class="path-grid">
+          <a class="path-card" href="/series/stock-basics/">
+            <span>入门</span>
+            <strong>从零看懂股票</strong>
+            <p>按顺序理解股票、行情、收益来源和基础概念。</p>
+          </a>
+          <a class="path-card" href="/tags/财报分析/">
+            <span>研究</span>
+            <strong>公司研究笔记</strong>
+            <p>从财报、产业逻辑和跟踪指标看公司。</p>
+          </a>
+          <a class="path-card" href="/method/">
+            <span>边界</span>
+            <strong>研究方法</strong>
+            <p>说明数据来源、风险声明和内容边界。</p>
+          </a>
+        </div>
       </section>
 
       <section class="content-section" aria-labelledby="latest-posts">
@@ -50,13 +73,15 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
 
     <PageSidebar
       title="研究方向"
-      intro="AI、股票，以及 AI 怎样真正进入研究和决策流程。"
+      intro="股票、公司研究、AI 投研工具，以及普通人如何长期积累资产。"
       sections={[
         {
           title: '入口',
           items: [
             { label: '文章归档', href: '/posts/' },
             { label: '分类浏览', href: '/categories/' },
+            { label: '从零看懂股票', href: '/series/stock-basics/' },
+            { label: '研究方法', href: '/method/' },
             { label: '项目页', href: '/projects/' },
             { label: '关于页', href: '/about/' },
           ],

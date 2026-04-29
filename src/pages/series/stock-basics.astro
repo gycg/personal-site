@@ -1,0 +1,59 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+import { getPostUrl } from '../../lib/posts';
+
+const posts = (await getCollection('posts', ({ data }) => {
+  return !data.draft && data.tags.includes('从零看懂股票');
+})).sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+
+const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout
+  title="从零看懂股票"
+  description="写给普通人的股票入门路径，从股票是什么开始，逐步理解市场、财报与估值。"
+  canonicalPath="/series/stock-basics/"
+>
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">专题</p>
+        <h1>从零看懂股票</h1>
+        <p class="lead">按顺序阅读这组文章，先建立基本概念，再进入行情、收益、财报和估值。</p>
+      </section>
+
+      <ul class="post-list">
+        {
+          posts.map((post) => (
+            <li class="post-card">
+              <p class="post-meta">{dateFormatter.format(post.data.pubDate)}</p>
+              <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
+              <p>{post.data.description}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <PageSidebar
+      title="专题"
+      intro="先搭框架，再看公司。"
+      sections={[
+        {
+          title: '继续阅读',
+          items: [
+            { label: '全部文章', href: '/posts/' },
+            { label: '研究方法', href: '/method/' },
+            { label: 'RSS 订阅', href: '/rss.xml' },
+          ],
+        },
+      ]}
+    />
+  </div>
+</BaseLayout>
