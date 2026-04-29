@@ -13,17 +13,17 @@ export const MAIN_NAV_ITEMS = [
 ];
 
 export const GISCUS_CONFIG = {
-  enabled: false,
-  repo: '',
-  repoId: '',
-  category: '',
-  categoryId: '',
+  enabled: true,
+  repo: 'gycg/personal-site',
+  repoId: 'R_kgDOSH0hsw',
+  category: 'General',
+  categoryId: 'DIC_kwDOSH0hs84C7-iq',
   mapping: 'pathname',
   strict: '0',
   reactionsEnabled: '1',
   emitMetadata: '0',
-  inputPosition: 'top',
-  theme: 'light',
-  lang: 'zh-CN',
+  inputPosition: 'bottom',
+  theme: 'preferred_color_scheme',
+  lang: 'en',
   loading: 'lazy',
 } as const;
