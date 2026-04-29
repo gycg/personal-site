@@ -4,17 +4,33 @@ import PostLayout from '../../layouts/PostLayout.astro';
 import { getPostSlug } from '../../lib/posts';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('posts', ({ data }) => !data.draft);
-  return posts.map((post) => ({
-    params: { slug: getPostSlug(post) },
-    props: { post },
-  }));
+  const posts = (await getCollection('posts', ({ data }) => !data.draft))
+    .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+
+  return posts.map((post, index) => {
+    const seriesPosts = post.data.tags.includes('从零看懂股票')
+      ? posts
+          .filter((item) => item.data.tags.includes('从零看懂股票'))
+          .sort((a, b) => a.data.title.localeCompare(b.data.title, 'zh-CN', { numeric: true }))
+      : [];
+    const seriesIndex = seriesPosts.findIndex((item) => item.id === post.id);
+
+    return {
+      params: { slug: getPostSlug(post) },
+      props: {
+        post,
+        previousPost: seriesIndex >= 0 ? seriesPosts[seriesIndex - 1] : posts[index - 1],
+        nextPost: seriesIndex >= 0 ? seriesPosts[seriesIndex + 1] : posts[index + 1],
+        seriesPosts,
+      },
+    };
+  });
 }
 
-const { post } = Astro.props;
-const { Content } = await render(post);
+const { post, previousPost, nextPost, seriesPosts } = Astro.props;
+const { Content, headings } = await render(post);
 ---
 
-<PostLayout post={post}>
+<PostLayout post={post} headings={headings} previousPost={previousPost} nextPost={nextPost} seriesPosts={seriesPosts}>
   <Content />
 </PostLayout>

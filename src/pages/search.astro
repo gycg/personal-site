@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="站内搜索" description="搜索长坡厚雪已经发布的文章。" canonicalPath="/search/">
+  <section class="hero">
+    <p class="eyebrow">搜索</p>
+    <h1>站内搜索</h1>
+    <p class="lead">按标题、摘要和标签搜索文章。</p>
+  </section>
+
+  <section class="search-panel" aria-labelledby="search-title">
+    <h2 id="search-title">搜索文章</h2>
+    <label class="search-box">
+      <span>关键词</span>
+      <input id="search-input" type="search" placeholder="例如：财报分析、股票收益、AI 算力" autocomplete="off" />
+    </label>
+    <p id="search-status" class="post-meta">输入关键词开始搜索。</p>
+    <ul id="search-results" class="post-list" aria-live="polite"></ul>
+  </section>
+
+  <script is:inline>
+    const input = document.querySelector('#search-input');
+    const results = document.querySelector('#search-results');
+    const status = document.querySelector('#search-status');
+    let posts = [];
+
+    const normalize = (value) => value.toLowerCase().trim();
+    const formatDate = (value) => new Intl.DateTimeFormat('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(value));
+
+    const renderResults = (items, query) => {
+      results.innerHTML = '';
+      if (!query) {
+        status.textContent = '输入关键词开始搜索。';
+        return;
+      }
+      status.textContent = items.length ? '找到 ' + items.length + ' 篇文章。' : '没有找到匹配文章。';
+      for (const post of items) {
+        const item = document.createElement('li');
+        item.className = 'post-card';
+        item.innerHTML =
+          '<p class="post-meta">' + formatDate(post.pubDate) + '</p>' +
+          '<h2><a href="' + post.url + '">' + post.title + '</a></h2>' +
+          '<p>' + post.description + '</p>' +
+          '<div class="tags">' + post.tags.map((tag) => '<a class="tag" href="/tags/' + encodeURIComponent(tag) + '/">' + tag + '</a>').join('') + '</div>';
+        results.append(item);
+      }
+    };
+
+    const search = () => {
+      const query = normalize(input.value);
+      const tokens = query.split(/\s+/).filter(Boolean);
+      const matched = posts
+        .map((post) => {
+          const haystack = normalize([post.title, post.description, post.tags.join(' ')].join(' '));
+          const score = tokens.reduce((total, token) => {
+            if (normalize(post.title).includes(token)) return total + 4;
+            if (post.tags.some((tag) => normalize(tag).includes(token))) return total + 3;
+            if (haystack.includes(token)) return total + 1;
+            return total;
+          }, 0);
+          return { post, score };
+        })
+        .filter((item) => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map((item) => item.post);
+
+      renderResults(matched, query);
+    };
+
+    fetch('/search.json')
+      .then((response) => response.json())
+      .then((data) => {
+        posts = data;
+        input.addEventListener('input', search);
+        const params = new URLSearchParams(window.location.search);
+        const initial = params.get('q');
+        if (initial) {
+          input.value = initial;
+          search();
+        }
+      })
+      .catch(() => {
+        status.textContent = '搜索索引加载失败，请稍后再试。';
+      });
+  </script>
+</BaseLayout>

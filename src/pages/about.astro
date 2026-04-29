@@ -21,10 +21,18 @@ import PageSidebar from '../components/PageSidebar.astro';
       <h2>写作原则</h2>
       <p>长期比短期重要，现金流比故事重要，复盘比预测重要，能力圈比情绪重要，慢慢变富比一夜暴富更可靠。</p>
 
+      <h2 id="method">研究方法</h2>
+      <p>公司研究优先使用上市公司公告、定期报告、交易所披露文件、公司投资者关系记录和可信财经媒体报道。涉及关键财务数据时，尽量在文末保留资料来源。</p>
+
+      <p>财报分析通常关注几个问题：公司靠什么赚钱，收入和利润为什么变化，现金流是否跟得上利润，资产负债表有没有风险，行业景气是否持续，后续最该跟踪哪些指标。</p>
+
+      <h2>AI 的使用边界</h2>
+      <p>AI 可以辅助整理资料、提取公告信息、生成提纲和检查遗漏，但最终判断仍然要回到原始材料、商业逻辑和风险约束。AI 输出不能替代独立研究。</p>
+
       <h2>内容边界</h2>
       <p>这里不会荐股，不会喊单，不承诺收益，也不鼓励高杠杆和短线赌博。所有投资相关内容都只是公开资料下的研究记录，不构成投资建议。</p>
 
-      <h2>联系</h2>
+      <h2 id="contact">联系</h2>
       <p>目前可以通过抖音和小红书继续关注后续更新。</p>
 
       <div class="qr-grid" aria-label="社交平台二维码">
@@ -63,7 +71,7 @@ import PageSidebar from '../components/PageSidebar.astro';
         {
           title: '推荐阅读',
           items: [
-            { label: '研究方法', href: '/method/' },
+            { label: '研究方法', href: '/about/#method' },
             { label: '从零看懂股票', href: '/series/stock-basics/' },
             { label: '项目页', href: '/projects/' },
             { label: '建站文章', href: '/posts/building-this-blog/' },

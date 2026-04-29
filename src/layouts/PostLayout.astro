@@ -6,9 +6,13 @@ import { getPostUrl } from '../lib/posts';
 
 interface Props {
   post: CollectionEntry<'posts'>;
+  headings?: Array<{ depth: number; slug: string; text: string }>;
+  previousPost?: CollectionEntry<'posts'>;
+  nextPost?: CollectionEntry<'posts'>;
+  seriesPosts?: CollectionEntry<'posts'>[];
 }
 
-const { post } = Astro.props;
+const { post, headings = [], previousPost, nextPost, seriesPosts = [] } = Astro.props;
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
   month: 'long',
@@ -16,6 +20,12 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
 });
 
 const pubYear = String(post.data.pubDate.getFullYear());
+const tocItems = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
+const keyPoints = [
+  post.data.description,
+  ...tocItems.slice(0, 3).map((heading) => heading.text),
+];
+const relatedSeriesPosts = seriesPosts.filter((item) => item.id !== post.id);
 ---
 
 <BaseLayout
@@ -54,6 +64,12 @@ const pubYear = String(post.data.pubDate.getFullYear());
         </p>
         <h1>{post.data.title}</h1>
         <p class="lead">{post.data.description}</p>
+        <section class="article-summary" aria-labelledby="article-summary-title">
+          <h2 id="article-summary-title">本文要点</h2>
+          <ul>
+            {keyPoints.map((point) => <li>{point}</li>)}
+          </ul>
+        </section>
         <div class="tags" aria-label="文章标签">
           {post.data.tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
         </div>
@@ -61,17 +77,66 @@ const pubYear = String(post.data.pubDate.getFullYear());
       <div class="prose article-prose">
         <slot />
       </div>
+      <nav class="post-navigation" aria-label="文章前后导航">
+        {
+          previousPost ? (
+            <a href={getPostUrl(previousPost)} rel="prev">
+              <span>上一篇</span>
+              <strong>{previousPost.data.title}</strong>
+            </a>
+          ) : (
+            <span class="post-navigation-empty">上一篇</span>
+          )
+        }
+        {
+          nextPost ? (
+            <a href={getPostUrl(nextPost)} rel="next">
+              <span>下一篇</span>
+              <strong>{nextPost.data.title}</strong>
+            </a>
+          ) : (
+            <span class="post-navigation-empty">下一篇</span>
+          )
+        }
+      </nav>
+      <section class="feedback-box" aria-labelledby="feedback-title">
+        <h2 id="feedback-title">反馈入口</h2>
+        <p>如果这篇文章有事实错误、表达不清或值得补充的地方，可以通过关于页的社交平台入口反馈。</p>
+        <a href="/about/#contact">去反馈</a>
+      </section>
     </article>
 
     <PageSidebar
       title="文章"
       sections={[
+        ...(tocItems.length
+          ? [
+              {
+                title: '目录',
+                items: tocItems.map((heading) => ({
+                  label: heading.depth === 3 ? `· ${heading.text}` : heading.text,
+                  href: `#${heading.slug}`,
+                })),
+              },
+            ]
+          : []),
+        ...(relatedSeriesPosts.length
+          ? [
+              {
+                title: '同专题',
+                items: seriesPosts.map((item) => ({
+                  label: item.id === post.id ? `当前：${item.data.title}` : item.data.title,
+                  href: getPostUrl(item),
+                })),
+              },
+            ]
+          : []),
         {
           title: '按时间',
           items: [{ label: `${pubYear} 年归档`, href: '/posts/' }],
         },
         {
-          title: '按主题',
+          title: '标签',
           items: post.data.tags.map((tag) => ({
             label: tag,
             href: `/tags/${tag}/`,

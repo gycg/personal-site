@@ -31,7 +31,7 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   <div class="page-grid">
     <div>
       <section class="hero">
-        <p class="eyebrow">分类</p>
+        <p class="eyebrow">标签</p>
         <h1>#{tag}</h1>
         <p class="lead">{posts.length} 篇文章</p>
       </section>
@@ -50,12 +50,13 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
     </div>
 
     <PageSidebar
-      title="分类"
+      title="标签"
       sections={[
         {
           title: '继续浏览',
           items: [
             { label: '全部文章', href: '/posts/' },
+            { label: '专题页', href: '/series/' },
             { label: '返回首页', href: '/' },
           ],
         },

@@ -37,8 +37,8 @@ src/content.config.ts
 - 首页 `/`
 - 文章列表页 `/posts/`
 - 文章详情页 `/posts/[slug]/`
-- 分类页 `/categories/`
 - 标签归档页 `/tags/[tag]/`
+- 专题页 `/series/`
 - 项目页 `/projects/`
 - About 页面 `/about/`
 
@@ -66,14 +66,15 @@ src/
     PageSidebar.astro
   pages/
     about.astro
-    categories/
-      index.astro
     index.astro
     posts/
       index.astro
       [slug].astro
     projects/
       index.astro
+    series/
+      index.astro
+      stock-basics.astro
     tags/
       [tag].astro
   styles/
@@ -92,7 +93,7 @@ SEO 放在 `BaseLayout.astro` 里统一处理。每个页面传入 `title`、`de
 
 文章页使用 Astro 的 content collections。`src/content.config.ts` 定义了文章 frontmatter 的 schema，避免文章元信息随意增长或字段拼错。详情页通过动态路由读取集合内容，然后渲染 Markdown/MDX 正文。
 
-页面布局用了统一的右侧栏结构。首页右边放作者说明、站内导航和最近更新，文章页放按时间和按主题浏览，分类页和项目页也各自有对应的辅助信息。移动端时右侧栏会自动落到正文下方。
+页面布局用了统一的右侧栏结构。首页右边放作者说明、站内导航和最近更新，文章页放目录、同专题和标签入口，专题页和项目页也各自有对应的辅助信息。移动端时右侧栏会自动落到正文下方。
 
 全站还加了一个回到顶部按钮。页面往下滚动时按钮会出现，点一下就平滑返回顶部。这个功能很小，但对长文章会更顺手。
 

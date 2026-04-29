@@ -1,0 +1,52 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+import { getPostUrl } from '../../lib/posts';
+
+const stockBasicsPosts = (await getCollection('posts', ({ data }) => {
+  return !data.draft && data.tags.includes('从零看懂股票');
+})).sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+---
+
+<BaseLayout
+  title="专题"
+  description="按阅读路径组织的系列文章。"
+  canonicalPath="/series/"
+>
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">专题</p>
+        <h1>按顺序阅读的内容路径</h1>
+        <p class="lead">专题用于承载系列文章，比标签更强调阅读顺序和完整框架。</p>
+      </section>
+
+      <ul class="post-list">
+        <li class="post-card">
+          <p class="post-meta">{stockBasicsPosts.length} 篇</p>
+          <h2><a href="/series/stock-basics/">从零看懂股票</a></h2>
+          <p>写给普通人的股票入门路径，从股票是什么开始，逐步理解行情、收益、财报与估值。</p>
+          <div class="tags">
+            {stockBasicsPosts.slice(0, 3).map((post) => <a class="tag" href={getPostUrl(post)}>{post.data.title}</a>)}
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <PageSidebar
+      title="专题"
+      intro="专题是长期内容的骨架，标签是具体主题的索引。"
+      sections={[
+        {
+          title: '继续浏览',
+          items: [
+            { label: '全部文章', href: '/posts/' },
+            { label: '标签：财报分析', href: '/tags/财报分析/' },
+            { label: '研究方法', href: '/about/#method' },
+          ],
+        },
+      ]}
+    />
+  </div>
+</BaseLayout>

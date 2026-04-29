@@ -44,7 +44,7 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
       title="浏览"
       sections={[
         {
-          title: '按主题',
+          title: '按标签',
           items: tags.map((tag) => ({
             label: tag,
             href: `/tags/${tag}/`,
@@ -53,7 +53,7 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
         {
           title: '相关页面',
           items: [
-            { label: '分类页', href: '/categories/' },
+            { label: '专题页', href: '/series/' },
             { label: '项目页', href: '/projects/' },
           ],
         },

@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import BackToTop from '../components/BackToTop.astro';
-import { SITE_AUTHOR, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts';
+import { DEFAULT_OG_IMAGE, MAIN_NAV_ITEMS, SITE_AUTHOR, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts';
 
 interface Props {
   title?: string;
@@ -19,15 +19,14 @@ const {
 
 const pageTitle = title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`;
 const canonicalUrl = new URL(canonicalPath, SITE_URL).toString();
+const ogImageUrl = new URL(DEFAULT_OG_IMAGE, SITE_URL).toString();
+const rssUrl = new URL('/rss.xml', SITE_URL).toString();
 const pathname = Astro.url.pathname;
 
-const navItems = [
-  { href: '/posts/', label: '文章' },
-  { href: '/categories/', label: '分类' },
-  { href: '/method/', label: '方法' },
-  { href: '/projects/', label: '项目' },
-  { href: '/about/', label: '关于' },
-];
+function isActiveNav(href: string) {
+  if (href === '/') return pathname === '/';
+  return pathname.startsWith(href);
+}
 ---
 
 <!doctype html>
@@ -54,20 +53,36 @@ const navItems = [
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content={SITE_TITLE} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:alt" content={`${SITE_TITLE} 文章分享图`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageUrl} />
   </head>
   <body>
+    {type === 'article' && <div class="reading-progress" aria-hidden="true"><span></span></div>}
     <header class="site-header">
       <div class="site-shell nav">
         <a class="brand" href="/">{SITE_TITLE}</a>
         <nav class="nav-links" aria-label="主导航">
           {
-            navItems.map((item) => (
-              <a href={item.href} aria-current={pathname.startsWith(item.href) ? 'page' : undefined}>
+            MAIN_NAV_ITEMS.map((item) => (
+              <a href={item.href} aria-current={isActiveNav(item.href) ? 'page' : undefined}>
                 {item.label}
               </a>
             ))
           }
+        </nav>
+        <nav class="utility-links" aria-label="工具入口">
+          <a href="/search/" aria-current={pathname.startsWith('/search/') ? 'page' : undefined}>搜索</a>
+          <details class="rss-menu">
+            <summary>RSS</summary>
+            <div class="rss-menu-panel">
+              <a href="/rss.xml">打开 RSS</a>
+              <button type="button" data-copy-rss={rssUrl}>复制订阅地址</button>
+              <p data-rss-copy-status aria-live="polite">复制后粘贴到 RSS 阅读器。</p>
+            </div>
+          </details>
+          <a href="/about/#contact">反馈</a>
         </nav>
       </div>
     </header>
@@ -77,17 +92,55 @@ const navItems = [
     <footer class="site-footer">
       <div class="site-shell">
         <p>© {new Date().getFullYear()} {SITE_AUTHOR}. Built with Astro.</p>
-        <nav class="footer-links" aria-label="页脚链接">
-          <a href="/method/">研究方法</a>
-          <a href="/series/stock-basics/">从零看懂股票</a>
-          <a href="/rss.xml">RSS</a>
-        </nav>
       </div>
     </footer>
     <BackToTop />
+    <script is:inline>
+      const rssCopyButton = document.querySelector('[data-copy-rss]');
+      const rssCopyStatus = document.querySelector('[data-rss-copy-status]');
+      const copyText = async (value) => {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+          return;
+        }
+
+        const input = document.createElement('textarea');
+        input.value = value;
+        input.setAttribute('readonly', '');
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.append(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+      };
+
+      rssCopyButton?.addEventListener('click', async () => {
+        try {
+          await copyText(rssCopyButton.dataset.copyRss);
+          if (rssCopyStatus) rssCopyStatus.textContent = '已复制 RSS 订阅地址。';
+        } catch {
+          if (rssCopyStatus) rssCopyStatus.textContent = '复制失败，可以点“打开 RSS”后复制地址栏。';
+        }
+      });
+    </script>
     {
       type === 'article' && (
-        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" />
+        <>
+          <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" />
+          <script is:inline>
+            const progressBar = document.querySelector('.reading-progress span');
+            const updateReadingProgress = () => {
+              if (!progressBar) return;
+              const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+              const progress = scrollable > 0 ? Math.min(window.scrollY / scrollable, 1) : 0;
+              progressBar.style.transform = 'scaleX(' + progress + ')';
+            };
+            updateReadingProgress();
+            window.addEventListener('scroll', updateReadingProgress, { passive: true });
+            window.addEventListener('resize', updateReadingProgress);
+          </script>
+        </>
       )
     }
   </body>
