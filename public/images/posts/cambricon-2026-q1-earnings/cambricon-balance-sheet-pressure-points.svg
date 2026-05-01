@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">寒武纪资产负债表压力点</title>
+  <desc id="desc">展示寒武纪 2026 年一季度末存货、预付款项、应收账款和流动性。</desc>
+  <rect width="1200" height="720" fill="#f4f7f2"/>
+  <rect x="70" y="60" width="1060" height="600" rx="26" fill="#fff" stroke="#d1ddca" stroke-width="2"/>
+  <text x="112" y="130" fill="#17351f" font-family="Noto Sans SC, Arial, sans-serif" font-size="38" font-weight="700">资产负债表：安全垫还在，压力点也很清楚</text>
+  <text x="112" y="174" fill="#61705e" font-family="Noto Sans SC, Arial, sans-serif" font-size="22">2026 年一季度末，单位：亿元</text>
+  <g font-family="Noto Sans SC, Arial, sans-serif">
+    <rect x="112" y="234" width="260" height="242" rx="18" fill="#e9f2e5"/>
+    <text x="142" y="292" fill="#5d6e5d" font-size="24">货币资金 + 理财</text>
+    <text x="142" y="378" fill="#15341e" font-size="58" font-weight="700">61.87</text>
+    <text x="142" y="430" fill="#60705f" font-size="21">流动性安全垫较厚</text>
+
+    <rect x="412" y="234" width="200" height="242" rx="18" fill="#fff2db"/>
+    <text x="442" y="292" fill="#5d6e5d" font-size="24">存货</text>
+    <text x="442" y="378" fill="#563713" font-size="58" font-weight="700">44.97</text>
+    <text x="442" y="430" fill="#60705f" font-size="21">规模仍然偏高</text>
+
+    <rect x="652" y="234" width="200" height="242" rx="18" fill="#eef1ff"/>
+    <text x="682" y="292" fill="#5d6e5d" font-size="24">预付款项</text>
+    <text x="682" y="378" fill="#1b2855" font-size="58" font-weight="700">18.97</text>
+    <text x="682" y="430" fill="#60705f" font-size="21">提前锁资源</text>
+
+    <rect x="892" y="234" width="196" height="242" rx="18" fill="#e9f6f3"/>
+    <text x="922" y="292" fill="#5d6e5d" font-size="24">应收账款</text>
+    <text x="922" y="378" fill="#113c36" font-size="58" font-weight="700">12.19</text>
+    <text x="922" y="430" fill="#60705f" font-size="21">继续看回款</text>
+  </g>
+  <path d="M180 555H1020" stroke="#d7e1d0" stroke-width="2"/>
+  <text x="112" y="612" fill="#17351f" font-family="Noto Sans SC, Arial, sans-serif" font-size="26" font-weight="700">判断重点：高增长需要备货和预付支撑，后续要看库存能否顺利转成收入和现金。</text>
+</svg>

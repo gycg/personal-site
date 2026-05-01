@@ -2,11 +2,11 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
-import { getPostUrl } from '../../lib/posts';
+import { compareSeriesPosts, getPostUrl } from '../../lib/posts';
 
 const stockBasicsPosts = (await getCollection('posts', ({ data }) => {
   return !data.draft && data.tags.includes('从零看懂股票');
-})).sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+})).sort(compareSeriesPosts);
 ---
 
 <BaseLayout

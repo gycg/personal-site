@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">寒武纪 2026 年一季度关键财务数据</title>
+  <desc id="desc">展示寒武纪 2026 年一季度营收、归母净利润、扣非归母净利润和经营现金流。</desc>
+  <rect width="1200" height="720" fill="#f5f8f1"/>
+  <rect x="72" y="64" width="1056" height="592" rx="28" fill="#ffffff" stroke="#cfdcc9" stroke-width="2"/>
+  <text x="112" y="130" fill="#16351f" font-family="Noto Sans SC, Arial, sans-serif" font-size="38" font-weight="700">寒武纪 2026 年 Q1：收入、利润、现金流同时改善</text>
+  <text x="112" y="174" fill="#5c6b5d" font-family="Noto Sans SC, Arial, sans-serif" font-size="22">单位：亿元；同比增速来自公司 2026 年第一季度报告</text>
+  <g font-family="Noto Sans SC, Arial, sans-serif">
+    <rect x="112" y="236" width="218" height="296" rx="18" fill="#e8f2e4"/>
+    <text x="140" y="292" fill="#60705f" font-size="24">营业收入</text>
+    <text x="140" y="380" fill="#14351f" font-size="56" font-weight="700">28.85</text>
+    <text x="140" y="438" fill="#1d6d3a" font-size="28" font-weight="700">+159.56%</text>
+    <line x1="140" y1="468" x2="302" y2="468" stroke="#bdd2b5" stroke-width="2"/>
+    <text x="140" y="512" fill="#60705f" font-size="20">AI 算力需求转化为收入</text>
+
+    <rect x="372" y="236" width="218" height="296" rx="18" fill="#eef1ff"/>
+    <text x="400" y="292" fill="#60705f" font-size="24">归母净利润</text>
+    <text x="400" y="380" fill="#162451" font-size="56" font-weight="700">10.13</text>
+    <text x="400" y="438" fill="#3155b8" font-size="28" font-weight="700">+185.04%</text>
+    <line x1="400" y1="468" x2="562" y2="468" stroke="#c4ccef" stroke-width="2"/>
+    <text x="400" y="512" fill="#60705f" font-size="20">利润弹性开始释放</text>
+
+    <rect x="632" y="236" width="218" height="296" rx="18" fill="#fff5df"/>
+    <text x="660" y="292" fill="#60705f" font-size="24">扣非净利润</text>
+    <text x="660" y="380" fill="#4f3514" font-size="56" font-weight="700">9.34</text>
+    <text x="660" y="438" fill="#b76d13" font-size="28" font-weight="700">+238.56%</text>
+    <line x1="660" y1="468" x2="822" y2="468" stroke="#ead3a7" stroke-width="2"/>
+    <text x="660" y="512" fill="#60705f" font-size="20">主营利润质量更关键</text>
+
+    <rect x="892" y="236" width="196" height="296" rx="18" fill="#eaf6f3"/>
+    <text x="920" y="292" fill="#60705f" font-size="24">经营现金流</text>
+    <text x="920" y="380" fill="#123c36" font-size="56" font-weight="700">8.34</text>
+    <text x="920" y="438" fill="#15705f" font-size="28" font-weight="700">转正</text>
+    <line x1="920" y1="468" x2="1060" y2="468" stroke="#b8d9d2" stroke-width="2"/>
+    <text x="920" y="512" fill="#60705f" font-size="20">回款质量明显改善</text>
+  </g>
+  <text x="112" y="610" fill="#16351f" font-family="Noto Sans SC, Arial, sans-serif" font-size="26" font-weight="700">核心变化：从“国产 AI 芯片预期股”，切换成“业绩兑现型公司”。</text>
+</svg>

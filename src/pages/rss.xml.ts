@@ -1,6 +1,6 @@
 import { getCollection } from 'astro:content';
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts';
-import { getPostUrl } from '../lib/posts';
+import { comparePostsNewest, getPostUrl } from '../lib/posts';
 
 function escapeXml(value: string) {
   return value
@@ -12,9 +12,7 @@ function escapeXml(value: string) {
 }
 
 export async function GET(context: { site?: URL }) {
-  const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-  );
+  const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(comparePostsNewest);
   const site = context.site ?? new URL(SITE_URL);
   const feedUrl = new URL('/rss.xml', site).toString();
   const lastBuildDate = posts[0]?.data.updatedDate ?? posts[0]?.data.pubDate ?? new Date();

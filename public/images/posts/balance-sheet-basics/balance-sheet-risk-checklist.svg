@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">资产负债表风险信号清单图</title>
+  <desc id="desc">资产负债表风险信号包括现金少短债多、应收账款增长远快于收入、存货大幅增加、商誉占净资产比例过高、资产负债率持续上升、固定资产扩张但收入利润没跟上。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">资产负债表不是只看规模，而是找风险</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif" font-size="27" fill="#23352b">
+    <rect x="165" y="215" width="870" height="355" rx="16" fill="#fff" stroke="#b7c6b8"/>
+    <text x="215" y="285">□ 现金少，短债多</text>
+    <text x="215" y="340">□ 应收账款增长远快于收入</text>
+    <text x="215" y="395">□ 存货大幅增加</text>
+    <text x="215" y="450">□ 商誉占净资产比例过高</text>
+    <text x="215" y="505">□ 资产负债率持续上升</text>
+    <text x="215" y="560">□ 固定资产扩张但收入利润没跟上</text>
+  </g>
+</svg>

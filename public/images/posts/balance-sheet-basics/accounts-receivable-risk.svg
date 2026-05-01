@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">应收账款风险图</title>
+  <desc id="desc">卖出产品并确认收入后，如果客户未付款，会形成应收账款，账面收入不等于现金到账。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">账面收入不等于现金到账</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif" text-anchor="middle" font-weight="700">
+    <rect x="130" y="270" width="200" height="76" rx="12" fill="#e8f0e8" stroke="#92aa97"/><text x="230" y="318" fill="#23352b" font-size="26">卖出产品</text>
+    <path d="M345 308h70" stroke="#a2661b" stroke-width="5"/><path d="M415 308l-15-10v20z" fill="#a2661b"/>
+    <rect x="435" y="270" width="200" height="76" rx="12" fill="#fff8e8" stroke="#d0a35b"/><text x="535" y="318" fill="#23352b" font-size="26">确认收入</text>
+    <path d="M650 308h70" stroke="#a2661b" stroke-width="5"/><path d="M720 308l-15-10v20z" fill="#a2661b"/>
+    <rect x="740" y="270" width="250" height="76" rx="12" fill="#f4ede7" stroke="#bd9477"/><text x="865" y="318" fill="#23352b" font-size="26">客户未付款</text>
+    <path d="M865 362v54" stroke="#2e5f49" stroke-width="5"/><path d="M865 424l-14-18h28z" fill="#2e5f49"/>
+    <rect x="695" y="440" width="340" height="80" rx="12" fill="#2e5f49"/><text x="865" y="491" fill="#fff" font-size="28">形成应收账款</text>
+    <text x="300" y="492" fill="#a2661b" font-size="28">收入增长 20%</text><text x="300" y="540" fill="#a2661b" font-size="28">应收账款增长 80%</text><text x="300" y="590" fill="#23352b" font-size="24">回款风险需要警惕</text>
+  </g>
+</svg>

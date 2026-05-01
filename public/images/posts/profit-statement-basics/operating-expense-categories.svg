@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">四大费用分类图</title>
+  <desc id="desc">销售费用、管理费用、研发费用和财务费用的常见用途。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">费用不是越低越好，关键看花得是否有效</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif">
+    <rect x="150" y="220" width="900" height="360" rx="14" fill="#fff" stroke="#b7c6b8"/>
+    <line x1="150" y1="310" x2="1050" y2="310" stroke="#b7c6b8"/><line x1="150" y1="400" x2="1050" y2="400" stroke="#b7c6b8"/><line x1="150" y1="490" x2="1050" y2="490" stroke="#b7c6b8"/><line x1="390" y1="220" x2="390" y2="580" stroke="#b7c6b8"/>
+    <text x="270" y="275" font-size="27" font-weight="700" text-anchor="middle" fill="#2e5f49">费用类型</text><text x="720" y="275" font-size="27" font-weight="700" text-anchor="middle" fill="#2e5f49">钱花在哪里</text>
+    <text x="270" y="365" font-size="25" font-weight="700" text-anchor="middle" fill="#23352b">销售费用</text><text x="430" y="365" font-size="24" fill="#617166">广告、渠道、销售人员、促销</text>
+    <text x="270" y="455" font-size="25" font-weight="700" text-anchor="middle" fill="#23352b">管理费用</text><text x="430" y="455" font-size="24" fill="#617166">总部、行政、办公、管理人员</text>
+    <text x="270" y="545" font-size="25" font-weight="700" text-anchor="middle" fill="#23352b">研发 / 财务</text><text x="430" y="545" font-size="24" fill="#617166">新产品、新技术；借款利息、汇兑损益</text>
+  </g>
+</svg>

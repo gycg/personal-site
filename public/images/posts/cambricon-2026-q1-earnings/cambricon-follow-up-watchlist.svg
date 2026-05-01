@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">寒武纪后续跟踪指标</title>
+  <desc id="desc">展示寒武纪后续财报需要关注的五个指标。</desc>
+  <rect width="1200" height="720" fill="#f5f8f1"/>
+  <rect x="72" y="64" width="1056" height="592" rx="28" fill="#ffffff" stroke="#cedcc8" stroke-width="2"/>
+  <text x="112" y="132" fill="#16351f" font-family="Noto Sans SC, Arial, sans-serif" font-size="38" font-weight="700">后续财报最该盯的五个指标</text>
+  <g font-family="Noto Sans SC, Arial, sans-serif" font-size="27" fill="#17351f">
+    <circle cx="142" cy="228" r="18" fill="#2f7b45"/>
+    <text x="178" y="237" font-weight="700">营收能不能继续高增</text>
+    <text x="178" y="274" fill="#66725f" font-size="21">验证云端 AI 算力订单持续性</text>
+
+    <circle cx="142" cy="326" r="18" fill="#3155b8"/>
+    <text x="178" y="335" font-weight="700">毛利率能不能稳住</text>
+    <text x="178" y="372" fill="#66725f" font-size="21">观察产品结构、价格竞争和成本压力</text>
+
+    <circle cx="142" cy="424" r="18" fill="#15705f"/>
+    <text x="178" y="433" font-weight="700">经营现金流能否持续为正</text>
+    <text x="178" y="470" fill="#66725f" font-size="21">现金流比净利润更能检验订单质量</text>
+
+    <circle cx="142" cy="522" r="18" fill="#b76d13"/>
+    <text x="178" y="531" font-weight="700">存货和减值能不能下降</text>
+    <text x="178" y="568" fill="#66725f" font-size="21">库存风险会直接影响利润质量</text>
+
+    <circle cx="682" cy="326" r="18" fill="#7c3f8c"/>
+    <text x="718" y="335" font-weight="700">客户和供应链能否分散</text>
+    <text x="718" y="372" fill="#66725f" font-size="21">集中度越高，订单和交付波动越容易放大</text>
+  </g>
+  <text x="112" y="638" fill="#16351f" font-family="Noto Sans SC, Arial, sans-serif" font-size="25" font-weight="700">一句话：已经证明“有业绩”，下一步要证明“能连续兑现”。</text>
+</svg>

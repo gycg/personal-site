@@ -1,9 +1,9 @@
 import { getCollection } from 'astro:content';
-import { getPostUrl } from '../lib/posts';
+import { comparePostsNewest, getPostUrl } from '../lib/posts';
 
 export async function GET() {
   const posts = (await getCollection('posts', ({ data }) => !data.draft))
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+    .sort(comparePostsNewest)
     .map((post) => ({
       title: post.data.title,
       description: post.data.description,

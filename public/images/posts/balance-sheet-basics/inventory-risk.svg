@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">存货风险图</title>
+  <desc id="desc">存货包括原材料、半成品和产成品，能卖出去才是正常经营，卖不出去会积压、降价并产生跌价损失。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">存货要能卖出去，才是真正有价值的资产</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif" text-anchor="middle">
+    <rect x="405" y="230" width="390" height="78" rx="14" fill="#e8f0e8" stroke="#92aa97"/><text x="600" y="280" fill="#23352b" font-size="30" font-weight="700">原材料 / 半成品 / 产成品</text>
+    <path d="M600 320v70" stroke="#a2661b" stroke-width="5"/><path d="M600 398l-14-18h28z" fill="#a2661b"/>
+    <rect x="180" y="430" width="360" height="110" rx="14" fill="#e8f0e8" stroke="#92aa97"/><text x="360" y="475" fill="#2e5f49" font-size="30" font-weight="700">能卖出去</text><text x="360" y="520" fill="#617166" font-size="23">正常经营</text>
+    <rect x="660" y="430" width="360" height="110" rx="14" fill="#f4ede7" stroke="#bd9477"/><text x="840" y="475" fill="#a2661b" font-size="30" font-weight="700">卖不出去</text><text x="840" y="520" fill="#617166" font-size="23">积压、降价、跌价损失</text>
+  </g>
+</svg>

@@ -14,6 +14,33 @@ import PageSidebar from '../../components/PageSidebar.astro';
 
       <section class="project-list" aria-label="项目列表">
         <article class="project-card">
+          <div class="project-copy">
+            <p class="post-meta">Portfolio Tracker / Live Quotes</p>
+            <h2>我的持仓</h2>
+            <p>
+              记录当前 ETF 持仓、买入卖出明细、持仓成本和估算盈亏。页面会尝试读取实时行情，方便把交易记录和当前市值放在一起复盘。
+            </p>
+            <div class="project-meta-grid">
+              <div>
+                <span>定位</span>
+                <strong>持仓复盘</strong>
+              </div>
+              <div>
+                <span>内容</span>
+                <strong>交易 / 市值 / 盈亏</strong>
+              </div>
+              <div>
+                <span>状态</span>
+                <strong>已上线</strong>
+              </div>
+            </div>
+            <div class="project-links">
+              <a class="tag" href="/projects/holdings/">查看持仓</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card">
           <img
             src="/project-personal-blog.svg"
             alt="个人博客项目截图预览"
@@ -132,6 +159,7 @@ import PageSidebar from '../../components/PageSidebar.astro';
           items: [
             { label: '首页', href: '/' },
             { label: '文章页', href: '/posts/' },
+            { label: '我的持仓', href: '/projects/holdings/' },
             { label: '研究方法', href: '/about/#method' },
             { label: '关于页', href: '/about/' },
           ],

@@ -3,10 +3,10 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE_DESCRIPTION } from '../consts';
 import PageSidebar from '../components/PageSidebar.astro';
-import { getPostUrl } from '../lib/posts';
+import { comparePostsNewest, getPostUrl } from '../lib/posts';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .sort(comparePostsNewest)
   .slice(0, 5);
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',

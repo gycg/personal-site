@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">商誉减值风险图</title>
+  <desc id="desc">收购价格 100 亿元，扣除可辨认净资产 60 亿元，形成商誉 40 亿元。如果业绩不达预期，商誉可能减值并冲击净利润。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">商誉代表过去并购时对未来的乐观预期</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif" text-anchor="middle" font-weight="700">
+    <rect x="160" y="260" width="250" height="110" rx="14" fill="#e8f0e8" stroke="#92aa97"/><text x="285" y="306" fill="#23352b" font-size="26">收购价格</text><text x="285" y="350" fill="#2e5f49" font-size="36">100 亿元</text>
+    <text x="455" y="333" fill="#a2661b" font-size="52">-</text>
+    <rect x="515" y="260" width="260" height="110" rx="14" fill="#f4ede7" stroke="#bd9477"/><text x="645" y="306" fill="#23352b" font-size="26">可辨认净资产</text><text x="645" y="350" fill="#a2661b" font-size="36">60 亿元</text>
+    <text x="820" y="333" fill="#2e5f49" font-size="52">=</text>
+    <rect x="880" y="260" width="180" height="110" rx="14" fill="#fff8e8" stroke="#d0a35b"/><text x="970" y="306" fill="#23352b" font-size="26">商誉</text><text x="970" y="350" fill="#a2661b" font-size="36">40 亿元</text>
+    <path d="M970 392v58" stroke="#2e5f49" stroke-width="5"/><path d="M970 458l-14-18h28z" fill="#2e5f49"/>
+    <rect x="675" y="480" width="420" height="86" rx="14" fill="#2e5f49"/><text x="885" y="515" fill="#fff" font-size="25">业绩不达预期 → 商誉减值</text><text x="885" y="550" fill="#fff" font-size="25">冲击净利润</text>
+  </g>
+</svg>

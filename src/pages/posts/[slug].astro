@@ -1,17 +1,17 @@
 ---
 import { getCollection, render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
-import { getPostSlug } from '../../lib/posts';
+import { comparePostsOldest, compareSeriesPosts, getPostSlug } from '../../lib/posts';
 
 export async function getStaticPaths() {
   const posts = (await getCollection('posts', ({ data }) => !data.draft))
-    .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+    .sort(comparePostsOldest);
 
   return posts.map((post, index) => {
     const seriesPosts = post.data.tags.includes('从零看懂股票')
       ? posts
           .filter((item) => item.data.tags.includes('从零看懂股票'))
-          .sort((a, b) => a.data.title.localeCompare(b.data.title, 'zh-CN', { numeric: true }))
+          .sort(compareSeriesPosts)
       : [];
     const seriesIndex = seriesPosts.findIndex((item) => item.id === post.id);
 

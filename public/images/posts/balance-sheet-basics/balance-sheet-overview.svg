@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">资产负债表总览图</title>
+  <desc id="desc">资产负债表展示公司某一时点的资产、负债和所有者权益。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">资产负债表看的是公司某一时点的家底和风险</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif" text-anchor="middle">
+    <rect x="430" y="210" width="340" height="78" rx="14" fill="#2e5f49"/><text x="600" y="260" fill="#fff" font-size="32" font-weight="700">公司家底</text>
+    <path d="M600 300v42M600 342H270M600 342h330M270 342v44M600 342v44M930 342v44" fill="none" stroke="#a2661b" stroke-width="5" stroke-linecap="round"/>
+    <rect x="140" y="405" width="260" height="138" rx="14" fill="#e8f0e8" stroke="#92aa97"/><text x="270" y="462" fill="#23352b" font-size="30" font-weight="700">资产</text><text x="270" y="506" fill="#617166" font-size="22">公司拥有什么</text>
+    <rect x="470" y="405" width="260" height="138" rx="14" fill="#f4ede7" stroke="#bd9477"/><text x="600" y="462" fill="#23352b" font-size="30" font-weight="700">负债</text><text x="600" y="506" fill="#617166" font-size="22">公司欠了什么</text>
+    <rect x="800" y="405" width="260" height="138" rx="14" fill="#fff8e8" stroke="#d0a35b"/><text x="930" y="462" fill="#23352b" font-size="30" font-weight="700">所有者权益</text><text x="930" y="506" fill="#617166" font-size="22">真正属于股东</text>
+  </g>
+</svg>
