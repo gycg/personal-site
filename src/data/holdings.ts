@@ -105,6 +105,11 @@ export function getQuoteSymbol(security: Security) {
   return `${security.market}${security.code}`;
 }
 
+export function getEastmoneySecid(security: Security) {
+  const marketPrefix = security.market === 'sh' ? '1' : '0';
+  return `${marketPrefix}.${security.code}`;
+}
+
 export function calculatePositions() {
   const positions = securities.map((security) => ({
     ...security,

@@ -14,7 +14,7 @@ draft: false
 
 利润表，也叫损益表。它记录的是一家公司在一段时间内的经营成果：赚了多少收入，花了多少成本和费用，最后剩下多少利润。
 
-![利润表总览：收入扣除成本、费用和税费后得到净利润](/images/posts/profit-statement-basics/income-statement-overview.svg)
+![利润表总览：收入扣除成本、费用和税费后得到净利润](/images/posts/profit-statement-basics/income-statement-overview.png)
 
 如果把公司看成一家店，利润表就像这家店一年的经营账本：
 
@@ -84,7 +84,7 @@ draft: false
 
 **收入 - 成本 - 费用 = 利润**
 
-![收入、成本、费用、利润关系图](/images/posts/profit-statement-basics/revenue-cost-expense-profit-flow.svg)
+![收入、成本、费用、利润关系图](/images/posts/profit-statement-basics/revenue-cost-expense-profit-flow.png)
 
 财报会把不同性质的钱分门别类列出来，方便投资者看清楚：
 
@@ -113,7 +113,7 @@ draft: false
 
 如果一家公司的营业收入持续增长，说明它卖出的产品或服务金额在增加，可能是销量提升、价格上涨、业务扩张，或者新产品放量。
 
-![营业收入增长拆解：销量、涨价、新产品、新市场和并购](/images/posts/profit-statement-basics/revenue-growth-drivers.svg)
+![营业收入增长拆解：销量、涨价、新产品、新市场和并购](/images/posts/profit-statement-basics/revenue-growth-drivers.png)
 
 但收入增长还要继续追问：
 
@@ -172,7 +172,7 @@ draft: false
 
 **40 亿元 ÷ 100 亿元 = 40%**
 
-![毛利润与毛利率计算示例](/images/posts/profit-statement-basics/gross-profit-margin-calculation.svg)
+![毛利润与毛利率计算示例](/images/posts/profit-statement-basics/gross-profit-margin-calculation.png)
 
 毛利率表示公司每卖出 1 元钱产品或服务，扣除直接成本后，能留下多少初步利润。
 
@@ -314,7 +314,7 @@ draft: false
 财务费用是否侵蚀利润？
 是否存在汇率波动影响？
 
-![四大费用分类：销售、管理、研发和财务费用](/images/posts/profit-statement-basics/operating-expense-categories.svg)
+![四大费用分类：销售、管理、研发和财务费用](/images/posts/profit-statement-basics/operating-expense-categories.png)
 
 财务费用不是利润表里最显眼的项目，但它能提醒我们公司的资金压力。
 
@@ -434,7 +434,7 @@ draft: false
 
 如果两者差距长期很大，就要认真研究原因。
 
-![净利润、归母净利润和扣非净利润关系图](/images/posts/profit-statement-basics/net-profit-attribution-recurring-profit.svg)
+![净利润、归母净利润和扣非净利润关系图](/images/posts/profit-statement-basics/net-profit-attribution-recurring-profit.png)
 
 ### EPS：每股收益
 
@@ -450,7 +450,7 @@ EPS，全称 Earnings Per Share，中文叫每股收益。
 
 **100 亿元 ÷ 50 亿股 = 2 元/股**
 
-![EPS 每股收益计算示例](/images/posts/profit-statement-basics/eps-calculation.svg)
+![EPS 每股收益计算示例](/images/posts/profit-statement-basics/eps-calculation.png)
 
 EPS 表示每一股股票对应多少利润。
 
@@ -574,7 +574,7 @@ EPS 也是后面学习市盈率 PE 的基础。
 
 这可能是利润被一次性收益“美化”了。
 
-![利润质量检查清单](/images/posts/profit-statement-basics/profit-quality-checklist.svg)
+![利润质量检查清单](/images/posts/profit-statement-basics/profit-quality-checklist.png)
 
 ## 例子与总结
 

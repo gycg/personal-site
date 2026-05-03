@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">筹资活动现金流</title>
+  <desc id="desc">筹资现金流入包括银行借款、发行债券和发行股票，筹资现金流出包括偿还债务、支付利息、现金分红和股票回购。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">筹资现金流看公司是否依赖外部资金</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif">
+    <rect x="135" y="235" width="420" height="310" rx="18" fill="#edf3f7" stroke="#a9bcc8"/>
+    <text x="345" y="300" text-anchor="middle" fill="#335b6f" font-size="32" font-weight="700">筹资现金流入</text>
+    <text x="195" y="370" fill="#23352b" font-size="27">+ 银行借款</text>
+    <text x="195" y="425" fill="#23352b" font-size="27">+ 发行债券</text>
+    <text x="195" y="480" fill="#23352b" font-size="27">+ 发行股票融资</text>
+    <rect x="645" y="235" width="420" height="310" rx="18" fill="#fff3e6" stroke="#d6aa7a"/>
+    <text x="855" y="300" text-anchor="middle" fill="#7a4d21" font-size="32" font-weight="700">筹资现金流出</text>
+    <text x="705" y="370" fill="#23352b" font-size="27">- 偿还债务</text>
+    <text x="705" y="425" fill="#23352b" font-size="27">- 支付利息</text>
+    <text x="705" y="480" fill="#23352b" font-size="27">- 分红 / 回购</text>
+  </g>
+</svg>

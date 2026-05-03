@@ -41,6 +41,33 @@ import PageSidebar from '../../components/PageSidebar.astro';
         </article>
 
         <article class="project-card">
+          <div class="project-copy">
+            <p class="post-meta">Fear Index / A-share & US</p>
+            <h2>恐慌指数</h2>
+            <p>
+              把 A 股期权波动率、PCR、股指期货贴水压力和美股 VIX 历史分位数做成每日恐慌分数，并和沪深300、标普500放在同一张图里观察。
+            </p>
+            <div class="project-meta-grid">
+              <div>
+                <span>定位</span>
+                <strong>风险温度计</strong>
+              </div>
+              <div>
+                <span>内容</span>
+                <strong>A股 / 美股 / 指数对照</strong>
+              </div>
+              <div>
+                <span>状态</span>
+                <strong>已上线</strong>
+              </div>
+            </div>
+            <div class="project-links">
+              <a class="tag" href="/projects/fear-index/">查看指数</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card">
           <img
             src="/project-personal-blog.svg"
             alt="个人博客项目截图预览"
@@ -160,6 +187,7 @@ import PageSidebar from '../../components/PageSidebar.astro';
             { label: '首页', href: '/' },
             { label: '文章页', href: '/posts/' },
             { label: '我的持仓', href: '/projects/holdings/' },
+            { label: '恐慌指数', href: '/projects/fear-index/' },
             { label: '研究方法', href: '/about/#method' },
             { label: '关于页', href: '/about/' },
           ],

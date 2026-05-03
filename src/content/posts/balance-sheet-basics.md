@@ -26,7 +26,7 @@ draft: false
 **公司欠多少钱？**
 **扣掉负债后，真正属于股东的钱有多少？**
 
-![资产负债表总览：资产、负债和所有者权益](/images/posts/balance-sheet-basics/balance-sheet-overview.svg)
+![资产负债表总览：资产、负债和所有者权益](/images/posts/balance-sheet-basics/balance-sheet-overview.png)
 
 这一篇，我们就从零开始，看懂资产负债表。
 
@@ -79,7 +79,7 @@ draft: false
 
 **资产 100 万元 = 负债 40 万元 + 所有者权益 60 万元**
 
-![资产等于负债加所有者权益](/images/posts/balance-sheet-basics/assets-liabilities-equity-formula.svg)
+![资产等于负债加所有者权益](/images/posts/balance-sheet-basics/assets-liabilities-equity-formula.png)
 
 你可以把公司理解成一个家庭。
 
@@ -111,7 +111,7 @@ draft: false
 
 比如固定资产、无形资产、长期股权投资、商誉。
 
-![资产分类：流动资产和非流动资产](/images/posts/balance-sheet-basics/asset-classification.svg)
+![资产分类：流动资产和非流动资产](/images/posts/balance-sheet-basics/asset-classification.png)
 
 看资产时，不能只看总额。
 
@@ -178,7 +178,7 @@ draft: false
 
 如果客户最后拖欠、赖账或破产，公司就可能收不回来钱，需要计提坏账损失。
 
-![应收账款风险：收入确认不等于现金到账](/images/posts/balance-sheet-basics/accounts-receivable-risk.svg)
+![应收账款风险：收入确认不等于现金到账](/images/posts/balance-sheet-basics/accounts-receivable-risk.png)
 
 看应收账款时，要关注：
 
@@ -219,7 +219,7 @@ draft: false
 房地产公司存货巨大，可能面临去化压力。
 原材料价格下跌，存货价值缩水。
 
-![存货风险：能卖出去才是真正有价值的资产](/images/posts/balance-sheet-basics/inventory-risk.svg)
+![存货风险：能卖出去才是真正有价值的资产](/images/posts/balance-sheet-basics/inventory-risk.png)
 
 看存货时，要关注：
 
@@ -297,7 +297,7 @@ draft: false
 
 商誉减值会直接冲击利润。
 
-![商誉减值风险：高价收购后的预期可能落空](/images/posts/balance-sheet-basics/goodwill-impairment-risk.svg)
+![商誉减值风险：高价收购后的预期可能落空](/images/posts/balance-sheet-basics/goodwill-impairment-risk.png)
 
 很多公司曾经通过高价并购做大规模，几年后被收购资产业绩变差，就出现大额商誉减值，导致净利润大幅下降甚至亏损。
 
@@ -361,7 +361,7 @@ draft: false
 
 看短期借款时，要和货币资金一起看。
 
-![短债与现金安全：现金和短期借款要放在一起看](/images/posts/balance-sheet-basics/short-term-debt-cash-safety.svg)
+![短债与现金安全：现金和短期借款要放在一起看](/images/posts/balance-sheet-basics/short-term-debt-cash-safety.png)
 
 比如：
 
@@ -523,7 +523,7 @@ ROE 可以来自优秀经营，也可以来自高杠杆。
 
 这时，高 ROE 背后可能隐藏较高负债风险。
 
-![高 ROE 可能来自经营优秀，也可能来自高负债杠杆](/images/posts/balance-sheet-basics/roe-leverage-risk.svg)
+![高 ROE 可能来自经营优秀，也可能来自高负债杠杆](/images/posts/balance-sheet-basics/roe-leverage-risk.png)
 
 所以，看 ROE 时，要结合资产负债率、负债结构和现金流一起看。
 
@@ -565,7 +565,7 @@ ROE 可以来自优秀经营，也可以来自高杠杆。
 
 这可能说明扩产效率低，未来折旧压力可能上升。
 
-![资产负债表风险信号清单](/images/posts/balance-sheet-basics/balance-sheet-risk-checklist.svg)
+![资产负债表风险信号清单](/images/posts/balance-sheet-basics/balance-sheet-risk-checklist.png)
 
 这些风险信号不一定单独构成投资结论，但它们都值得继续追问。
 

@@ -27,7 +27,7 @@ draft: false
 为什么客户愿意买它的东西？
 它未来还能不能继续增长？
 
-![商业模式总览：产品、客户、收入、成本、利润和增长](/images/posts/business-model-revenue-structure/business-model-overview.svg)
+![商业模式总览：产品、客户、收入、成本、利润和增长](/images/posts/business-model-revenue-structure/business-model-overview.png)
 
 这一篇，我们就从“生意”的角度，讲清楚如何看懂一家公司。
 
@@ -73,7 +73,7 @@ draft: false
 
 第四，公司如何控制成本并获得利润。
 
-![商业模式四要素：产品服务、客户、收费方式和成本控制](/images/posts/business-model-revenue-structure/business-model-four-elements.svg)
+![商业模式四要素：产品服务、客户、收费方式和成本控制](/images/posts/business-model-revenue-structure/business-model-four-elements.png)
 
 举个简单例子。
 
@@ -106,7 +106,7 @@ draft: false
 
 名字可能会给人想象空间，但财报里的主营业务才是真相。
 
-![收入结构示例：核心业务、成长业务和新业务](/images/posts/business-model-revenue-structure/revenue-structure-example.svg)
+![收入结构示例：核心业务、成长业务和新业务](/images/posts/business-model-revenue-structure/revenue-structure-example.png)
 
 新手看公司时，可以先问三个问题：
 
@@ -178,7 +178,7 @@ To B 业务的特点是，单个客户金额可能较大，销售周期较长，
 
 比如部分基建、环保、智慧城市、政务系统、公共服务项目等。这类业务可能订单金额较大，但回款周期、政策变化和项目周期需要重点关注。
 
-![客户类型：To C、To B、To G](/images/posts/business-model-revenue-structure/customer-types-toc-tob-tog.svg)
+![客户类型：To C、To B、To G](/images/posts/business-model-revenue-structure/customer-types-toc-tob-tog.png)
 
 看客户结构时，要特别关注客户集中度。
 
@@ -248,7 +248,7 @@ To B 业务的特点是，单个客户金额可能较大，销售周期较长，
 
 比如一家公司卖出 100 元产品，生产和采购成本是 60 元，那么毛利润是 40 元，毛利率就是 40%。
 
-![毛利率计算示例：收入 100 元、成本 60 元、毛利润 40 元](/images/posts/business-model-revenue-structure/gross-margin-calculation.svg)
+![毛利率计算示例：收入 100 元、成本 60 元、毛利润 40 元](/images/posts/business-model-revenue-structure/gross-margin-calculation.png)
 
 毛利率越高，说明公司每卖出一元钱产品，留下来的初步利润空间越大。
 
@@ -308,7 +308,7 @@ To B 业务的特点是，单个客户金额可能较大，销售周期较长，
 
 牌照或资源优势。比如某些行业需要资质、牌照、矿产资源、港口资源、土地资源。
 
-![竞争优势护城河：品牌、技术、成本、渠道、规模、客户粘性和资源牌照](/images/posts/business-model-revenue-structure/competitive-moat.svg)
+![竞争优势护城河：品牌、技术、成本、渠道、规模、客户粘性和资源牌照](/images/posts/business-model-revenue-structure/competitive-moat.png)
 
 竞争优势越强，公司越有可能长期保持较好的盈利能力。
 
@@ -428,7 +428,7 @@ To B 业务的特点是，单个客户金额可能较大，销售周期较长，
 
 第四，商业模式可能还没完全验证。有些公司收入增长很快，但长期盈利能力不清楚。
 
-![周期性行业与成长性行业对比](/images/posts/business-model-revenue-structure/cyclical-vs-growth-industries.svg)
+![周期性行业与成长性行业对比](/images/posts/business-model-revenue-structure/cyclical-vs-growth-industries.png)
 
 所以，看成长性行业时，“赛道好”只是起点。
 

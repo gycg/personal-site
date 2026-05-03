@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">自由现金流计算</title>
+  <desc id="desc">经营活动现金流 100 亿元减去资本开支 40 亿元，得到自由现金流 60 亿元，可用于分红、回购、还债、再投资和现金储备。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">自由现金流越稳定，公司的财务弹性越强</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif" text-anchor="middle">
+    <rect x="135" y="245" width="260" height="130" rx="18" fill="#e6efe8" stroke="#9cb39e"/>
+    <text x="265" y="295" fill="#2e5f49" font-size="28" font-weight="700">经营活动现金流</text>
+    <text x="265" y="345" fill="#23352b" font-size="36" font-weight="700">100 亿元</text>
+    <text x="455" y="325" fill="#6f846f" font-size="42" font-weight="700">-</text>
+    <rect x="505" y="245" width="220" height="130" rx="18" fill="#fff8dc" stroke="#d8bd67"/>
+    <text x="615" y="295" fill="#6a5414" font-size="28" font-weight="700">资本开支</text>
+    <text x="615" y="345" fill="#23352b" font-size="36" font-weight="700">40 亿元</text>
+    <text x="780" y="325" fill="#6f846f" font-size="42" font-weight="700">=</text>
+    <rect x="830" y="245" width="235" height="130" rx="18" fill="#2e5f49"/>
+    <text x="947" y="295" fill="#fff" font-size="28" font-weight="700">自由现金流</text>
+    <text x="947" y="345" fill="#fff" font-size="36" font-weight="700">60 亿元</text>
+    <rect x="200" y="475" width="800" height="76" rx="14" fill="#fff" stroke="#b7c6b8"/>
+    <text x="600" y="523" fill="#23352b" font-size="27">可用于：分红、回购、还债、再投资、现金储备</text>
+  </g>
+</svg>

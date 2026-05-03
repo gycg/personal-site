@@ -1,0 +1,233 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+import { getFearIndexData } from '../../data/fear-index';
+
+const data = await getFearIndexData();
+
+const formatScore = (value: number | null | undefined) => (value == null ? '--' : value.toFixed(1));
+const formatIndex = (value: number | null | undefined) => (value == null ? '--' : value.toLocaleString('zh-CN', { maximumFractionDigits: 2 }));
+const formatDateLabel = (date: string) => date.slice(5);
+
+function chartSeries(points: typeof data.us) {
+  const available = points.filter((point) => point.fear !== null || point.index !== null);
+  const fearValues = available.map((point) => point.fear).filter((value): value is number => value !== null);
+  const indexValues = available.map((point) => point.index).filter((value): value is number => value !== null);
+  const minIndex = Math.min(...indexValues);
+  const maxIndex = Math.max(...indexValues);
+  const indexRange = Math.max(maxIndex - minIndex, 1);
+
+  const fearLine = available
+    .map((point, index) => {
+      if (point.fear === null) return null;
+      const x = available.length <= 1 ? 0 : (index / (available.length - 1)) * 100;
+      const y = 92 - (point.fear / 100) * 80;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .filter(Boolean)
+    .join(' ');
+
+  const indexLine = available
+    .map((point, index) => {
+      if (point.index === null) return null;
+      const x = available.length <= 1 ? 0 : (index / (available.length - 1)) * 100;
+      const y = 92 - ((point.index - minIndex) / indexRange) * 80;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .filter(Boolean)
+    .join(' ');
+
+  return {
+    count: available.length,
+    start: available[0]?.date ?? '',
+    middle: available[Math.floor((available.length - 1) / 2)]?.date ?? '',
+    end: available.at(-1)?.date ?? '',
+    fearLine,
+    indexLine,
+    minIndex,
+    maxIndex,
+    midIndex: (minIndex + maxIndex) / 2,
+  };
+}
+
+const usChart = chartSeries(data.us);
+const cnChart = chartSeries(data.cn);
+---
+
+<BaseLayout title="恐慌指数" description="按 VIX、A股期权隐含波动率、PCR 和股指期货贴水压力构建 A 股与美股恐慌分数。" canonicalPath="/projects/fear-index/">
+  <div class="page-grid fear-index-layout">
+    <div>
+      <section class="hero fear-index-hero">
+        <p class="eyebrow">Fear Index</p>
+        <h1>恐慌指数</h1>
+        <p class="lead">
+          美股恐慌分数取 VIX 的 5 年历史分位数；A 股恐慌分数由沪深300期权 IV、中证1000/中证500期权 IV、期权 PCR 和股指期货贴水压力加权得到。
+        </p>
+      </section>
+
+      <section class="fear-summary" aria-label="恐慌指数总览">
+        <article>
+          <span>美股恐慌</span>
+          <strong>{formatScore(data.latestUs?.fear)}</strong>
+          <p>标普500 {formatIndex(data.latestUs?.index)}</p>
+        </article>
+        <article>
+          <span>A股恐慌</span>
+          <strong>{formatScore(data.latestCn?.fear)}</strong>
+          <p>沪深300 {formatIndex(data.latestCn?.index)}</p>
+        </article>
+        <article>
+          <span>更新时间</span>
+          <strong>{data.updatedAt.split(' ')[0]}</strong>
+          <p>{data.updatedAt.split(' ')[1] ?? ''}</p>
+        </article>
+      </section>
+
+      <section class="content-section" aria-labelledby="us-fear-title">
+        <div class="section-head">
+          <h2 id="us-fear-title">美股：VIX 恐慌分数 × 标普500</h2>
+          <p>{formatDateLabel(usChart.start)} - {formatDateLabel(usChart.end)} · {usChart.count} 个交易日</p>
+        </div>
+        <div class="fear-chart">
+          <div class="fear-chart-head">
+            <div><i class="is-fear"></i>恐慌分数</div>
+            <div><i class="is-index"></i>标普500</div>
+          </div>
+          <div class="fear-chart-body">
+            <div class="fear-y-axis" aria-hidden="true">
+              <span>100</span>
+              <span>50</span>
+              <span>0</span>
+            </div>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="美股恐慌分数和标普500走势图">
+              <line class="grid-line" x1="0" y1="12" x2="100" y2="12"></line>
+              <line class="grid-line" x1="0" y1="52" x2="100" y2="52"></line>
+              <line class="grid-line" x1="0" y1="92" x2="100" y2="92"></line>
+              <polyline class="fear-line" points={usChart.fearLine}></polyline>
+              <polyline class="index-line" points={usChart.indexLine}></polyline>
+            </svg>
+            <div class="fear-y-axis is-right" aria-hidden="true">
+              <span>{formatIndex(usChart.maxIndex)}</span>
+              <span>{formatIndex(usChart.midIndex)}</span>
+              <span>{formatIndex(usChart.minIndex)}</span>
+            </div>
+          </div>
+          <div class="fear-x-axis" aria-hidden="true">
+            <span></span>
+            <span>{formatDateLabel(usChart.start)}</span>
+            <span>{formatDateLabel(usChart.middle)}</span>
+            <span>{formatDateLabel(usChart.end)}</span>
+            <span></span>
+          </div>
+          <div class="fear-chart-foot">
+            <span>左轴：恐慌分数</span>
+            <span>右轴：标普500点位</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="cn-fear-title">
+        <div class="section-head">
+          <h2 id="cn-fear-title">A股：复合恐慌分数 × 沪深300</h2>
+          <p>{formatDateLabel(cnChart.start)} - {formatDateLabel(cnChart.end)} · {cnChart.count} 个交易日</p>
+        </div>
+        <div class="fear-chart is-cn">
+          <div class="fear-chart-head">
+            <div><i class="is-fear"></i>恐慌分数</div>
+            <div><i class="is-index"></i>沪深300</div>
+          </div>
+          <div class="fear-chart-body">
+            <div class="fear-y-axis" aria-hidden="true">
+              <span>100</span>
+              <span>50</span>
+              <span>0</span>
+            </div>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="A股恐慌分数和沪深300走势图">
+              <line class="grid-line" x1="0" y1="12" x2="100" y2="12"></line>
+              <line class="grid-line" x1="0" y1="52" x2="100" y2="52"></line>
+              <line class="grid-line" x1="0" y1="92" x2="100" y2="92"></line>
+              <polyline class="fear-line" points={cnChart.fearLine}></polyline>
+              <polyline class="index-line" points={cnChart.indexLine}></polyline>
+            </svg>
+            <div class="fear-y-axis is-right" aria-hidden="true">
+              <span>{formatIndex(cnChart.maxIndex)}</span>
+              <span>{formatIndex(cnChart.midIndex)}</span>
+              <span>{formatIndex(cnChart.minIndex)}</span>
+            </div>
+          </div>
+          <div class="fear-x-axis" aria-hidden="true">
+            <span></span>
+            <span>{formatDateLabel(cnChart.start)}</span>
+            <span>{formatDateLabel(cnChart.middle)}</span>
+            <span>{formatDateLabel(cnChart.end)}</span>
+            <span></span>
+          </div>
+          <div class="fear-chart-foot">
+            <span>左轴：恐慌分数</span>
+            <span>右轴：沪深300点位</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="fear-components-title">
+        <div class="section-head">
+          <h2 id="fear-components-title">A股分项</h2>
+        </div>
+        <div class="fear-component-grid">
+          <article><span>40%</span><strong>{formatScore(data.latestCn?.parts?.iv300)}</strong><p>沪深300期权 IV 分位数</p></article>
+          <article><span>25%</span><strong>{formatScore(data.latestCn?.parts?.ivMidSmall)}</strong><p>中证1000/中证500期权 IV 分位数</p></article>
+          <article><span>20%</span><strong>{formatScore(data.latestCn?.parts?.pcr)}</strong><p>期权 PCR 分位数</p></article>
+          <article><span>15%</span><strong>{formatScore(data.latestCn?.parts?.basis)}</strong><p>股指期货贴水压力分位数</p></article>
+        </div>
+
+        <div class="fear-component-notes" aria-label="A股恐慌分项说明">
+          <article>
+            <span>40% · 沪深300期权 IV</span>
+            <p>
+              用沪深300相关 ETF 期权的隐含波动率分位数衡量大盘蓝筹方向的避险定价。分位数越高，说明期权市场给未来波动的定价越贵，恐慌权重越高。
+            </p>
+          </article>
+          <article>
+            <span>25% · 中证1000/中证500期权 IV</span>
+            <p>
+              用中小盘相关期权隐含波动率补充宽基风险。A股风险经常先在中小盘扩散，这个分项用于捕捉非沪深300成分的情绪压力。
+            </p>
+          </article>
+          <article>
+            <span>20% · 期权 PCR</span>
+            <p>
+              PCR 取认沽成交量除以认购成交量。数值分位越高，表示保护性认沽或下跌押注越活跃，市场对下行风险的需求更强。
+            </p>
+          </article>
+          <article>
+            <span>15% · 股指期货贴水压力</span>
+            <p>
+              贴水压力来自 IF 主力期货相对沪深300现货的折价。这里按反向分位处理：期货相对现货越便宜，代表套保或悲观预期越重，恐慌分数越高。
+            </p>
+          </article>
+        </div>
+
+        <p class="fear-component-formula">
+          A股恐慌分数 = 40% × 沪深300期权 IV 分位数 + 25% × 中证1000/中证500期权 IV 分位数 + 20% × 期权 PCR 分位数 + 15% × 股指期货贴水压力分位数。
+          四个分项统一映射到 0-100，越接近 100 代表恐慌或避险压力越强。
+        </p>
+      </section>
+    </div>
+
+    <PageSidebar
+      title="恐慌指数"
+      intro="美股数据来自 FRED；A股波动率来自 OptBBS QVIX，PCR 来自上交所期权每日统计，期货贴水来自新浪 IF0 与沪深300。"
+      sections={[
+        {
+          title: '项目入口',
+          items: [
+            { label: '项目页', href: '/projects/' },
+            { label: '美股图', href: '#us-fear-title' },
+            { label: 'A股图', href: '#cn-fear-title' },
+            { label: 'A股分项', href: '#fear-components-title' },
+          ],
+        },
+      ]}
+    />
+  </div>
+</BaseLayout>

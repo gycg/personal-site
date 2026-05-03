@@ -4,6 +4,7 @@ import PageSidebar from '../../components/PageSidebar.astro';
 import {
   calculatePortfolioSummary,
   calculatePositions,
+  getEastmoneySecid,
   getSecurityById,
   getQuoteSymbol,
   securities,
@@ -13,7 +14,188 @@ import {
 const positions = calculatePositions();
 const summary = calculatePortfolioSummary();
 const displayTrades = [...trades].sort((a, b) => b.executedAt.localeCompare(a.executedAt));
-const quoteSymbols = securities.map(getQuoteSymbol);
+const chronologicalTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
+const eastmoneySecids = securities.map(getEastmoneySecid);
+const tencentSymbols = securities.map(getQuoteSymbol);
+const maxPositionCost = Math.max(...positions.map((position) => position.cost), 1);
+const maxPositionQuantity = Math.max(...positions.map((position) => position.quantity), 1);
+const maxTradeAmount = Math.max(...trades.map((trade) => trade.amount + trade.fee), 1);
+const firstTradeDate = chronologicalTrades[0]?.executedAt.slice(0, 10).replaceAll('-', '') ?? '20260416';
+
+type KlineGroup = {
+  symbol: string;
+  rows: Array<{
+    date: string;
+    close: number;
+  }>;
+};
+
+type DailyPortfolioPoint = {
+  date: string;
+  marketValue: number;
+  cost: number;
+  profit: number;
+  dailyChange: number;
+  trades: typeof trades;
+};
+
+function getTradeDate(trade: (typeof trades)[number]) {
+  return trade.executedAt.slice(0, 10);
+}
+
+function normalizeKlinePayload(payload: any): KlineGroup | null {
+  const data = payload.data;
+  if (!data?.klines?.length) return null;
+
+  const symbol = `${Number(data.market) === 1 ? 'sh' : 'sz'}${data.code}`;
+  const rows = data.klines
+    .map((line: string) => {
+      const parts = line.split(',');
+      const close = Number(parts[2]);
+      if (!parts[0] || !Number.isFinite(close)) return null;
+      return { date: parts[0], close };
+    })
+    .filter(Boolean);
+
+  return rows.length ? { symbol, rows } : null;
+}
+
+async function fetchKlineGroup(position: (typeof positions)[number]): Promise<KlineGroup | null> {
+  const fields1 = 'f1,f2,f3,f4,f5,f6';
+  const fields2 = 'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61';
+  const secid = getEastmoneySecid(position);
+  const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=${fields1}&fields2=${fields2}&klt=101&fqt=1&beg=${firstTradeDate}&end=20500101`;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(`${url}&_=${Date.now()}-${attempt}`);
+      if (!response.ok) continue;
+
+      const kline = normalizeKlinePayload(await response.json());
+      if (kline) return kline;
+    } catch {
+      // The upstream endpoint occasionally drops connections. Retry and keep build resilient.
+    }
+  }
+
+  return null;
+}
+
+function calculateDailyPortfolioPoints(klineGroups: KlineGroup[]): DailyPortfolioPoint[] {
+  const klineBySymbol = new Map(klineGroups.map((group) => [group.symbol, group.rows]));
+  const allDates = [...new Set(klineGroups.flatMap((group) => group.rows.map((row) => row.date)))].sort();
+  const sortedTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
+  const stateById = new Map(positions.map((position) => [position.id, { quantity: 0, cost: 0, realizedProfit: 0 }]));
+  const latestCloseBySymbol = new Map<string, number>();
+  let tradeIndex = 0;
+  let previousProfit: number | null = null;
+
+  return allDates
+    .map((date) => {
+      for (const [symbol, rows] of klineBySymbol.entries()) {
+        const row = rows.find((item) => item.date === date);
+        if (row) latestCloseBySymbol.set(symbol, row.close);
+      }
+
+      while (tradeIndex < sortedTrades.length && getTradeDate(sortedTrades[tradeIndex]) <= date) {
+        const trade = sortedTrades[tradeIndex];
+        const state = stateById.get(trade.securityId);
+
+        if (state) {
+          if (trade.side === '买入') {
+            state.quantity += trade.quantity;
+            state.cost += trade.amount + trade.fee;
+          } else {
+            const averageCost = state.quantity > 0 ? state.cost / state.quantity : 0;
+            const closingCost = averageCost * trade.quantity;
+            state.quantity -= trade.quantity;
+            state.cost -= closingCost;
+            state.realizedProfit += trade.amount - trade.fee - closingCost;
+          }
+        }
+
+        tradeIndex += 1;
+      }
+
+      let marketValue = 0;
+      let cost = 0;
+      let realizedProfit = 0;
+
+      for (const position of positions) {
+        const state = stateById.get(position.id);
+        const close = latestCloseBySymbol.get(position.quoteSymbol);
+        if (!state || !close) continue;
+
+        marketValue += state.quantity * close;
+        cost += state.cost;
+        realizedProfit += state.realizedProfit;
+      }
+
+      if (marketValue <= 0 && cost <= 0) return null;
+
+      const profit = marketValue - cost + realizedProfit;
+      const dailyChange = previousProfit === null ? 0 : profit - previousProfit;
+      previousProfit = profit;
+
+      return { date, marketValue, cost, profit, dailyChange };
+    })
+    .filter(Boolean)
+    .map((point) => ({
+      ...point,
+      trades: sortedTrades.filter((trade) => getTradeDate(trade) === point.date),
+    }));
+}
+
+const dailyKlineResults = await Promise.allSettled(positions.map(fetchKlineGroup));
+const dailyKlineGroups = dailyKlineResults
+  .filter((result): result is PromiseFulfilledResult<KlineGroup> => result.status === 'fulfilled' && Boolean(result.value))
+  .map((result) => result.value);
+const dailyPortfolioPoints = calculateDailyPortfolioPoints(dailyKlineGroups);
+const dailyLatestPoint = dailyPortfolioPoints.at(-1);
+const dailyProfits = dailyPortfolioPoints.map((point) => point.profit);
+const dailyMinProfit = Math.min(...dailyProfits, 0);
+const dailyMaxProfit = Math.max(...dailyProfits, 0);
+const dailyProfitRange = Math.max(dailyMaxProfit - dailyMinProfit, 1);
+const getDailyPointCoordinate = (point: DailyPortfolioPoint, index: number) => {
+  const x = dailyPortfolioPoints.length <= 1 ? 0 : (index / (dailyPortfolioPoints.length - 1)) * 100;
+  const y = 90 - ((point.profit - dailyMinProfit) / dailyProfitRange) * 78;
+  return { x, y };
+};
+const dailyCoordinates = dailyPortfolioPoints.map(getDailyPointCoordinate);
+const dailyLinePoints = dailyCoordinates.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
+const dailyZeroY = 90 - ((0 - dailyMinProfit) / dailyProfitRange) * 78;
+const dailyAreaPath = dailyCoordinates.length
+  ? [
+      `M ${dailyCoordinates[0].x.toFixed(2)} ${dailyZeroY.toFixed(2)}`,
+      ...dailyCoordinates.map((point, index) => `${index === 0 ? 'L' : 'L'} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`),
+      `L ${dailyCoordinates.at(-1)?.x.toFixed(2)} ${dailyZeroY.toFixed(2)}`,
+      'Z',
+    ].join(' ')
+  : '';
+const dailyDots = dailyPortfolioPoints.map((point, index) => {
+  const { x, y } = getDailyPointCoordinate(point, index);
+  return {
+    x,
+    y,
+    isLast: index === dailyPortfolioPoints.length - 1,
+    isPeak: point.profit === dailyMaxProfit && dailyPortfolioPoints.length > 1,
+  };
+});
+const dailyTradeMarkers = dailyPortfolioPoints.flatMap((point, index) => {
+  if (!point.trades.length) return [];
+  const { x, y } = getDailyPointCoordinate(point, index);
+  return point.trades.map((trade, tradeIndex) => {
+    const security = getSecurityById(trade.securityId);
+    return {
+      x,
+      y,
+      markerY: Math.max(7, y - 9 - tradeIndex * 7),
+      side: trade.side,
+      label: `${trade.side} ${security?.name ?? ''}`,
+      amount: trade.amount + trade.fee,
+    };
+  });
+});
 
 const formatCurrency = new Intl.NumberFormat('zh-CN', {
   style: 'currency',
@@ -37,6 +219,27 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+const dailyChartStatus = dailyLatestPoint
+  ? `${dailyKlineGroups.length < positions.length ? `部分日 K 数据缺失，已按 ${dailyKlineGroups.length}/${positions.length} 只标的计算。` : ''}最新市值 ${formatCurrency.format(dailyLatestPoint.marketValue)}，单日变化 ${formatCurrency.format(dailyLatestPoint.dailyChange)}。`
+  : '构建时未取得日 K 数据，暂时无法计算每日持仓变化。';
+const recentDailyPoints = dailyPortfolioPoints.slice(-8);
+const dailyStartLabel = dailyPortfolioPoints[0]?.date.slice(5) ?? '--';
+const dailyEndLabel = dailyPortfolioPoints.at(-1)?.date.slice(5) ?? '--';
+const dailyScaleLabels = [
+  { label: formatCurrency.format(dailyMaxProfit), y: 12 },
+  { label: '0', y: Math.min(90, Math.max(12, dailyZeroY)) },
+  ...(dailyMinProfit < 0 ? [{ label: formatCurrency.format(dailyMinProfit), y: 90 }] : []),
+];
+const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
+  if (!point.trades.length) return '无交易';
+
+  return point.trades
+    .map((trade) => {
+      const security = getSecurityById(trade.securityId);
+      return `${trade.side}${security?.name ?? ''} ${formatNumber.format(trade.quantity)}份`;
+    })
+    .join(' / ');
+};
 ---
 
 <BaseLayout title="我的持仓" description="公开记录当前持仓、交易明细、持仓成本和实时估算盈亏。" canonicalPath="/projects/holdings/">
@@ -77,6 +280,197 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
             <strong>{formatCurrency.format(summary.totalFees)}</strong>
             <p>{formatNumber.format(summary.totalQuantity)} 份持仓</p>
           </article>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="holding-chart-title">
+        <div class="section-head">
+          <h2 id="holding-chart-title">持仓图表</h2>
+        </div>
+
+        <div class="holding-visual-panel" aria-label="持仓图表">
+          <div class="allocation-strip" aria-label="按成本占比展示持仓结构">
+            {positions.map((position) => {
+              const share = summary.totalCost > 0 ? (position.cost / summary.totalCost) * 100 : 0;
+              return (
+                <div
+                  class="allocation-segment"
+                  style={`--share: ${share}%;`}
+                  title={`${position.name} ${formatPercent.format(share / 100)}`}
+                >
+                  <span>{position.name}</span>
+                  <strong>{formatPercent.format(share / 100)}</strong>
+                </div>
+              );
+            })}
+          </div>
+
+          <div class="position-chart-grid">
+            {positions.map((position) => {
+              const costShare = summary.totalCost > 0 ? position.cost / summary.totalCost : 0;
+              const costWidth = (position.cost / maxPositionCost) * 100;
+              const quantityWidth = (position.quantity / maxPositionQuantity) * 100;
+              return (
+                <article class="position-visual-card" data-position-visual data-symbol={position.quoteSymbol}>
+                  <div class="position-visual-head">
+                    <div>
+                      <p>{position.name}</p>
+                      <span>{position.code} · {position.note}</span>
+                    </div>
+                    <strong>{formatPercent.format(costShare)}</strong>
+                  </div>
+
+                  <div class="position-bars">
+                    <div class="position-bar-row">
+                      <span>成本</span>
+                      <div class="position-bar-track">
+                        <i style={`--bar: ${costWidth}%;`}></i>
+                      </div>
+                      <strong>{formatCurrency.format(position.cost)}</strong>
+                    </div>
+                    <div class="position-bar-row">
+                      <span>份额</span>
+                      <div class="position-bar-track is-muted">
+                        <i style={`--bar: ${quantityWidth}%;`}></i>
+                      </div>
+                      <strong>{formatNumber.format(position.quantity)}</strong>
+                    </div>
+                  </div>
+
+                  <dl class="position-visual-stats">
+                    <div>
+                      <dt>成本价</dt>
+                      <dd>{formatPrice.format(position.cost / position.quantity)}</dd>
+                    </div>
+                    <div>
+                      <dt>现价</dt>
+                      <dd data-chart-price>--</dd>
+                    </div>
+                    <div>
+                      <dt>市值</dt>
+                      <dd data-chart-market-value>--</dd>
+                    </div>
+                    <div>
+                      <dt>浮盈</dt>
+                      <dd data-chart-profit>--</dd>
+                    </div>
+                  </dl>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="daily-chart-title">
+        <div class="section-head">
+          <h2 id="daily-chart-title">每日持仓变化</h2>
+        </div>
+
+        <div class:list={['holding-line-chart', 'is-daily', dailyLatestPoint && (dailyLatestPoint.profit >= 0 ? 'is-profit' : 'is-loss')]} aria-label="每日持仓浮盈变化折线图" data-daily-chart>
+          <div class="line-chart-head">
+            <div>
+              <span>最新浮盈</span>
+              <strong data-daily-profit>{dailyLatestPoint ? formatCurrency.format(dailyLatestPoint.profit) : '--'}</strong>
+            </div>
+            <p data-daily-chart-status>{dailyChartStatus}</p>
+          </div>
+
+          <div class="line-chart-canvas">
+            <div class="line-chart-scale" aria-hidden="true">
+              {dailyScaleLabels.map((item) => <span style={`top: ${item.y}%;`}>{item.label}</span>)}
+            </div>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="每日持仓浮盈变化折线图">
+              <defs>
+                <linearGradient id="daily-profit-area" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"></stop>
+                  <stop offset="72%" stop-color="currentColor" stop-opacity="0.07"></stop>
+                  <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+              <line class="grid-line is-top" x1="0" y1="12" x2="100" y2="12"></line>
+              <line class="grid-line" x1="0" y1="51" x2="100" y2="51"></line>
+              <line class="grid-line is-bottom" x1="0" y1="90" x2="100" y2="90"></line>
+              <line class="zero-line" x1="0" y1={dailyZeroY} x2="100" y2={dailyZeroY}></line>
+              <g class="daily-trade-markers">
+                {dailyTradeMarkers.map((marker) => (
+                  <line class="trade-event-line" x1={marker.x} y1="12" x2={marker.x} y2="90"></line>
+                ))}
+              </g>
+              {dailyAreaPath && <path class="line-chart-area" d={dailyAreaPath} fill="url(#daily-profit-area)"></path>}
+              <polyline data-daily-line points={dailyLinePoints}></polyline>
+              <g data-daily-dots>
+                {dailyDots.map((dot) => (
+                  <circle class:list={['daily-dot', dot.isLast && 'is-last', dot.isPeak && 'is-peak']} cx={dot.x} cy={dot.y} r={dot.isLast ? '3.3' : dot.isPeak ? '2.8' : '1.45'}></circle>
+                ))}
+              </g>
+              <g class="daily-trade-markers">
+                {dailyTradeMarkers.map((marker) => (
+                  <g>
+                    <line class="trade-marker-stem" x1={marker.x} y1={marker.markerY + 3.8} x2={marker.x} y2={marker.y - 2.8}></line>
+                    <circle
+                      class:list={['trade-marker-dot', marker.side === '买入' ? 'is-buy' : 'is-sell']}
+                      cx={marker.x}
+                      cy={marker.markerY}
+                      r="3.2"
+                    >
+                      <title>{marker.label} · {formatCurrency.format(marker.amount)}</title>
+                    </circle>
+                  </g>
+                ))}
+              </g>
+            </svg>
+          </div>
+
+          <div class="line-chart-foot" aria-hidden="true">
+            <span>{dailyStartLabel}</span>
+            <span>{dailyPortfolioPoints.length} 个交易日</span>
+            <span>{dailyEndLabel}</span>
+          </div>
+
+          <div class="daily-change-table" data-daily-list>
+            {recentDailyPoints.length ? (
+              recentDailyPoints.map((point) => (
+                <article class:list={['daily-change-row', point.dailyChange >= 0 ? 'is-profit' : 'is-loss', point.trades.length && 'has-trade']}>
+                  <time>{point.date.slice(5)}</time>
+                  <strong>{formatCurrency.format(point.profit)}</strong>
+                  <span>{point.dailyChange >= 0 ? '+' : ''}{formatCurrency.format(point.dailyChange)}</span>
+                  <p>{getDailyTradeSummary(point)}</p>
+                </article>
+              ))
+            ) : (
+              <p>构建时未取得日 K 数据。</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="trade-chart-title">
+        <div class="section-head">
+          <h2 id="trade-chart-title">交易时间线</h2>
+        </div>
+
+        <div class="trade-timeline" aria-label="买入卖出时间线">
+          {chronologicalTrades.map((trade) => {
+            const security = getSecurityById(trade.securityId);
+            const tradeCost = trade.amount + trade.fee;
+            const barWidth = (tradeCost / maxTradeAmount) * 100;
+            return (
+              <article class:list={['trade-event', trade.side === '买入' ? 'is-buy' : 'is-sell']}>
+                <time>{trade.executedAt.slice(5, 16)}</time>
+                <div class="trade-event-main">
+                  <div class="trade-event-head">
+                    <strong>{security?.name}</strong>
+                    <span>{trade.side} {formatNumber.format(trade.quantity)} 份</span>
+                  </div>
+                  <div class="trade-event-bar">
+                    <i style={`--bar: ${barWidth}%;`}></i>
+                  </div>
+                  <p>{formatPrice.format(trade.price)} · {formatCurrency.format(trade.amount)} · 手续费 {formatCurrency.format(trade.fee)}</p>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -180,7 +574,7 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
     />
   </div>
 
-<script define:vars={{ positions, summary, quoteSymbols }}>
+<script define:vars={{ positions, summary, eastmoneySecids, tencentSymbols }}>
   const currencyFormatter = new Intl.NumberFormat('zh-CN', {
     style: 'currency',
     currency: 'CNY',
@@ -206,28 +600,6 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
     setText('[data-quote-status]', message);
   }
 
-  function parseSinaQuote(symbol) {
-    const raw = window[`hq_str_${symbol}`];
-    if (!raw) return null;
-
-    const parts = raw.split(',');
-    const name = parts[0];
-    const previousClose = Number(parts[2]);
-    const current = Number(parts[3]);
-    const date = parts[30];
-    const time = parts[31];
-
-    if (!Number.isFinite(current) || current <= 0) return null;
-
-    return {
-      symbol,
-      name,
-      price: current,
-      previousClose: Number.isFinite(previousClose) ? previousClose : null,
-      updatedAt: date && time ? `${date} ${time}` : '',
-    };
-  }
-
   function updateQuoteTime(quotes) {
     const timeElement = document.querySelector('[data-quote-time]');
     if (!timeElement) return;
@@ -240,6 +612,58 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
 
     timeElement.textContent = `行情时间 ${latest}`;
     timeElement.setAttribute('datetime', latest.replace(' ', 'T'));
+  }
+
+  function formatEastmoneyTime(timestamp) {
+    if (!Number.isFinite(timestamp) || timestamp <= 0) return '';
+
+    const date = new Date(timestamp * 1000);
+    const pad = (value) => String(value).padStart(2, '0');
+    return [
+      date.getFullYear(),
+      pad(date.getMonth() + 1),
+      pad(date.getDate()),
+    ].join('-') + ' ' + [
+      pad(date.getHours()),
+      pad(date.getMinutes()),
+      pad(date.getSeconds()),
+    ].join(':');
+  }
+
+  function normalizeEastmoneyQuote(item) {
+    const price = Number(item.f2);
+    if (!Number.isFinite(price) || price <= 0) return null;
+
+    const market = String(item.f13) === '1' ? 'sh' : 'sz';
+    return {
+      symbol: `${market}${item.f12}`,
+      name: item.f14,
+      price,
+      previousClose: Number(item.f18),
+      updatedAt: formatEastmoneyTime(Number(item.f124)),
+    };
+  }
+
+  function parseTencentQuote(symbol) {
+    const raw = window[`v_${symbol}`];
+    if (!raw) return null;
+
+    const parts = raw.split('~');
+    const price = Number(parts[3]);
+    if (!Number.isFinite(price) || price <= 0) return null;
+
+    const timeRaw = parts[30] ?? '';
+    const updatedAt = /^\d{14}$/.test(timeRaw)
+      ? `${timeRaw.slice(0, 4)}-${timeRaw.slice(4, 6)}-${timeRaw.slice(6, 8)} ${timeRaw.slice(8, 10)}:${timeRaw.slice(10, 12)}:${timeRaw.slice(12, 14)}`
+      : '';
+
+    return {
+      symbol,
+      name: parts[1],
+      price,
+      previousClose: Number(parts[4]),
+      updatedAt,
+    };
   }
 
   function renderHoldings(quotes) {
@@ -268,6 +692,15 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
       row.querySelector('[data-profit-rate]').textContent = percentFormatter.format(profitRate);
       row.classList.toggle('is-profit', profit >= 0);
       row.classList.toggle('is-loss', profit < 0);
+
+      const visualCard = document.querySelector(`[data-position-visual][data-symbol="${position.quoteSymbol}"]`);
+      if (visualCard) {
+        visualCard.querySelector('[data-chart-price]').textContent = priceFormatter.format(quote.price);
+        visualCard.querySelector('[data-chart-market-value]').textContent = currencyFormatter.format(marketValue);
+        visualCard.querySelector('[data-chart-profit]').textContent = currencyFormatter.format(profit);
+        visualCard.classList.toggle('is-profit', profit >= 0);
+        visualCard.classList.toggle('is-loss', profit < 0);
+      }
     }
 
     const totalProfit = totalMarketValue - summary.totalCost + summary.realizedProfit;
@@ -283,26 +716,59 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
     updateQuoteTime(quotes);
   }
 
-  function loadQuotes() {
-    const script = document.createElement('script');
-    script.src = `https://hq.sinajs.cn/list=${quoteSymbols.join(',')}`;
-    script.charset = 'gbk';
-    script.async = true;
+  async function loadEastmoneyQuotes() {
+    const fields = ['f2', 'f12', 'f13', 'f14', 'f18', 'f124'].join(',');
+    const url = `https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=${eastmoneySecids.join(',')}&fields=${fields}`;
 
-    script.onload = () => {
-      const quotes = quoteSymbols.map(parseSinaQuote).filter(Boolean);
-      if (!quotes.length) {
-        setStatus('行情接口暂无返回，已保留静态成本数据');
-        return;
-      }
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Eastmoney quote request failed: ${response.status}`);
+
+    const payload = await response.json();
+    const quotes = (payload.data?.diff ?? []).map(normalizeEastmoneyQuote).filter(Boolean);
+    if (!quotes.length) throw new Error('Eastmoney quote response is empty');
+
+    return quotes;
+  }
+
+  function loadTencentQuotes() {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = `https://qt.gtimg.cn/q=${tencentSymbols.join(',')}`;
+      script.charset = 'gbk';
+      script.async = true;
+
+      script.onload = () => {
+        const quotes = tencentSymbols.map(parseTencentQuote).filter(Boolean);
+        if (!quotes.length) {
+          reject(new Error('Tencent quote response is empty'));
+          return;
+        }
+        resolve(quotes);
+      };
+
+      script.onerror = () => reject(new Error('Tencent quote script failed'));
+      document.head.append(script);
+    });
+  }
+
+  async function loadQuotes() {
+    try {
+      const quotes = await loadEastmoneyQuotes();
       renderHoldings(quotes);
-    };
+      setStatus('实时行情已更新');
+      return;
+    } catch (eastmoneyError) {
+      console.warn(eastmoneyError);
+    }
 
-    script.onerror = () => {
+    try {
+      const quotes = await loadTencentQuotes();
+      renderHoldings(quotes);
+      setStatus('实时行情已更新（备用源）');
+    } catch (tencentError) {
+      console.warn(tencentError);
       setStatus('行情接口加载失败，已保留静态成本数据');
-    };
-
-    document.head.append(script);
+    }
   }
 
   loadQuotes();

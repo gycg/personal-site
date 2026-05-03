@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">现金流风险信号清单</title>
+  <desc id="desc">现金流风险信号包括净利润增长但经营现金流为负、应收账款大幅增加、存货大量增加、自由现金流长期为负、长期依赖借钱或融资、现金增加主要来自筹资而非经营。</desc>
+  <rect width="1200" height="720" fill="#f0f4ef"/>
+  <rect x="70" y="72" width="1060" height="576" rx="18" fill="#fbfcfa" stroke="#b7c6b8" stroke-width="2"/>
+  <text x="110" y="145" fill="#2e5f49" font-family="Noto Serif SC, Songti SC, serif" font-size="42" font-weight="700">利润好看但现金流差，要继续追问原因</text>
+  <g font-family="Noto Sans SC, PingFang SC, sans-serif" font-size="27" fill="#23352b">
+    <rect x="165" y="205" width="870" height="390" rx="16" fill="#fff" stroke="#b7c6b8"/>
+    <text x="215" y="275">□ 净利润增长，但经营现金流为负</text>
+    <text x="215" y="330">□ 应收账款大幅增加</text>
+    <text x="215" y="385">□ 存货大量增加</text>
+    <text x="215" y="440">□ 自由现金流长期为负</text>
+    <text x="215" y="495">□ 长期依赖借钱或融资</text>
+    <text x="215" y="550">□ 现金增加主要来自筹资，而非经营</text>
+  </g>
+</svg>
