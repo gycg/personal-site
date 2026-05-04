@@ -16,6 +16,16 @@ export type Trade = {
   side: '买入' | '卖出';
 };
 
+export type TargetAllocation = {
+  category: string;
+  market: 'sh' | 'sz';
+  code: string;
+  name: string;
+  amount: number | null;
+  weight: number | null;
+  feeRate: string;
+};
+
 export const securities: Security[] = [
   {
     id: 'ai-intelligence',
@@ -94,6 +104,99 @@ export const trades: Trade[] = [
     amount: 4932.0,
     fee: 5.0,
     side: '买入',
+  },
+];
+
+export const targetAllocations: TargetAllocation[] = [
+  {
+    category: '中国大盘股',
+    market: 'sh',
+    code: '510300',
+    name: '沪深300ETF华泰柏瑞',
+    amount: 120000,
+    weight: 0.12,
+    feeRate: '0.15% + 0.05%',
+  },
+  {
+    category: '中国中盘股',
+    market: 'sh',
+    code: '510500',
+    name: '中证500ETF南方',
+    amount: 50000,
+    weight: 0.05,
+    feeRate: '0.15% + 0.05%',
+  },
+  {
+    category: '中国小盘股',
+    market: 'sh',
+    code: '512100',
+    name: '中证1000ETF南方',
+    amount: 30000,
+    weight: 0.03,
+    feeRate: '0.15% + 0.05%',
+  },
+  {
+    category: '美国宽基',
+    market: 'sh',
+    code: '513500',
+    name: '标普500ETF博时',
+    amount: 300000,
+    weight: 0.3,
+    feeRate: '0.60% + 0.20%',
+  },
+  {
+    category: '美国宽基',
+    market: 'sh',
+    code: '513650',
+    name: '标普500ETF南方',
+    amount: null,
+    weight: null,
+    feeRate: '0.60% + 0.15%',
+  },
+  {
+    category: '美国科技成长',
+    market: 'sh',
+    code: '513100',
+    name: '纳指ETF国泰',
+    amount: 150000,
+    weight: 0.15,
+    feeRate: '0.60% + 0.20%',
+  },
+  {
+    category: '美国科技成长',
+    market: 'sz',
+    code: '159501',
+    name: '纳指ETF嘉实',
+    amount: null,
+    weight: null,
+    feeRate: '0.50% + 0.10%',
+  },
+  {
+    category: '黄金',
+    market: 'sh',
+    code: '518880',
+    name: '华安黄金ETF',
+    amount: 100000,
+    weight: 0.1,
+    feeRate: '0.50% + 0.10%',
+  },
+  {
+    category: '沙特股票',
+    market: 'sh',
+    code: '520830',
+    name: '沙特ETF华泰柏瑞',
+    amount: 25000,
+    weight: 0.025,
+    feeRate: '0.50% + 0.10%',
+  },
+  {
+    category: '中国债券',
+    market: 'sz',
+    code: '161119',
+    name: '易方达中债新综指LOF A',
+    amount: 225000,
+    weight: 0.225,
+    feeRate: '0.15% + 0.05%',
   },
 ];
 

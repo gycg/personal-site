@@ -8,6 +8,7 @@ import {
   getSecurityById,
   getQuoteSymbol,
   securities,
+  targetAllocations,
   trades,
 } from '../../data/holdings';
 
@@ -21,6 +22,22 @@ const maxPositionCost = Math.max(...positions.map((position) => position.cost), 
 const maxPositionQuantity = Math.max(...positions.map((position) => position.quantity), 1);
 const maxTradeAmount = Math.max(...trades.map((trade) => trade.amount + trade.fee), 1);
 const firstTradeDate = chronologicalTrades[0]?.executedAt.slice(0, 10).replaceAll('-', '') ?? '20260416';
+const targetTotalAmount = targetAllocations.reduce((sum, item) => sum + (item.amount ?? 0), 0);
+const targetAllocationGroups = [...targetAllocations.reduce((groups, item) => {
+  const group = groups.get(item.category) ?? {
+    category: item.category,
+    amount: 0,
+    weight: 0,
+    funds: [] as typeof targetAllocations,
+  };
+
+  group.amount += item.amount ?? 0;
+  group.weight += item.weight ?? 0;
+  group.funds.push(item);
+  groups.set(item.category, group);
+  return groups;
+}, new Map<string, { category: string; amount: number; weight: number; funds: typeof targetAllocations }>()).values()];
+const targetEastmoneySecids = targetAllocations.map((item) => `${item.market === 'sh' ? '1' : '0'}.${item.code}`);
 
 type KlineGroup = {
   symbol: string;
@@ -151,51 +168,6 @@ const dailyKlineGroups = dailyKlineResults
   .filter((result): result is PromiseFulfilledResult<KlineGroup> => result.status === 'fulfilled' && Boolean(result.value))
   .map((result) => result.value);
 const dailyPortfolioPoints = calculateDailyPortfolioPoints(dailyKlineGroups);
-const dailyLatestPoint = dailyPortfolioPoints.at(-1);
-const dailyProfits = dailyPortfolioPoints.map((point) => point.profit);
-const dailyMinProfit = Math.min(...dailyProfits, 0);
-const dailyMaxProfit = Math.max(...dailyProfits, 0);
-const dailyProfitRange = Math.max(dailyMaxProfit - dailyMinProfit, 1);
-const getDailyPointCoordinate = (point: DailyPortfolioPoint, index: number) => {
-  const x = dailyPortfolioPoints.length <= 1 ? 0 : (index / (dailyPortfolioPoints.length - 1)) * 100;
-  const y = 90 - ((point.profit - dailyMinProfit) / dailyProfitRange) * 78;
-  return { x, y };
-};
-const dailyCoordinates = dailyPortfolioPoints.map(getDailyPointCoordinate);
-const dailyLinePoints = dailyCoordinates.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
-const dailyZeroY = 90 - ((0 - dailyMinProfit) / dailyProfitRange) * 78;
-const dailyAreaPath = dailyCoordinates.length
-  ? [
-      `M ${dailyCoordinates[0].x.toFixed(2)} ${dailyZeroY.toFixed(2)}`,
-      ...dailyCoordinates.map((point, index) => `${index === 0 ? 'L' : 'L'} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`),
-      `L ${dailyCoordinates.at(-1)?.x.toFixed(2)} ${dailyZeroY.toFixed(2)}`,
-      'Z',
-    ].join(' ')
-  : '';
-const dailyDots = dailyPortfolioPoints.map((point, index) => {
-  const { x, y } = getDailyPointCoordinate(point, index);
-  return {
-    x,
-    y,
-    isLast: index === dailyPortfolioPoints.length - 1,
-    isPeak: point.profit === dailyMaxProfit && dailyPortfolioPoints.length > 1,
-  };
-});
-const dailyTradeMarkers = dailyPortfolioPoints.flatMap((point, index) => {
-  if (!point.trades.length) return [];
-  const { x, y } = getDailyPointCoordinate(point, index);
-  return point.trades.map((trade, tradeIndex) => {
-    const security = getSecurityById(trade.securityId);
-    return {
-      x,
-      y,
-      markerY: Math.max(7, y - 9 - tradeIndex * 7),
-      side: trade.side,
-      label: `${trade.side} ${security?.name ?? ''}`,
-      amount: trade.amount + trade.fee,
-    };
-  });
-});
 
 const formatCurrency = new Intl.NumberFormat('zh-CN', {
   style: 'currency',
@@ -219,17 +191,47 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
-const dailyChartStatus = dailyLatestPoint
-  ? `${dailyKlineGroups.length < positions.length ? `部分日 K 数据缺失，已按 ${dailyKlineGroups.length}/${positions.length} 只标的计算。` : ''}最新市值 ${formatCurrency.format(dailyLatestPoint.marketValue)}，单日变化 ${formatCurrency.format(dailyLatestPoint.dailyChange)}。`
-  : '构建时未取得日 K 数据，暂时无法计算每日持仓变化。';
-const recentDailyPoints = dailyPortfolioPoints.slice(-8);
-const dailyStartLabel = dailyPortfolioPoints[0]?.date.slice(5) ?? '--';
-const dailyEndLabel = dailyPortfolioPoints.at(-1)?.date.slice(5) ?? '--';
-const dailyScaleLabels = [
-  { label: formatCurrency.format(dailyMaxProfit), y: 12 },
-  { label: '0', y: Math.min(90, Math.max(12, dailyZeroY)) },
-  ...(dailyMinProfit < 0 ? [{ label: formatCurrency.format(dailyMinProfit), y: 90 }] : []),
-];
+const weekdayLabels = ['一', '二', '三', '四', '五', '六', '日'];
+const dailyPointByDate = new Map(dailyPortfolioPoints.map((point) => [point.date, point]));
+const dailyCalendarMonths = (() => {
+  if (!dailyPortfolioPoints.length) return [];
+
+  const start = new Date(`${dailyPortfolioPoints[0].date}T00:00:00`);
+  const end = new Date(`${dailyPortfolioPoints.at(-1)?.date}T00:00:00`);
+  const months = [];
+  const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+
+  while (cursor <= end) {
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const leadingBlanks = (firstDay.getDay() + 6) % 7;
+    const cells = [
+      ...Array.from({ length: leadingBlanks }, (_, index) => ({ key: `blank-${year}-${month}-${index}`, isBlank: true as const })),
+      ...Array.from({ length: daysInMonth }, (_, index) => {
+        const day = index + 1;
+        const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        return {
+          key: date,
+          isBlank: false as const,
+          day,
+          date,
+          point: dailyPointByDate.get(date),
+        };
+      }),
+    ];
+
+    months.push({
+      key: `${year}-${String(month + 1).padStart(2, '0')}`,
+      label: `${year}年${month + 1}月`,
+      cells,
+    });
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  return months;
+})();
 const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
   if (!point.trades.length) return '无交易';
 
@@ -242,12 +244,12 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
 };
 ---
 
-<BaseLayout title="我的持仓" description="公开记录当前持仓、交易明细、持仓成本和实时估算盈亏。" canonicalPath="/projects/holdings/">
+<BaseLayout title="我的持仓（模拟）" description="公开记录模拟持仓、交易明细、持仓成本和实时估算盈亏。" canonicalPath="/projects/holdings/">
   <div class="page-grid">
     <div>
       <section class="hero">
         <p class="eyebrow">项目</p>
-        <h1>我的持仓</h1>
+        <h1>我的持仓（模拟）</h1>
         <p class="lead">
           用交易记录算出当前持仓成本，再尝试读取实时行情估算市值和浮动盈亏。数据用于复盘和公开记录，不构成投资建议。
         </p>
@@ -280,6 +282,72 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
             <strong>{formatCurrency.format(summary.totalFees)}</strong>
             <p>{formatNumber.format(summary.totalQuantity)} 份持仓</p>
           </article>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="target-allocation-title">
+        <div class="section-head">
+          <h2 id="target-allocation-title">目标投资结构</h2>
+          <p>以 100 万目标组合为基准，用来对照后续买入和调仓进度。</p>
+        </div>
+
+        <div class="target-allocation-panel">
+          <div class="holding-table-wrap">
+            <table class="holding-table is-target">
+              <thead>
+                <tr>
+                  <th>类别</th>
+                  <th>场内基金</th>
+                  <th>买入金额</th>
+                  <th>占比</th>
+                  <th>费率</th>
+                  <th>实时规模</th>
+                  <th>估算溢价率</th>
+                </tr>
+              </thead>
+              <tbody>
+                {targetAllocationGroups.map((group) => (
+                  <tr>
+                    <td><strong>{group.category}</strong></td>
+                    <td class="target-fund-cell">
+                      {group.funds.map((fund) => (
+                        <span class="target-fund-item">
+                          <strong>{fund.code}</strong>
+                          <em>{fund.name}</em>
+                        </span>
+                      ))}
+                    </td>
+                    <td>{formatCurrency.format(group.amount)}</td>
+                    <td>{formatPercent.format(group.weight)}</td>
+                    <td class="target-stack-cell">
+                      {group.funds.map((fund) => (
+                        <span>{fund.feeRate}</span>
+                      ))}
+                    </td>
+                    <td class="target-stack-cell">
+                      {group.funds.map((fund) => (
+                        <span data-target-scale data-code={fund.code}>--</span>
+                      ))}
+                    </td>
+                    <td class="target-stack-cell">
+                      {group.funds.map((fund) => (
+                        <span data-target-premium data-code={fund.code}>--</span>
+                      ))}
+                    </td>
+                  </tr>
+                ))}
+                <tr class="is-total">
+                  <td><strong>合计</strong></td>
+                  <td></td>
+                  <td>{formatCurrency.format(targetTotalAmount)}</td>
+                  <td>{formatPercent.format(1)}</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -362,86 +430,51 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
         </div>
       </section>
 
-      <section class="content-section" aria-labelledby="daily-chart-title">
+      <section class="content-section" aria-labelledby="daily-calendar-title">
         <div class="section-head">
-          <h2 id="daily-chart-title">每日持仓变化</h2>
+          <h2 id="daily-calendar-title">每日持仓日历</h2>
+          <p>每个交易日显示当日涨跌额；下方小字为截至当天的累计浮盈。</p>
         </div>
 
-        <div class:list={['holding-line-chart', 'is-daily', dailyLatestPoint && (dailyLatestPoint.profit >= 0 ? 'is-profit' : 'is-loss')]} aria-label="每日持仓浮盈变化折线图" data-daily-chart>
-          <div class="line-chart-head">
-            <div>
-              <span>最新浮盈</span>
-              <strong data-daily-profit>{dailyLatestPoint ? formatCurrency.format(dailyLatestPoint.profit) : '--'}</strong>
-            </div>
-            <p data-daily-chart-status>{dailyChartStatus}</p>
-          </div>
-
-          <div class="line-chart-canvas">
-            <div class="line-chart-scale" aria-hidden="true">
-              {dailyScaleLabels.map((item) => <span style={`top: ${item.y}%;`}>{item.label}</span>)}
-            </div>
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="每日持仓浮盈变化折线图">
-              <defs>
-                <linearGradient id="daily-profit-area" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"></stop>
-                  <stop offset="72%" stop-color="currentColor" stop-opacity="0.07"></stop>
-                  <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop>
-                </linearGradient>
-              </defs>
-              <line class="grid-line is-top" x1="0" y1="12" x2="100" y2="12"></line>
-              <line class="grid-line" x1="0" y1="51" x2="100" y2="51"></line>
-              <line class="grid-line is-bottom" x1="0" y1="90" x2="100" y2="90"></line>
-              <line class="zero-line" x1="0" y1={dailyZeroY} x2="100" y2={dailyZeroY}></line>
-              <g class="daily-trade-markers">
-                {dailyTradeMarkers.map((marker) => (
-                  <line class="trade-event-line" x1={marker.x} y1="12" x2={marker.x} y2="90"></line>
-                ))}
-              </g>
-              {dailyAreaPath && <path class="line-chart-area" d={dailyAreaPath} fill="url(#daily-profit-area)"></path>}
-              <polyline data-daily-line points={dailyLinePoints}></polyline>
-              <g data-daily-dots>
-                {dailyDots.map((dot) => (
-                  <circle class:list={['daily-dot', dot.isLast && 'is-last', dot.isPeak && 'is-peak']} cx={dot.x} cy={dot.y} r={dot.isLast ? '3.3' : dot.isPeak ? '2.8' : '1.45'}></circle>
-                ))}
-              </g>
-              <g class="daily-trade-markers">
-                {dailyTradeMarkers.map((marker) => (
-                  <g>
-                    <line class="trade-marker-stem" x1={marker.x} y1={marker.markerY + 3.8} x2={marker.x} y2={marker.y - 2.8}></line>
-                    <circle
-                      class:list={['trade-marker-dot', marker.side === '买入' ? 'is-buy' : 'is-sell']}
-                      cx={marker.x}
-                      cy={marker.markerY}
-                      r="3.2"
+        <div class="holding-calendar" aria-label="每日持仓涨跌日历">
+          {dailyCalendarMonths.length ? (
+            dailyCalendarMonths.map((month) => (
+              <article class="holding-calendar-month">
+                <h3>{month.label}</h3>
+                <div class="holding-calendar-weekdays" aria-hidden="true">
+                  {weekdayLabels.map((label) => <span>{label}</span>)}
+                </div>
+                <div class="holding-calendar-grid">
+                  {month.cells.map((cell) => cell.isBlank ? (
+                    <div class="holding-calendar-day is-empty" aria-hidden="true"></div>
+                  ) : (
+                    <article
+                      class:list={[
+                        'holding-calendar-day',
+                        !cell.point && 'is-muted',
+                        cell.point && cell.point.dailyChange >= 0 ? 'is-profit' : '',
+                        cell.point && cell.point.dailyChange < 0 ? 'is-loss' : '',
+                        cell.point?.trades.length && 'has-trade',
+                      ]}
                     >
-                      <title>{marker.label} · {formatCurrency.format(marker.amount)}</title>
-                    </circle>
-                  </g>
-                ))}
-              </g>
-            </svg>
-          </div>
-
-          <div class="line-chart-foot" aria-hidden="true">
-            <span>{dailyStartLabel}</span>
-            <span>{dailyPortfolioPoints.length} 个交易日</span>
-            <span>{dailyEndLabel}</span>
-          </div>
-
-          <div class="daily-change-table" data-daily-list>
-            {recentDailyPoints.length ? (
-              recentDailyPoints.map((point) => (
-                <article class:list={['daily-change-row', point.dailyChange >= 0 ? 'is-profit' : 'is-loss', point.trades.length && 'has-trade']}>
-                  <time>{point.date.slice(5)}</time>
-                  <strong>{formatCurrency.format(point.profit)}</strong>
-                  <span>{point.dailyChange >= 0 ? '+' : ''}{formatCurrency.format(point.dailyChange)}</span>
-                  <p>{getDailyTradeSummary(point)}</p>
-                </article>
-              ))
-            ) : (
-              <p>构建时未取得日 K 数据。</p>
-            )}
-          </div>
+                      <time datetime={cell.date}>{cell.day}</time>
+                      {cell.point ? (
+                        <>
+                          <strong>{cell.point.dailyChange >= 0 ? '+' : ''}{formatCurrency.format(cell.point.dailyChange)}</strong>
+                          <span>{formatCurrency.format(cell.point.profit)}</span>
+                          <p>{getDailyTradeSummary(cell.point)}</p>
+                        </>
+                      ) : (
+                        <span>--</span>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              </article>
+            ))
+          ) : (
+            <p class="empty">构建时未取得日 K 数据，暂时无法生成日历。</p>
+          )}
         </div>
       </section>
 
@@ -559,13 +592,15 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
     </div>
 
     <PageSidebar
-      title="持仓"
-      intro="实时行情来自公开行情脚本，可能有延迟或失败；买卖记录仍以本页静态数据为准。"
+      title="持仓（模拟）"
+      intro="实时行情来自公开行情脚本，可能有延迟或失败；模拟买卖记录仍以本页静态数据为准。"
       sections={[
         {
           title: '入口',
           items: [
             { label: '项目页', href: '/projects/' },
+            { label: '目标投资结构', href: '#target-allocation-title' },
+            { label: '每日持仓日历', href: '#daily-calendar-title' },
             { label: '全部文章', href: '/posts/' },
             { label: '研究方法', href: '/about/#method' },
           ],
@@ -574,7 +609,7 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
     />
   </div>
 
-<script define:vars={{ positions, summary, eastmoneySecids, tencentSymbols }}>
+<script define:vars={{ positions, summary, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
   const currencyFormatter = new Intl.NumberFormat('zh-CN', {
     style: 'currency',
     currency: 'CNY',
@@ -588,6 +623,12 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
   const percentFormatter = new Intl.NumberFormat('zh-CN', {
     style: 'percent',
     minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const compactCurrencyFormatter = new Intl.NumberFormat('zh-CN', {
+    style: 'currency',
+    currency: 'CNY',
+    notation: 'compact',
     maximumFractionDigits: 2,
   });
 
@@ -640,6 +681,7 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
       name: item.f14,
       price,
       previousClose: Number(item.f18),
+      scale: Number(item.f116),
       updatedAt: formatEastmoneyTime(Number(item.f124)),
     };
   }
@@ -716,6 +758,95 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
     updateQuoteTime(quotes);
   }
 
+  function setTargetCell(selector, code, value, state = '') {
+    const element = document.querySelector(`${selector}[data-code="${code}"]`);
+    if (!element) return;
+
+    element.textContent = value;
+    element.classList.toggle('is-positive', state === 'positive');
+    element.classList.toggle('is-negative', state === 'negative');
+  }
+
+  function parseFundEstimatePayload(raw) {
+    const match = raw.match(/^jsonpgz\((.*)\);?$/);
+    if (!match) return null;
+
+    try {
+      return JSON.parse(match[1]);
+    } catch {
+      return null;
+    }
+  }
+
+  async function loadFundEstimateByFetch(code) {
+    const response = await fetch(`https://fundgz.1234567.com.cn/js/${code}.js?rt=${Date.now()}`);
+    if (!response.ok) return null;
+    return parseFundEstimatePayload(await response.text());
+  }
+
+  function loadFundEstimateByScript(code) {
+    return new Promise((resolve) => {
+      const previousJsonpgz = window.jsonpgz;
+      const script = document.createElement('script');
+      script.src = `https://fundgz.1234567.com.cn/js/${code}.js?rt=${Date.now()}`;
+      script.async = true;
+
+      window.jsonpgz = (payload) => {
+        window.jsonpgz = previousJsonpgz;
+        script.remove();
+        resolve(payload);
+      };
+
+      script.onerror = () => {
+        window.jsonpgz = previousJsonpgz;
+        script.remove();
+        resolve(null);
+      };
+
+      document.head.append(script);
+    });
+  }
+
+  async function loadTargetMetrics() {
+    try {
+      const fields = ['f2', 'f12', 'f13', 'f14', 'f116', 'f124'].join(',');
+      const url = `https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=${targetEastmoneySecids.join(',')}&fields=${fields}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Target ETF quote request failed: ${response.status}`);
+
+      const payload = await response.json();
+      const quotes = (payload.data?.diff ?? []).map(normalizeEastmoneyQuote).filter(Boolean);
+      const quoteByCode = new Map(quotes.map((quote) => [quote.symbol.slice(2), quote]));
+
+      for (const item of targetAllocations) {
+        const quote = quoteByCode.get(item.code);
+        if (quote?.scale > 0) {
+          setTargetCell('[data-target-scale]', item.code, compactCurrencyFormatter.format(quote.scale));
+        }
+
+        let estimate = null;
+        try {
+          estimate = await loadFundEstimateByFetch(item.code);
+        } catch {
+          estimate = await loadFundEstimateByScript(item.code);
+        }
+
+        const estimatedNav = Number(estimate?.gsz || estimate?.dwjz);
+        if (quote?.price > 0 && estimatedNav > 0) {
+          const premium = quote.price / estimatedNav - 1;
+          setTargetCell(
+            '[data-target-premium]',
+            item.code,
+            percentFormatter.format(premium),
+            premium >= 0 ? 'positive' : 'negative',
+          );
+        }
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  }
+
   async function loadEastmoneyQuotes() {
     const fields = ['f2', 'f12', 'f13', 'f14', 'f18', 'f124'].join(',');
     const url = `https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=${eastmoneySecids.join(',')}&fields=${fields}`;
@@ -772,5 +903,6 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
   }
 
   loadQuotes();
+  loadTargetMetrics();
 </script>
 </BaseLayout>
