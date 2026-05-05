@@ -32,7 +32,15 @@ const { title = '侧栏', intro, sections = [], compact = false } = Astro.props;
         <ul class="sidebar-list">
           {section.items.map((item) => (
             <li>
-              {item.href ? <a class="sidebar-link" href={item.href}>{item.label}</a> : <span>{item.label}</span>}
+              {
+                item.href ? (
+                  <a class="sidebar-link" href={item.href} data-toc-link={item.href.startsWith('#') ? true : undefined}>
+                    {item.label}
+                  </a>
+                ) : (
+                  <span>{item.label}</span>
+                )
+              }
             </li>
           ))}
         </ul>

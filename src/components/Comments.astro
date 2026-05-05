@@ -11,27 +11,74 @@ const isConfigured =
 
 {
   isConfigured && (
-    <section class="comments-section" aria-labelledby="comments-title">
+    <section
+      class="comments-section"
+      aria-labelledby="comments-title"
+      data-giscus-comments
+      data-repo={GISCUS_CONFIG.repo}
+      data-repo-id={GISCUS_CONFIG.repoId}
+      data-category={GISCUS_CONFIG.category}
+      data-category-id={GISCUS_CONFIG.categoryId}
+      data-mapping={GISCUS_CONFIG.mapping}
+      data-strict={GISCUS_CONFIG.strict}
+      data-reactions-enabled={GISCUS_CONFIG.reactionsEnabled}
+      data-emit-metadata={GISCUS_CONFIG.emitMetadata}
+      data-input-position={GISCUS_CONFIG.inputPosition}
+      data-theme={GISCUS_CONFIG.theme}
+      data-lang={GISCUS_CONFIG.lang}
+      data-loading={GISCUS_CONFIG.loading}
+    >
       <div class="section-head">
         <h2 id="comments-title">评论与回复</h2>
       </div>
-      <script
-        src="https://giscus.app/client.js"
-        data-repo={GISCUS_CONFIG.repo}
-        data-repo-id={GISCUS_CONFIG.repoId}
-        data-category={GISCUS_CONFIG.category}
-        data-category-id={GISCUS_CONFIG.categoryId}
-        data-mapping={GISCUS_CONFIG.mapping}
-        data-strict={GISCUS_CONFIG.strict}
-        data-reactions-enabled={GISCUS_CONFIG.reactionsEnabled}
-        data-emit-metadata={GISCUS_CONFIG.emitMetadata}
-        data-input-position={GISCUS_CONFIG.inputPosition}
-        data-theme={GISCUS_CONFIG.theme}
-        data-lang={GISCUS_CONFIG.lang}
-        data-loading={GISCUS_CONFIG.loading}
-        crossorigin="anonymous"
-        async
-      />
+      <p class="comments-placeholder">评论区将在接近页面底部时加载。</p>
     </section>
+  )
+}
+
+{
+  isConfigured && (
+    <script is:inline>
+      const comments = document.querySelector('[data-giscus-comments]');
+      const loadGiscus = () => {
+        if (!comments || comments.dataset.loaded === 'true') return;
+        comments.dataset.loaded = 'true';
+        const placeholder = comments.querySelector('.comments-placeholder');
+        if (placeholder) placeholder.textContent = '正在加载评论区...';
+        const script = document.createElement('script');
+        script.src = 'https://giscus.app/client.js';
+        script.async = true;
+        script.crossOrigin = 'anonymous';
+
+        for (const [key, value] of Object.entries(comments.dataset)) {
+          if (!value || key === 'giscusComments' || key === 'loaded') continue;
+          const attr = 'data-' + key.replace(/[A-Z]/g, (char) => '-' + char.toLowerCase());
+          script.setAttribute(attr, value);
+        }
+
+        script.addEventListener('load', () => placeholder?.remove());
+        script.addEventListener('error', () => {
+          if (placeholder) placeholder.textContent = '评论区加载失败，可以稍后刷新页面重试。';
+        });
+        comments.append(script);
+      };
+
+      if (comments) {
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              if (entries.some((entry) => entry.isIntersecting)) {
+                observer.disconnect();
+                loadGiscus();
+              }
+            },
+            { rootMargin: '360px 0px' }
+          );
+          observer.observe(comments);
+        } else {
+          window.addEventListener('load', loadGiscus, { once: true });
+        }
+      }
+    </script>
   )
 }

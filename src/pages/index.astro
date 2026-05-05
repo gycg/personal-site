@@ -3,11 +3,12 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE_DESCRIPTION } from '../consts';
 import PageSidebar from '../components/PageSidebar.astro';
-import { comparePostsNewest, getPostUrl } from '../lib/posts';
+import { comparePostsNewest, estimateReadingMinutes, getPostUrl } from '../lib/posts';
 
-const posts = (await getCollection('posts', ({ data }) => !data.draft))
-  .sort(comparePostsNewest)
-  .slice(0, 5);
+const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(comparePostsNewest);
+const posts = allPosts.slice(0, 5);
+const stockBasicsCount = allPosts.filter((post) => post.data.tags.includes('从零看懂股票')).length;
+const tagCount = new Set(allPosts.flatMap((post) => post.data.tags)).size;
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
   month: 'long',
@@ -24,6 +25,20 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
         <p class="lead">
           用工程化方法研究股票、公司和 AI 投研工具。这里不荐股，不喊单，专注沉淀可复盘的研究过程、投资框架和通往财务自由的长期实验。
         </p>
+        <div class="home-stats" aria-label="站点概览">
+          <a href="/posts/">
+            <strong>{allPosts.length}</strong>
+            <span>公开文章</span>
+          </a>
+          <a href="/series/stock-basics/">
+            <strong>{stockBasicsCount}</strong>
+            <span>入门专题</span>
+          </a>
+          <a href="/posts/">
+            <strong>{tagCount}</strong>
+            <span>研究标签</span>
+          </a>
+        </div>
       </section>
 
       <section class="content-section" aria-labelledby="reading-paths">
@@ -58,7 +73,7 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
           {
             posts.map((post) => (
               <li class="post-card">
-                <p class="post-meta">{dateFormatter.format(post.data.pubDate)}</p>
+                <p class="post-meta">{dateFormatter.format(post.data.pubDate)} · 约 {estimateReadingMinutes(post)} 分钟读完</p>
                 <h3><a href={getPostUrl(post)}>{post.data.title}</a></h3>
                 <p>{post.data.description}</p>
                 <div class="tags">

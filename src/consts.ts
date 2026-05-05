@@ -24,6 +24,6 @@ export const GISCUS_CONFIG = {
   emitMetadata: '0',
   inputPosition: 'bottom',
   theme: 'preferred_color_scheme',
-  lang: 'en',
+  lang: 'zh-CN',
   loading: 'lazy',
 } as const;

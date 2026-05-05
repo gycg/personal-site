@@ -3,7 +3,8 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import Comments from '../components/Comments.astro';
 import PageSidebar from '../components/PageSidebar.astro';
-import { getPostUrl } from '../lib/posts';
+import { SITE_AUTHOR, SITE_TITLE, SITE_URL } from '../consts';
+import { getPostOgImageUrl, getPostSeries, getPostUrl } from '../lib/posts';
 
 interface Props {
   post: CollectionEntry<'posts'>;
@@ -11,9 +12,19 @@ interface Props {
   previousPost?: CollectionEntry<'posts'>;
   nextPost?: CollectionEntry<'posts'>;
   seriesPosts?: CollectionEntry<'posts'>[];
+  relatedPosts?: CollectionEntry<'posts'>[];
+  readingMinutes?: number;
 }
 
-const { post, headings = [], previousPost, nextPost, seriesPosts = [] } = Astro.props;
+const {
+  post,
+  headings = [],
+  previousPost,
+  nextPost,
+  seriesPosts = [],
+  relatedPosts = [],
+  readingMinutes,
+} = Astro.props;
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
   month: 'long',
@@ -24,13 +35,65 @@ const pubYear = String(post.data.pubDate.getFullYear());
 const tocItems = headings.filter((heading) => heading.depth === 2 && heading.text !== 'Footnotes');
 const keyPoints = tocItems.slice(0, 4).map((heading) => heading.text);
 const relatedSeriesPosts = seriesPosts.filter((item) => item.id !== post.id);
+const postUrl = getPostUrl(post);
+const canonicalTarget = post.data.canonical ?? postUrl;
+const canonicalUrl = new URL(canonicalTarget, SITE_URL).toString();
+const series = getPostSeries(post);
+const socialImage = getPostOgImageUrl(post);
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+  url: canonicalUrl,
+  mainEntityOfPage: canonicalUrl,
+  image: new URL(socialImage, SITE_URL).toString(),
+  inLanguage: 'zh-CN',
+  keywords: post.data.tags.join(', '),
+  author: {
+    '@type': 'Person',
+    name: SITE_AUTHOR,
+  },
+  publisher: {
+    '@type': 'Person',
+    name: SITE_AUTHOR,
+  },
+};
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: SITE_TITLE,
+      item: SITE_URL,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: '文章',
+      item: new URL('/posts/', SITE_URL).toString(),
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: post.data.title,
+      item: canonicalUrl,
+    },
+  ],
+};
 ---
 
 <BaseLayout
   title={post.data.title}
   description={post.data.description}
   type="article"
-  canonicalPath={getPostUrl(post)}
+  canonicalPath={canonicalTarget}
+  ogImage={socialImage}
+  jsonLd={[articleJsonLd, breadcrumbJsonLd]}
 >
   <div class="page-grid">
     <article class="article-body">
@@ -38,6 +101,9 @@ const relatedSeriesPosts = seriesPosts.filter((item) => item.id !== post.id);
         <p class="post-meta">
           {dateFormatter.format(post.data.pubDate)}
           {post.data.updatedDate && ` · 更新于 ${dateFormatter.format(post.data.updatedDate)}`}
+          {post.data.updatedReason && ` · ${post.data.updatedReason}`}
+          {readingMinutes && ` · 约 ${readingMinutes} 分钟读完`}
+          {series && ` · ${series}`}
           <span class="post-views" id="busuanzi_container_page_pv" aria-label="文章浏览量">
             <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16">
               <path
@@ -64,9 +130,15 @@ const relatedSeriesPosts = seriesPosts.filter((item) => item.id !== post.id);
         <p class="lead">{post.data.description}</p>
         <section class="article-summary" aria-labelledby="article-summary-title">
           <h2 id="article-summary-title">本文要点</h2>
-          <ul>
-            {keyPoints.map((point) => <li>{point}</li>)}
-          </ul>
+          {
+            keyPoints.length ? (
+              <ul>
+                {keyPoints.map((point) => <li>{point}</li>)}
+              </ul>
+            ) : (
+              <p>这篇文章较短，可以直接顺序阅读。</p>
+            )
+          }
         </section>
         <div class="tags" aria-label="文章标签">
           {post.data.tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
@@ -97,6 +169,24 @@ const relatedSeriesPosts = seriesPosts.filter((item) => item.id !== post.id);
           )
         }
       </nav>
+      {
+        relatedPosts.length > 0 && (
+          <section class="related-posts" aria-labelledby="related-posts-title">
+            <div class="section-head">
+              <h2 id="related-posts-title">相关阅读</h2>
+            </div>
+            <ul class="post-list is-compact">
+              {relatedPosts.map((item) => (
+                <li class="post-card">
+                  <p class="post-meta">{dateFormatter.format(item.data.pubDate)}</p>
+                  <h3><a href={getPostUrl(item)}>{item.data.title}</a></h3>
+                  <p>{item.data.description}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
       <Comments />
     </article>
 
@@ -139,4 +229,32 @@ const relatedSeriesPosts = seriesPosts.filter((item) => item.id !== post.id);
       ]}
     />
   </div>
+  {
+    tocItems.length > 1 && (
+      <script is:inline>
+        const headings = Array.from(document.querySelectorAll('.article-prose h2[id]'));
+        const tocLinks = Array.from(document.querySelectorAll('[data-toc-link]'));
+
+        if ('IntersectionObserver' in window && headings.length && tocLinks.length) {
+          const setActive = (id) => {
+            for (const link of tocLinks) {
+              link.toggleAttribute('aria-current', link.getAttribute('href') === '#' + id);
+            }
+          };
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              const visible = entries
+                .filter((entry) => entry.isIntersecting)
+                .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+              if (visible[0]?.target?.id) setActive(visible[0].target.id);
+            },
+            { rootMargin: '-18% 0px -68% 0px', threshold: 0.01 }
+          );
+
+          headings.forEach((heading) => observer.observe(heading));
+        }
+      </script>
+    )
+  }
 </BaseLayout>

@@ -8,6 +8,8 @@ interface Props {
   description?: string;
   type?: 'website' | 'article';
   canonicalPath?: string;
+  ogImage?: string;
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
 const {
@@ -15,13 +17,35 @@ const {
   description = SITE_DESCRIPTION,
   type = 'website',
   canonicalPath = Astro.url.pathname,
+  ogImage = DEFAULT_OG_IMAGE,
+  jsonLd = [],
 } = Astro.props;
 
 const pageTitle = title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`;
 const canonicalUrl = new URL(canonicalPath, SITE_URL).toString();
-const ogImageUrl = new URL(DEFAULT_OG_IMAGE, SITE_URL).toString();
+const ogImageUrl = new URL(ogImage, SITE_URL).toString();
 const rssUrl = new URL('/rss.xml', SITE_URL).toString();
 const pathname = Astro.url.pathname;
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    inLanguage: 'zh-CN',
+    publisher: {
+      '@type': 'Person',
+      name: SITE_AUTHOR,
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: new URL('/search/?q={search_term_string}', SITE_URL).toString(),
+      'query-input': 'required name=search_term_string',
+    },
+  },
+  ...(Array.isArray(jsonLd) ? jsonLd : [jsonLd]),
+];
 
 function isActiveNav(href: string) {
   if (href === '/') return pathname === '/';
@@ -57,12 +81,14 @@ function isActiveNav(href: string) {
     <meta property="og:image:alt" content={`${SITE_TITLE} 文章分享图`} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImageUrl} />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">跳到正文</a>
     {type === 'article' && <div class="reading-progress" aria-hidden="true"><span></span></div>}
     <header class="site-header">
       <div class="site-shell nav">
-        <a class="brand" href="/">{SITE_TITLE}</a>
+        <a class="brand" href="/" aria-label={`${SITE_TITLE} 首页`}>{SITE_TITLE}</a>
         <nav class="nav-links" aria-label="主导航">
           {
             MAIN_NAV_ITEMS.map((item) => (
@@ -86,16 +112,27 @@ function isActiveNav(href: string) {
         </nav>
       </div>
     </header>
-    <main class="site-shell">
+    <main id="main-content" class="site-shell" tabindex="-1">
       <slot />
     </main>
     <footer class="site-footer">
       <div class="site-shell">
         <p>© {new Date().getFullYear()} {SITE_AUTHOR}. Built with Astro.</p>
+        <nav aria-label="页脚导航">
+          <a href="/rss.xml">RSS</a>
+          <a href="/search/">搜索</a>
+          <a href="/about/#method">研究方法</a>
+          <a href="/about/#contact">联系</a>
+        </nav>
       </div>
     </footer>
     <BackToTop />
     <script is:inline>
+      document.querySelectorAll('.prose img').forEach((image) => {
+        image.loading = image.loading || 'lazy';
+        image.decoding = image.decoding || 'async';
+      });
+
       const rssCopyButton = document.querySelector('[data-copy-rss]');
       const rssCopyStatus = document.querySelector('[data-rss-copy-status]');
       const copyText = async (value) => {

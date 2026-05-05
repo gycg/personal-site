@@ -7,7 +7,13 @@ const posts = defineCollection({
     description: z.string(),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
+    updatedReason: z.string().optional(),
     tags: z.array(z.string()).default([]),
+    series: z.string().optional(),
+    seriesOrder: z.number().int().positive().optional(),
+    cover: z.string().optional(),
+    ogImage: z.string().optional(),
+    canonical: z.string().url().optional(),
     draft: z.boolean().default(false),
   }),
 });

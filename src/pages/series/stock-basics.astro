@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
-import { compareSeriesPosts, getPostUrl } from '../../lib/posts';
+import { compareSeriesPosts, estimateReadingMinutes, getPostUrl } from '../../lib/posts';
 
 const posts = (await getCollection('posts', ({ data }) => {
   return !data.draft && data.tags.includes('从零看懂股票');
@@ -25,20 +25,23 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
       <section class="hero">
         <p class="eyebrow">专题</p>
         <h1>从零看懂股票</h1>
-        <p class="lead">按顺序阅读这组文章，先建立基本概念，再进入行情、收益、财报和估值。</p>
+        <p class="lead">按顺序阅读这组文章，先建立基本概念，再进入行情、收益、财报和估值。目前已发布 {posts.length} 篇。</p>
       </section>
 
-      <ul class="post-list">
+      <ol class="series-path">
         {
-          posts.map((post) => (
-            <li class="post-card">
-              <p class="post-meta">{dateFormatter.format(post.data.pubDate)}</p>
-              <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
-              <p>{post.data.description}</p>
+          posts.map((post, index) => (
+            <li class="series-step">
+              <span class="series-step-number">{String(index + 1).padStart(2, '0')}</span>
+              <div>
+                <p class="post-meta">{dateFormatter.format(post.data.pubDate)} · 约 {estimateReadingMinutes(post)} 分钟读完</p>
+                <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
+                <p>{post.data.description}</p>
+              </div>
             </li>
           ))
         }
-      </ul>
+      </ol>
     </div>
 
     <PageSidebar

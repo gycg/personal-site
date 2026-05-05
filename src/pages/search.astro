@@ -1,5 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort();
 ---
 
 <BaseLayout title="站内搜索" description="搜索长坡厚雪已经发布的文章。" canonicalPath="/search/">
@@ -16,6 +20,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <input id="search-input" type="search" placeholder="例如：财报分析、股票收益、AI 算力" autocomplete="off" />
     </label>
     <p id="search-status" class="post-meta">输入关键词开始搜索。</p>
+    <div class="search-suggestions" aria-label="常用标签">
+      {tags.map((tag) => <button type="button" data-search-tag={tag}>{tag}</button>)}
+    </div>
     <ul id="search-results" class="post-list" aria-live="polite"></ul>
   </section>
 
@@ -23,7 +30,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const input = document.querySelector('#search-input');
     const results = document.querySelector('#search-results');
     const status = document.querySelector('#search-status');
+    const tagButtons = document.querySelectorAll('[data-search-tag]');
     let posts = [];
+    let urlTimer;
 
     const normalize = (value) => value.toLowerCase().trim();
     const formatDate = (value) => new Intl.DateTimeFormat('zh-CN', {
@@ -31,6 +40,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       month: 'long',
       day: 'numeric',
     }).format(new Date(value));
+    const updateUrl = (query) => {
+      clearTimeout(urlTimer);
+      urlTimer = setTimeout(() => {
+        const url = new URL(window.location.href);
+        if (query) url.searchParams.set('q', query);
+        else url.searchParams.delete('q');
+        window.history.replaceState({}, '', url);
+      }, 180);
+    };
+    const appendHighlightedText = (node, value, tokens) => {
+      const lowerValue = value.toLowerCase();
+      let cursor = 0;
+      const ranges = tokens
+        .map((token) => {
+          const index = lowerValue.indexOf(token);
+          return index >= 0 ? { start: index, end: index + token.length } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.start - b.start);
+
+      for (const range of ranges) {
+        if (range.start < cursor) continue;
+        if (range.start > cursor) node.append(document.createTextNode(value.slice(cursor, range.start)));
+        const mark = document.createElement('mark');
+        mark.className = 'search-result-mark';
+        mark.textContent = value.slice(range.start, range.end);
+        node.append(mark);
+        cursor = range.end;
+      }
+      if (cursor < value.length) node.append(document.createTextNode(value.slice(cursor)));
+    };
 
     const renderResults = (items, query) => {
       results.innerHTML = '';
@@ -38,15 +78,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         status.textContent = '输入关键词开始搜索。';
         return;
       }
-      status.textContent = items.length ? '找到 ' + items.length + ' 篇文章。' : '没有找到匹配文章。';
+      const tokens = query.split(/\s+/).filter(Boolean);
+      status.textContent = items.length ? '找到 ' + items.length + ' 篇文章。' : '没有找到匹配文章，可以换用更短的关键词或点击标签浏览。';
       for (const post of items) {
         const item = document.createElement('li');
         item.className = 'post-card';
-        item.innerHTML =
-          '<p class="post-meta">' + formatDate(post.pubDate) + '</p>' +
-          '<h2><a href="' + post.url + '">' + post.title + '</a></h2>' +
-          '<p>' + post.description + '</p>' +
-          '<div class="tags">' + post.tags.map((tag) => '<a class="tag" href="/tags/' + encodeURIComponent(tag) + '/">' + tag + '</a>').join('') + '</div>';
+        const meta = document.createElement('p');
+        meta.className = 'post-meta';
+        meta.textContent = formatDate(post.pubDate);
+        const heading = document.createElement('h2');
+        const link = document.createElement('a');
+        link.href = post.url;
+        appendHighlightedText(link, post.title, tokens);
+        heading.append(link);
+        const description = document.createElement('p');
+        appendHighlightedText(description, post.description, tokens);
+        const tagList = document.createElement('div');
+        tagList.className = 'tags';
+        for (const tag of post.tags) {
+          const tagLink = document.createElement('a');
+          tagLink.className = 'tag';
+          tagLink.href = '/tags/' + encodeURIComponent(tag) + '/';
+          appendHighlightedText(tagLink, tag, tokens);
+          tagList.append(tagLink);
+        }
+        item.append(meta, heading, description, tagList);
         results.append(item);
       }
     };
@@ -70,6 +126,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .map((item) => item.post);
 
       renderResults(matched, query);
+      updateUrl(query);
     };
 
     fetch('/search.json')
@@ -77,6 +134,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .then((data) => {
         posts = data;
         input.addEventListener('input', search);
+        tagButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            input.value = button.dataset.searchTag;
+            input.focus();
+            search();
+          });
+        });
         const params = new URLSearchParams(window.location.search);
         const initial = params.get('q');
         if (initial) {

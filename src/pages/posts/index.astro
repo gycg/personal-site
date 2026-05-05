@@ -2,12 +2,19 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
-import { comparePostsNewest, getPostUrl } from '../../lib/posts';
+import { comparePostsNewest, estimateReadingMinutes, getPostUrl } from '../../lib/posts';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort(comparePostsNewest);
 
 const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort();
+const postsByYear = posts.reduce<Array<{ year: string; posts: typeof posts }>>((groups, post) => {
+  const year = String(post.data.pubDate.getFullYear());
+  const group = groups.find((item) => item.year === year);
+  if (group) group.posts.push(post);
+  else groups.push({ year, posts: [post] });
+  return groups;
+}, []);
 
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
@@ -22,22 +29,33 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
       <section class="hero">
         <p class="eyebrow">文章</p>
         <h1>文章</h1>
+        <p class="lead">共 {posts.length} 篇公开文章，按发布时间倒序归档。</p>
       </section>
 
-      <ul class="post-list">
+      <div class="archive-list">
         {
-          posts.map((post) => (
-            <li class="post-card">
-              <p class="post-meta">{dateFormatter.format(post.data.pubDate)}</p>
-              <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
-              <p>{post.data.description}</p>
-              <div class="tags">
-                {post.data.tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
+          postsByYear.map((group) => (
+            <section class="archive-year" aria-labelledby={`archive-${group.year}`}>
+              <div class="section-head">
+                <h2 id={`archive-${group.year}`}>{group.year}</h2>
+                <span>{group.posts.length} 篇</span>
               </div>
-            </li>
+              <ul class="post-list">
+                {group.posts.map((post) => (
+                  <li class="post-card">
+                    <p class="post-meta">{dateFormatter.format(post.data.pubDate)} · 约 {estimateReadingMinutes(post)} 分钟读完</p>
+                    <h3><a href={getPostUrl(post)}>{post.data.title}</a></h3>
+                    <p>{post.data.description}</p>
+                    <div class="tags">
+                      {post.data.tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))
         }
-      </ul>
+      </div>
     </div>
 
     <PageSidebar

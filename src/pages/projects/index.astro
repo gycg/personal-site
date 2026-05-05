@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
+import { projects } from '../../data/projects';
 ---
 
 <BaseLayout title="项目" description="投研工具、内容工作流和长期写作系统。" canonicalPath="/projects/">
@@ -13,148 +14,41 @@ import PageSidebar from '../../components/PageSidebar.astro';
       </section>
 
       <section class="project-list" aria-label="项目列表">
-        <article class="project-card">
-          <div class="project-copy">
-            <p class="post-meta">Portfolio Tracker / Live Quotes</p>
-            <h2>我的持仓（模拟）</h2>
-            <p>
-              记录当前 ETF 持仓、买入卖出明细、持仓成本和估算盈亏。页面会尝试读取实时行情，方便把交易记录和当前市值放在一起复盘。
-            </p>
-            <div class="project-meta-grid">
-              <div>
-                <span>定位</span>
-                <strong>持仓复盘</strong>
+        {
+          projects.map((project) => (
+            <article class="project-card">
+              {project.image && (
+                <img
+                  src={project.image.src}
+                  alt={project.image.alt}
+                  width="1200"
+                  height="720"
+                  loading="lazy"
+                />
+              )}
+              <div class="project-copy">
+                <p class="post-meta">{project.eyebrow}</p>
+                <h2>{project.title}</h2>
+                <p>{project.description}</p>
+                {project.meta && (
+                  <div class="project-meta-grid">
+                    {project.meta.map((item) => (
+                      <div>
+                        <span>{item.label}</span>
+                        <strong>{item.value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {project.links && (
+                  <div class="project-links">
+                    {project.links.map((link) => <a class="tag" href={link.href}>{link.label}</a>)}
+                  </div>
+                )}
               </div>
-              <div>
-                <span>内容</span>
-                <strong>交易 / 市值 / 盈亏</strong>
-              </div>
-              <div>
-                <span>状态</span>
-                <strong>已上线</strong>
-              </div>
-            </div>
-            <div class="project-links">
-              <a class="tag" href="/projects/holdings/">查看持仓（模拟）</a>
-            </div>
-          </div>
-        </article>
-
-        <article class="project-card">
-          <div class="project-copy">
-            <p class="post-meta">Fear Index / A-share & US</p>
-            <h2>恐慌指数</h2>
-            <p>
-              把 A 股期权波动率、PCR、股指期货贴水压力和美股 VIX 历史分位数做成每日恐慌分数，并和沪深300、标普500放在同一张图里观察。
-            </p>
-            <div class="project-meta-grid">
-              <div>
-                <span>定位</span>
-                <strong>风险温度计</strong>
-              </div>
-              <div>
-                <span>内容</span>
-                <strong>A股 / 美股 / 指数对照</strong>
-              </div>
-              <div>
-                <span>状态</span>
-                <strong>已上线</strong>
-              </div>
-            </div>
-            <div class="project-links">
-              <a class="tag" href="/projects/fear-index/">查看指数</a>
-            </div>
-          </div>
-        </article>
-
-        <article class="project-card">
-          <img
-            src="/project-personal-blog.svg"
-            alt="个人博客项目截图预览"
-            width="1200"
-            height="720"
-          />
-          <div class="project-copy">
-            <p class="post-meta">Astro / Markdown / Vercel</p>
-            <h2>个人博客</h2>
-            <p>
-              公开写作入口，用来沉淀股票入门、公司研究、AI 投研和财务自由实验。结构上保持轻量，方便长期维护和持续写作。
-            </p>
-            <div class="project-meta-grid">
-              <div>
-                <span>定位</span>
-                <strong>个人研究主页</strong>
-              </div>
-              <div>
-                <span>内容</span>
-                <strong>文章 / 项目 / 关于</strong>
-              </div>
-              <div>
-                <span>状态</span>
-                <strong>持续迭代中</strong>
-              </div>
-            </div>
-            <div class="project-links">
-              <a class="tag" href="/">查看首页</a>
-              <a class="tag" href="/posts/building-this-blog/">阅读文章</a>
-            </div>
-          </div>
-        </article>
-
-        <article class="project-card">
-          <div class="project-copy">
-            <p class="post-meta">Research System / In Progress</p>
-            <h2>长期投资研究系统</h2>
-            <p>用于整理股票观察池、财报笔记、估值假设和后续跟踪指标。目标是让每一次研究都能沉淀成可复盘的结构化记录。</p>
-            <div class="project-meta-grid">
-              <div>
-                <span>定位</span>
-                <strong>研究底座</strong>
-              </div>
-              <div>
-                <span>内容</span>
-                <strong>公司 / 指标 / 跟踪</strong>
-              </div>
-              <div>
-                <span>状态</span>
-                <strong>进行中</strong>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article class="project-card">
-          <div class="project-copy">
-            <p class="post-meta">AI Workflow / In Progress</p>
-            <h2>AI 财报阅读工作流</h2>
-            <p>用 AI 辅助整理年报、季报、公告和研报，提取关键数据和风险点。AI 负责提高效率，最终判断仍然回到原始材料和商业逻辑。</p>
-            <div class="project-meta-grid">
-              <div>
-                <span>定位</span>
-                <strong>AI 投研工具</strong>
-              </div>
-              <div>
-                <span>内容</span>
-                <strong>公告 / 财报 / 提纲</strong>
-              </div>
-              <div>
-                <span>状态</span>
-                <strong>打磨中</strong>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article class="project-card">
-          <div class="project-copy">
-            <p class="post-meta">Content Pipeline</p>
-            <h2>股票趋势视频生产流程</h2>
-            <p>从选题、数据整理、脚本、图表到发布，把短视频内容做成可以复用的流水线，减少重复劳动，提高内容一致性。</p>
-            <div class="project-links">
-              <a class="tag" href="/posts/how-i-make-stock-trend-videos/">阅读记录</a>
-            </div>
-          </div>
-        </article>
+            </article>
+          ))
+        }
       </section>
 
       <section class="content-section" aria-labelledby="project-notes">

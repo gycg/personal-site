@@ -1,19 +1,37 @@
 ---
 import { getCollection, render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
-import { comparePostsOldest, compareSeriesPosts, getPostSlug } from '../../lib/posts';
+import {
+  comparePostsNewest,
+  comparePostsOldest,
+  compareSeriesPosts,
+  estimateReadingMinutes,
+  getPostSeries,
+  getPostSlug,
+} from '../../lib/posts';
 
 export async function getStaticPaths() {
   const posts = (await getCollection('posts', ({ data }) => !data.draft))
     .sort(comparePostsOldest);
 
   return posts.map((post, index) => {
-    const seriesPosts = post.data.tags.includes('从零看懂股票')
+    const series = getPostSeries(post);
+    const seriesPosts = series
       ? posts
-          .filter((item) => item.data.tags.includes('从零看懂股票'))
+          .filter((item) => getPostSeries(item) === series)
           .sort(compareSeriesPosts)
       : [];
     const seriesIndex = seriesPosts.findIndex((item) => item.id === post.id);
+    const relatedPosts = posts
+      .filter((item) => item.id !== post.id)
+      .map((item) => ({
+        post: item,
+        score: item.data.tags.reduce((total, tag) => total + (post.data.tags.includes(tag) ? 1 : 0), 0),
+      }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score || comparePostsNewest(a.post, b.post))
+      .slice(0, 3)
+      .map((item) => item.post);
 
     return {
       params: { slug: getPostSlug(post) },
@@ -22,15 +40,25 @@ export async function getStaticPaths() {
         previousPost: seriesIndex >= 0 ? seriesPosts[seriesIndex - 1] : posts[index - 1],
         nextPost: seriesIndex >= 0 ? seriesPosts[seriesIndex + 1] : posts[index + 1],
         seriesPosts,
+        relatedPosts,
+        readingMinutes: estimateReadingMinutes(post),
       },
     };
   });
 }
 
-const { post, previousPost, nextPost, seriesPosts } = Astro.props;
+const { post, previousPost, nextPost, seriesPosts, relatedPosts, readingMinutes } = Astro.props;
 const { Content, headings } = await render(post);
 ---
 
-<PostLayout post={post} headings={headings} previousPost={previousPost} nextPost={nextPost} seriesPosts={seriesPosts}>
+<PostLayout
+  post={post}
+  headings={headings}
+  previousPost={previousPost}
+  nextPost={nextPost}
+  seriesPosts={seriesPosts}
+  relatedPosts={relatedPosts}
+  readingMinutes={readingMinutes}
+>
   <Content />
 </PostLayout>
