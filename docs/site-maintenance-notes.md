@@ -19,6 +19,7 @@
 - canonical 和站点域名统一使用 `https://cphxnotes.com`。
 - 页面需要保留 RSS alternate link、canonical、Open Graph 和 Twitter card 基础信息。
 - 全站模板需要保留 `WebSite` JSON-LD。文章页需要保留 `BlogPosting` 和 `BreadcrumbList` JSON-LD。
+- 文章页 JSON-LD 同时声明 `Article` 和 `BlogPosting`，字段应覆盖 headline、datePublished、dateModified、author、description、keywords、articleSection。
 - 默认 OG 图保留在 `public/og-default.svg`。
 - 文章可以通过 frontmatter 的 `ogImage` 或 `cover` 覆盖默认分享图，路径应指向 `public` 下的站内资源。
 - 未配置 `ogImage` 或 `cover` 时，文章页自动使用 `/og/<slug>.svg` 动态生成的 SVG 分享图。
@@ -44,6 +45,7 @@
 - 系列文章标题可以保留编号，但要带完整关键词，便于搜索结果和新读者判断内容。
 - “从零看懂股票”系列文章要保持上一篇/下一篇的系列顺序。
 - 新增或整理专题文章时，优先使用 `series` 和 `seriesOrder` 字段；旧文章仍可暂时用标签兜底。
+- 专题首页 `/series/` 不手写文章链接，必须从 content collection 按 `series` + `seriesOrder` 自动聚合，并显示完成进度。
 - 文章如有较重要更新，可以填写 `updatedDate` 和 `updatedReason`，标题区会展示更新说明。
 - 提交文章前运行 `npm run check:content`，优先解决 error，再评估 warning。
 - 长文小标题不要过碎。主问题用二级标题，解释性细节用三级标题。
@@ -57,13 +59,17 @@
 - 搜索页需要保持 `?q=` 查询同步，方便分享搜索结果。
 - 搜索页保留标签快捷入口，标签按钮只负责填入搜索词，不替代标签归档页。
 - 文章归档页按年份分组，保留总文章数和年度文章数提示。
+- 标签页顶部需要有一句人工维护的说明文案。新增标签时同步更新 `src/pages/tags/[tag].astro` 里的 `TAG_DESCRIPTIONS`。
 
 ## 项目与数据页
 
 - 项目页数据统一维护在 `src/data/projects.ts`，页面只负责渲染。
 - 新增项目时优先补齐 `eyebrow`、`title`、`description`、`status`、`meta` 和 `links`。
 - 持仓页表格保留横向滚动，小屏必须显示滑动提示。
+- 持仓页日 K 线优先使用东方财富，失败时用腾讯日 K 兜底，避免构建时单一行情源失败导致日历缺月份。
 - 恐慌指数图表在小屏下允许横向查看，避免压缩到不可读。
+- 恐慌指数缓存只允许复用当天 30 分钟内的数据。构建时如需强制刷新，可使用 `FORCE_FEAR_INDEX_REFRESH=1 npm run build`。
+- 恐慌指数页需要同时显示页面更新时间和各数据源最新交易日；如果 A 股波动率源未更新，要让页面明确显示 A 股数据停在哪一天。
 
 ## 已完成但仍需关注
 

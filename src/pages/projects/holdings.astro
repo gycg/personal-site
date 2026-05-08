@@ -77,6 +77,40 @@ function normalizeKlinePayload(payload: any): KlineGroup | null {
   return rows.length ? { symbol, rows } : null;
 }
 
+function normalizeTencentKlinePayload(payload: any, position: (typeof positions)[number]): KlineGroup | null {
+  const symbol = getQuoteSymbol(position);
+  const rows = payload.data?.[symbol]?.qfqday ?? payload.data?.[symbol]?.day ?? [];
+  const normalizedRows = rows
+    .map((row: string[]) => {
+      const close = Number(row[2]);
+      if (!row[0] || !Number.isFinite(close)) return null;
+      return { date: row[0], close };
+    })
+    .filter(Boolean);
+
+  return normalizedRows.length ? { symbol, rows: normalizedRows } : null;
+}
+
+async function fetchTencentKlineGroup(position: (typeof positions)[number]): Promise<KlineGroup | null> {
+  const symbol = getQuoteSymbol(position);
+  const start = chronologicalTrades[0]?.executedAt.slice(0, 10) ?? '2026-04-16';
+  const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${symbol},day,${start},2050-01-01,1600,qfq`;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await fetch(`${url}&_=${Date.now()}-${attempt}`);
+      if (!response.ok) continue;
+
+      const kline = normalizeTencentKlinePayload(await response.json(), position);
+      if (kline) return kline;
+    } catch {
+      // Keep build resilient; Eastmoney remains the primary source.
+    }
+  }
+
+  return null;
+}
+
 async function fetchKlineGroup(position: (typeof positions)[number]): Promise<KlineGroup | null> {
   const fields1 = 'f1,f2,f3,f4,f5,f6';
   const fields2 = 'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61';
@@ -95,7 +129,7 @@ async function fetchKlineGroup(position: (typeof positions)[number]): Promise<Kl
     }
   }
 
-  return null;
+  return fetchTencentKlineGroup(position);
 }
 
 function calculateDailyPortfolioPoints(klineGroups: KlineGroup[]): DailyPortfolioPoint[] {
@@ -436,42 +470,56 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
           <p>每个交易日显示当日涨跌额；下方小字为截至当天的累计浮盈。</p>
         </div>
 
-        <div class="holding-calendar" aria-label="每日持仓涨跌日历">
+        <div class="holding-calendar" aria-label="每日持仓涨跌日历" data-calendar-root>
           {dailyCalendarMonths.length ? (
-            dailyCalendarMonths.map((month) => (
-              <article class="holding-calendar-month">
-                <h3>{month.label}</h3>
-                <div class="holding-calendar-weekdays" aria-hidden="true">
-                  {weekdayLabels.map((label) => <span>{label}</span>)}
-                </div>
-                <div class="holding-calendar-grid">
-                  {month.cells.map((cell) => cell.isBlank ? (
-                    <div class="holding-calendar-day is-empty" aria-hidden="true"></div>
-                  ) : (
-                    <article
-                      class:list={[
-                        'holding-calendar-day',
-                        !cell.point && 'is-muted',
-                        cell.point && cell.point.dailyChange >= 0 ? 'is-profit' : '',
-                        cell.point && cell.point.dailyChange < 0 ? 'is-loss' : '',
-                        cell.point?.trades.length && 'has-trade',
-                      ]}
-                    >
-                      <time datetime={cell.date}>{cell.day}</time>
-                      {cell.point ? (
-                        <>
-                          <strong>{cell.point.dailyChange >= 0 ? '+' : ''}{formatCurrency.format(cell.point.dailyChange)}</strong>
-                          <span>{formatCurrency.format(cell.point.profit)}</span>
-                          <p>{getDailyTradeSummary(cell.point)}</p>
-                        </>
+            <>
+              <div class="holding-calendar-toolbar">
+                <button type="button" data-calendar-prev aria-label="上一个月">‹</button>
+                <strong data-calendar-label>{dailyCalendarMonths.at(-1)?.label}</strong>
+                <button type="button" data-calendar-next aria-label="下一个月">›</button>
+              </div>
+              <div class="holding-calendar-pages" aria-live="polite">
+                {dailyCalendarMonths.map((month, index) => (
+                  <article
+                    class="holding-calendar-month"
+                    data-calendar-month
+                    data-calendar-label={month.label}
+                    hidden={index !== dailyCalendarMonths.length - 1}
+                  >
+                    <h3>{month.label}</h3>
+                    <div class="holding-calendar-weekdays" aria-hidden="true">
+                      {weekdayLabels.map((label) => <span>{label}</span>)}
+                    </div>
+                    <div class="holding-calendar-grid">
+                      {month.cells.map((cell) => cell.isBlank ? (
+                        <div class="holding-calendar-day is-empty" aria-hidden="true"></div>
                       ) : (
-                        <span>--</span>
-                      )}
-                    </article>
-                  ))}
-                </div>
-              </article>
-            ))
+                        <article
+                          class:list={[
+                            'holding-calendar-day',
+                            !cell.point && 'is-muted',
+                            cell.point && cell.point.dailyChange >= 0 ? 'is-profit' : '',
+                            cell.point && cell.point.dailyChange < 0 ? 'is-loss' : '',
+                            cell.point?.trades.length && 'has-trade',
+                          ]}
+                        >
+                          <time datetime={cell.date}>{cell.day}</time>
+                          {cell.point ? (
+                            <>
+                              <strong>{cell.point.dailyChange >= 0 ? '+' : ''}{formatCurrency.format(cell.point.dailyChange)}</strong>
+                              <span>{formatCurrency.format(cell.point.profit)}</span>
+                              <p>{getDailyTradeSummary(cell.point)}</p>
+                            </>
+                          ) : (
+                            <span>--</span>
+                          )}
+                        </article>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </>
           ) : (
             <p class="empty">构建时未取得日 K 数据，暂时无法生成日历。</p>
           )}
@@ -610,6 +658,35 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
   </div>
 
 <script define:vars={{ positions, summary, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
+  const calendarRoot = document.querySelector('[data-calendar-root]');
+  if (calendarRoot) {
+    const months = Array.from(calendarRoot.querySelectorAll('[data-calendar-month]'));
+    const label = calendarRoot.querySelector('[data-calendar-label]');
+    const previous = calendarRoot.querySelector('[data-calendar-prev]');
+    const next = calendarRoot.querySelector('[data-calendar-next]');
+    let current = months.findIndex((month) => !month.hidden);
+    if (current < 0) current = Math.max(months.length - 1, 0);
+
+    const renderCalendarMonth = () => {
+      months.forEach((month, index) => {
+        month.hidden = index !== current;
+      });
+      if (label) label.textContent = months[current]?.dataset.calendarLabel ?? '';
+      if (previous) previous.disabled = current <= 0;
+      if (next) next.disabled = current >= months.length - 1;
+    };
+
+    previous?.addEventListener('click', () => {
+      current = Math.max(current - 1, 0);
+      renderCalendarMonth();
+    });
+    next?.addEventListener('click', () => {
+      current = Math.min(current + 1, months.length - 1);
+      renderCalendarMonth();
+    });
+    renderCalendarMonth();
+  }
+
   const currencyFormatter = new Intl.NumberFormat('zh-CN', {
     style: 'currency',
     currency: 'CNY',

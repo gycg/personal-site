@@ -2,11 +2,36 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
-import { compareSeriesPosts, getPostUrl } from '../../lib/posts';
+import { compareSeriesPosts, getPostSeries, getPostUrl } from '../../lib/posts';
 
-const stockBasicsPosts = (await getCollection('posts', ({ data }) => {
-  return !data.draft && data.tags.includes('从零看懂股票');
-})).sort(compareSeriesPosts);
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const seriesMeta: Record<string, { href: string; description: string; plannedCount?: number }> = {
+  '从零看懂股票': {
+    href: '/series/stock-basics/',
+    description: '写给普通人的股票入门路径，从股票是什么开始，逐步理解行情、收益、财报与估值。',
+    plannedCount: 10,
+  },
+};
+const seriesList = Array.from(
+  posts.reduce((groups, post) => {
+    const series = getPostSeries(post);
+    if (!series) return groups;
+    groups.set(series, [...(groups.get(series) ?? []), post]);
+    return groups;
+  }, new Map<string, typeof posts>())
+).map(([series, items]) => {
+  const sortedPosts = items.sort(compareSeriesPosts);
+  const maxOrder = Math.max(...sortedPosts.map((post) => post.data.seriesOrder ?? 0), sortedPosts.length);
+  const plannedCount = seriesMeta[series]?.plannedCount ?? maxOrder;
+  return {
+    title: series,
+    href: seriesMeta[series]?.href ?? `/series/${encodeURIComponent(series)}/`,
+    description: seriesMeta[series]?.description ?? '按顺序整理的一组系列文章。',
+    posts: sortedPosts,
+    plannedCount,
+    progress: Math.min(sortedPosts.length / plannedCount, 1),
+  };
+});
 ---
 
 <BaseLayout
@@ -22,16 +47,34 @@ const stockBasicsPosts = (await getCollection('posts', ({ data }) => {
         <p class="lead">专题用于承载系列文章，比标签更强调阅读顺序和完整框架。</p>
       </section>
 
-      <ul class="post-list">
-        <li class="post-card">
-          <p class="post-meta">{stockBasicsPosts.length} 篇</p>
-          <h2><a href="/series/stock-basics/">从零看懂股票</a></h2>
-          <p>写给普通人的股票入门路径，从股票是什么开始，逐步理解行情、收益、财报与估值。</p>
-          <div class="tags">
-            {stockBasicsPosts.slice(0, 3).map((post) => <a class="tag" href={getPostUrl(post)}>{post.data.title}</a>)}
-          </div>
-        </li>
-      </ul>
+      <div class="series-overview-list">
+        {
+          seriesList.map((series) => (
+            <article class="series-overview-card">
+              <div class="series-overview-head">
+                <div>
+                  <p class="post-meta">{series.posts.length} / {series.plannedCount} 已完成</p>
+                  <h2><a href={series.href}>{series.title}</a></h2>
+                </div>
+                <strong>{Math.round(series.progress * 100)}%</strong>
+              </div>
+              <div class="series-progress" aria-label={`${series.title} 完成进度 ${series.posts.length} / ${series.plannedCount}`}>
+                <span style={`width: ${series.progress * 100}%`}></span>
+              </div>
+              <p>{series.description}</p>
+              <ol class="series-mini-list">
+                {series.posts.map((post) => (
+                  <li>
+                    <a href={getPostUrl(post)}>
+                      {post.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </article>
+          ))
+        }
+      </div>
     </div>
 
     <PageSidebar

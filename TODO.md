@@ -34,6 +34,20 @@
 - 新增 `npm run check:content` 内容发布检查脚本，检查 frontmatter、图片路径、系列顺序和分享图路径。
 - 新增 `src/styles/README.md`，明确后续拆分 `global.css` 的边界和顺序。
 
+反馈修正已完成：
+
+- `/series/` 专题首页改为从 content collection 按 `series` + `seriesOrder` 自动聚合，不再手写前三篇链接。
+- 专题首页显示完成进度，例如“10 / 10 已完成”，并按 01 → 10 展示完整系列。
+- 标签页增加人工说明文案，让标签更像主题索引。
+- 文章 JSON-LD 同时声明 `Article` 和 `BlogPosting`，并补充 `articleSection`。
+
+数据更新修正已完成：
+
+- 恐慌指数缓存改为仅复用当天 30 分钟内的数据，避免 `.astro/fear-index-cache.json` 长时间停在旧日期。
+- 增加 `FORCE_FEAR_INDEX_REFRESH=1 npm run build` 强制刷新方式。
+- 恐慌指数页显示美股/A股数据源最新交易日；当前 OptBBS A 股波动率源只到 2026-04-30，页面会明确显示。
+- 持仓页日 K 线增加腾讯接口兜底。本次构建已生成 2026 年 5 月日历，并包含 2026-05-06、2026-05-07、2026-05-08。
+
 后续 TODO：
 
 - 为重点文章补齐更精细的人工 `cover` / `ogImage` 文件；没有人工图时使用动态 OG 图兜底。

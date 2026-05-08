@@ -46,10 +46,6 @@ export const projects: ProjectEntry[] = [
     eyebrow: 'Astro / Markdown / Vercel',
     title: '个人博客',
     description: '公开写作入口，用来沉淀股票入门、公司研究、AI 投研和财务自由实验。结构上保持轻量，方便长期维护和持续写作。',
-    image: {
-      src: '/project-personal-blog.svg',
-      alt: '个人博客项目截图预览',
-    },
     status: '持续迭代中',
     meta: [
       { label: '定位', value: '个人研究主页' },

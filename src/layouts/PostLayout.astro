@@ -42,7 +42,7 @@ const series = getPostSeries(post);
 const socialImage = getPostOgImageUrl(post);
 const articleJsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'BlogPosting',
+  '@type': ['Article', 'BlogPosting'],
   headline: post.data.title,
   description: post.data.description,
   datePublished: post.data.pubDate.toISOString(),
@@ -51,6 +51,7 @@ const articleJsonLd = {
   mainEntityOfPage: canonicalUrl,
   image: new URL(socialImage, SITE_URL).toString(),
   inLanguage: 'zh-CN',
+  articleSection: series ?? post.data.tags[0],
   keywords: post.data.tags.join(', '),
   author: {
     '@type': 'Person',

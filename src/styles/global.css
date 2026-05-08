@@ -980,30 +980,12 @@ p {
 }
 
 .series-step {
-  display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
-  gap: 18px;
   padding: 22px 0;
   border-top: 1px solid var(--border-soft);
 }
 
 .series-step:last-child {
   border-bottom: 1px solid var(--border-soft);
-}
-
-.series-step-number {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: oklch(0.993 0.005 150 / 0.72);
-  color: var(--accent-strong);
-  font-family:
-    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
-  font-size: 0.88rem;
-  font-weight: 600;
 }
 
 .series-step h2 {
@@ -1022,6 +1004,83 @@ p {
 
 .series-step p:last-child {
   margin-bottom: 0;
+}
+
+.series-overview-list {
+  display: grid;
+  gap: 20px;
+}
+
+.series-overview-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: oklch(0.993 0.005 150 / 0.72);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.series-overview-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.series-overview-head h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.series-overview-head h2 a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.series-overview-head h2 a:hover {
+  color: var(--accent-strong);
+}
+
+.series-overview-head strong {
+  color: var(--accent-strong);
+  font-family:
+    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.series-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--border-soft) 70%, transparent);
+  margin: 8px 0 18px;
+}
+
+.series-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-strong);
+}
+
+.series-mini-list {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.series-mini-list a {
+  display: block;
+  border-top: 1px solid var(--border-soft);
+  color: var(--text);
+  padding-top: 8px;
+  text-decoration: none;
+}
+
+.series-mini-list a:hover {
+  color: var(--accent-strong);
 }
 
 .page-sidebar {
@@ -1926,7 +1985,53 @@ p {
 
 .holding-calendar {
   display: grid;
-  gap: 18px;
+  gap: 12px;
+}
+
+.holding-calendar-toolbar {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+}
+
+.holding-calendar-toolbar button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: oklch(0.993 0.005 150 / 0.82);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.holding-calendar-toolbar button:hover {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.holding-calendar-toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.holding-calendar-toolbar strong {
+  color: var(--text);
+  font-family:
+    "Noto Serif SC", "Songti SC", "Source Han Serif SC", serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.holding-calendar-pages {
+  min-width: 0;
 }
 
 .holding-calendar-month {
@@ -1940,8 +2045,19 @@ p {
   box-shadow: var(--shadow);
 }
 
+.holding-calendar-month[hidden] {
+  display: none;
+}
+
 .holding-calendar-month h3 {
-  margin: 0 0 12px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  margin: 0;
   color: var(--text);
   font-size: 1.05rem;
 }
@@ -2784,11 +2900,6 @@ p {
 
   .post-card {
     padding: 18px 16px;
-  }
-
-  .series-step {
-    grid-template-columns: 1fr;
-    gap: 10px;
   }
 
   .sidebar-panel {

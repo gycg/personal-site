@@ -22,6 +22,12 @@
 - 新增 `scripts/check-content.mjs` 与 `npm run check:content`，用于检查文章 frontmatter、图片路径、系列顺序和分享图路径。
 - 新增 `src/styles/README.md`，记录后续拆分 `global.css` 的边界。
 - 清理 `.astro` 内容缓存后重新构建，消除重复内容 id 警告。
+- 根据反馈修正专题首页：`/series/` 改为按 content collection 的 `series` 和 `seriesOrder` 自动生成完整系列，并显示进度。
+- 标签页增加 `TAG_DESCRIPTIONS` 说明文案，避免只有机械归档列表。
+- 文章结构化数据同时声明 `Article` 和 `BlogPosting`，并补充 `articleSection`。
+- 修复数据页更新问题：恐慌指数缓存从 4 小时改为“当天 30 分钟内”，并支持 `FORCE_FEAR_INDEX_REFRESH=1` 强制刷新。
+- 恐慌指数页显示页面更新时间以及美股/A股数据源最新交易日，避免 A 股源停更时误以为整页未更新。
+- 持仓页日 K 线增加腾讯接口兜底；本次强制刷新构建后，持仓日历已生成 2026 年 5 月，包含 5 月 6、7、8 日数据。
 
 ## 2026-04-20
 

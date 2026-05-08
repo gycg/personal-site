@@ -30,9 +30,8 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
 
       <ol class="series-path">
         {
-          posts.map((post, index) => (
+          posts.map((post) => (
             <li class="series-step">
-              <span class="series-step-number">{String(index + 1).padStart(2, '0')}</span>
               <div>
                 <p class="post-meta">{dateFormatter.format(post.data.pubDate)} · 约 {estimateReadingMinutes(post)} 分钟读完</p>
                 <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>

@@ -34,7 +34,7 @@ type KlinePoint = {
 };
 
 const FIVE_YEAR_DAYS = 252 * 5;
-const CACHE_TTL_MS = 1000 * 60 * 60 * 4;
+const CACHE_TTL_MS = 1000 * 60 * 30;
 const CACHE_PATH = join(process.cwd(), '.astro', 'fear-index-cache.json');
 const execFileAsync = promisify(execFile);
 let memoryCache: { savedAt: number; data: FearIndexData } | null = null;
@@ -45,6 +45,16 @@ function formatDate(date: Date) {
 
 function compactDate(date: string) {
   return date.replaceAll('-', '');
+}
+
+function shanghaiDate(value = new Date()) {
+  return value.toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
+}
+
+function cacheIsFresh(savedAt: number) {
+  const savedDate = shanghaiDate(new Date(savedAt));
+  const today = shanghaiDate();
+  return savedDate === today && Date.now() - savedAt < CACHE_TTL_MS;
 }
 
 function parseNumber(value: unknown) {
@@ -247,13 +257,15 @@ function latest<T>(items: T[]) {
 }
 
 async function readCache() {
-  if (memoryCache && Date.now() - memoryCache.savedAt < CACHE_TTL_MS) {
+  if (process.env.FORCE_FEAR_INDEX_REFRESH === '1') return null;
+
+  if (memoryCache && cacheIsFresh(memoryCache.savedAt)) {
     return memoryCache.data;
   }
 
   try {
     const cached = JSON.parse(await readFile(CACHE_PATH, 'utf-8')) as { savedAt: number; data: FearIndexData };
-    if (Date.now() - cached.savedAt < CACHE_TTL_MS) {
+    if (cacheIsFresh(cached.savedAt)) {
       memoryCache = cached;
       return cached.data;
     }
@@ -262,6 +274,18 @@ async function readCache() {
   }
 
   return null;
+}
+
+async function readStaleCache() {
+  if (memoryCache) return memoryCache.data;
+
+  try {
+    const cached = JSON.parse(await readFile(CACHE_PATH, 'utf-8')) as { savedAt: number; data: FearIndexData };
+    memoryCache = cached;
+    return cached.data;
+  } catch {
+    return null;
+  }
 }
 
 async function writeCache(data: FearIndexData) {
@@ -364,7 +388,19 @@ export async function getFearIndexData(): Promise<FearIndexData> {
   const cached = await readCache();
   if (cached) return cached;
 
-  const data = await fetchFearIndexData();
-  await writeCache(data).catch(() => undefined);
-  return data;
+  try {
+    const data = await fetchFearIndexData();
+    await writeCache(data).catch(() => undefined);
+    return data;
+  } catch (error) {
+    const stale = await readStaleCache();
+    if (stale) {
+      return {
+        ...stale,
+        updatedAt: `${stale.updatedAt}（缓存，实时源暂不可用）`,
+      };
+    }
+
+    throw error;
+  }
 }

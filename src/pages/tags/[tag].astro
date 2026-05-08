@@ -4,6 +4,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 import { comparePostsNewest, getPostUrl } from '../../lib/posts';
 
+const TAG_DESCRIPTIONS: Record<string, string> = {
+  AI算力: '这里收集 AI 服务器、光模块、国产 AI 芯片相关的公司研究和产业跟踪。',
+  财报分析: '这里收集上市公司财报拆解、经营质量、风险信号和后续跟踪指标。',
+  半导体: '这里收集半导体公司、产业链景气度、AI 终端和国产替代相关研究。',
+  投资研究: '这里收集投资框架、公司研究、财务分析和长期跟踪方法。',
+  从零看懂股票: '这里收集股票入门系列文章，按概念、行情、财报、估值和投资判断逐步展开。',
+  内容创作: '这里收集内容生产流程、视频制作、写作系统和工具化经验。',
+  建站记录: '这里收集本站搭建、维护、设计和技术取舍记录。',
+};
+
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags)));
@@ -20,6 +30,7 @@ export async function getStaticPaths() {
 }
 
 const { tag, posts } = Astro.props;
+const tagDescription = TAG_DESCRIPTIONS[tag] ?? `这里收集和「${tag}」相关的文章、研究记录和后续更新。`;
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
   month: 'long',
@@ -27,13 +38,14 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
 });
 ---
 
-<BaseLayout title={`标签：${tag}`} description={`标签 ${tag} 下的文章。`} canonicalPath={`/tags/${tag}/`}>
+<BaseLayout title={`标签：${tag}`} description={tagDescription} canonicalPath={`/tags/${tag}/`}>
   <div class="page-grid">
     <div>
       <section class="hero">
         <p class="eyebrow">标签</p>
         <h1>#{tag}</h1>
-        <p class="lead">{posts.length} 篇文章</p>
+        <p class="lead">{tagDescription}</p>
+        <p class="post-meta">{posts.length} 篇文章</p>
       </section>
 
       <ul class="post-list">

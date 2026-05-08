@@ -52,6 +52,7 @@ function chartSeries(points: typeof data.us) {
 
 const usChart = chartSeries(data.us);
 const cnChart = chartSeries(data.cn);
+const latestSourceText = `美股至 ${data.latestUs?.date ?? '--'}，A股至 ${data.latestCn?.date ?? '--'}`;
 ---
 
 <BaseLayout title="恐慌指数" description="按 VIX、A股期权隐含波动率、PCR 和股指期货贴水压力构建 A 股与美股恐慌分数。" canonicalPath="/projects/fear-index/">
@@ -79,7 +80,7 @@ const cnChart = chartSeries(data.cn);
         <article>
           <span>更新时间</span>
           <strong>{data.updatedAt.split(' ')[0]}</strong>
-          <p>{data.updatedAt.split(' ')[1] ?? ''}</p>
+          <p>{data.updatedAt.split(' ')[1] ?? ''} · {latestSourceText}</p>
         </article>
       </section>
 
