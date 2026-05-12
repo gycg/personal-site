@@ -26,6 +26,18 @@ export type TargetAllocation = {
   feeRate: string;
 };
 
+export type IndustryPlanAllocation = {
+  category: string;
+  code: string;
+  name: string;
+  currentAmount: number;
+  action: string;
+  newCashBuy: number;
+  switchedCashBuy: number;
+  finalAmount: number;
+  finalWeight: number;
+};
+
 export const securities: Security[] = [
   {
     id: 'ai-intelligence',
@@ -48,9 +60,50 @@ export const securities: Security[] = [
     market: 'sh',
     note: '易方达中证创新药产业 ETF',
   },
+  {
+    id: 'brokerage-etf',
+    name: '券商ETF',
+    code: '512000',
+    market: 'sh',
+    note: '华宝中证全指证券公司 ETF',
+  },
+  {
+    id: 'bond-index-lof',
+    name: '中债LOF',
+    code: '161119',
+    market: 'sz',
+    note: '易方达中债新综指 LOF A',
+  },
 ];
 
 export const trades: Trade[] = [
+  {
+    executedAt: '2026-05-12 09:25:01',
+    securityId: 'brokerage-etf',
+    price: 0.524,
+    quantity: 40000,
+    amount: 20960.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-05-12 09:25:01',
+    securityId: 'innovative-medicine',
+    price: 0.668,
+    quantity: 45000,
+    amount: 30060.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-05-12 09:25:00',
+    securityId: 'bond-index-lof',
+    price: 1.777,
+    quantity: 23000,
+    amount: 40871.0,
+    fee: 6.13,
+    side: '买入',
+  },
   {
     executedAt: '2026-04-21 14:24:27',
     securityId: 'ai-intelligence',
@@ -113,8 +166,8 @@ export const targetAllocations: TargetAllocation[] = [
     market: 'sh',
     code: '510300',
     name: '沪深300ETF华泰柏瑞',
-    amount: 120000,
-    weight: 0.12,
+    amount: 100000,
+    weight: 0.1,
     feeRate: '0.15% + 0.05%',
   },
   {
@@ -172,6 +225,15 @@ export const targetAllocations: TargetAllocation[] = [
     feeRate: '0.50% + 0.10%',
   },
   {
+    category: '中国红利',
+    market: 'sh',
+    code: '515080',
+    name: '招商中证红利ETF',
+    amount: 50000,
+    weight: 0.05,
+    feeRate: '0.20% + 0.10%',
+  },
+  {
     category: '黄金',
     market: 'sh',
     code: '518880',
@@ -185,8 +247,8 @@ export const targetAllocations: TargetAllocation[] = [
     market: 'sh',
     code: '520830',
     name: '沙特ETF华泰柏瑞',
-    amount: 25000,
-    weight: 0.025,
+    amount: 20000,
+    weight: 0.02,
     feeRate: '0.50% + 0.10%',
   },
   {
@@ -194,9 +256,78 @@ export const targetAllocations: TargetAllocation[] = [
     market: 'sz',
     code: '161119',
     name: '易方达中债新综指LOF A',
-    amount: 225000,
-    weight: 0.225,
+    amount: 200000,
+    weight: 0.2,
     feeRate: '0.15% + 0.05%',
+  },
+];
+
+export const industryPlanAllocations: IndustryPlanAllocation[] = [
+  {
+    category: '通信/AI算力',
+    code: '515880',
+    name: '通信ETF国泰',
+    currentAmount: 0,
+    action: '新买',
+    newCashBuy: 35000,
+    switchedCashBuy: 0,
+    finalAmount: 35000,
+    finalWeight: 0.175,
+  },
+  {
+    category: '科创芯片',
+    code: '588200',
+    name: '科创芯片ETF嘉实',
+    currentAmount: 0,
+    action: '新买',
+    newCashBuy: 35000,
+    switchedCashBuy: 0,
+    finalAmount: 35000,
+    finalWeight: 0.175,
+  },
+  {
+    category: '创新药',
+    code: '516080',
+    name: '创新药ETF易方达',
+    currentAmount: 10000,
+    action: '保留并加仓',
+    newCashBuy: 30000,
+    switchedCashBuy: 0,
+    finalAmount: 40000,
+    finalWeight: 0.2,
+  },
+  {
+    category: '电网设备',
+    code: '159320',
+    name: '电网设备ETF广发',
+    currentAmount: 10000,
+    action: '保留并加仓',
+    newCashBuy: 30000,
+    switchedCashBuy: 0,
+    finalAmount: 40000,
+    finalWeight: 0.2,
+  },
+  {
+    category: '券商',
+    code: '512000',
+    name: '券商ETF华宝 或同类券商ETF',
+    currentAmount: 0,
+    action: '新买',
+    newCashBuy: 40000,
+    switchedCashBuy: 0,
+    finalAmount: 40000,
+    finalWeight: 0.2,
+  },
+  {
+    category: 'AI软件/应用',
+    code: '159819',
+    name: '人工智能ETF易方达',
+    currentAmount: 10000,
+    action: '保留不加仓',
+    newCashBuy: 0,
+    switchedCashBuy: 0,
+    finalAmount: 10000,
+    finalWeight: 0.05,
   },
 ];
 

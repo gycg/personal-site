@@ -7,6 +7,7 @@ import {
   getEastmoneySecid,
   getSecurityById,
   getQuoteSymbol,
+  industryPlanAllocations,
   securities,
   targetAllocations,
   trades,
@@ -18,11 +19,18 @@ const displayTrades = [...trades].sort((a, b) => b.executedAt.localeCompare(a.ex
 const chronologicalTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
 const eastmoneySecids = securities.map(getEastmoneySecid);
 const tencentSymbols = securities.map(getQuoteSymbol);
-const maxPositionCost = Math.max(...positions.map((position) => position.cost), 1);
-const maxPositionQuantity = Math.max(...positions.map((position) => position.quantity), 1);
 const maxTradeAmount = Math.max(...trades.map((trade) => trade.amount + trade.fee), 1);
 const firstTradeDate = chronologicalTrades[0]?.executedAt.slice(0, 10).replaceAll('-', '') ?? '20260416';
 const targetTotalAmount = targetAllocations.reduce((sum, item) => sum + (item.amount ?? 0), 0);
+const industryPlanTotals = industryPlanAllocations.reduce(
+  (totals, item) => ({
+    currentAmount: totals.currentAmount + item.currentAmount,
+    newCashBuy: totals.newCashBuy + item.newCashBuy,
+    switchedCashBuy: totals.switchedCashBuy + item.switchedCashBuy,
+    finalAmount: totals.finalAmount + item.finalAmount,
+  }),
+  { currentAmount: 0, newCashBuy: 0, switchedCashBuy: 0, finalAmount: 0 },
+);
 const targetAllocationGroups = [...targetAllocations.reduce((groups, item) => {
   const group = groups.get(item.category) ?? {
     category: item.category,
@@ -276,6 +284,21 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
     })
     .join(' / ');
 };
+const targetAllocationMarkdown = [
+  '| 类别 | 场内基金 | 买入金额 | 占比 | 费率 |',
+  '| --- | --- | ---: | ---: | --- |',
+  ...targetAllocationGroups.map((group) => (
+    `| ${group.category} | ${group.funds.map((fund) => `**${fund.code} ${fund.name}**`).join('<br>')} | ${formatCurrency.format(group.amount)} | ${formatPercent.format(group.weight)} | ${group.funds.map((fund) => fund.feeRate).join('<br>')} |`
+  )),
+  `| **合计** |  | ${formatCurrency.format(targetTotalAmount)} | ${formatPercent.format(1)} |  |`,
+].join('\n');
+const industryPlanMarkdown = [
+  '| 类别 | 基金代码/名称 | 当前已有 | 操作 | 新增资金买入 | 最终持仓金额 | 最终占行业仓比例 |',
+  '| --- | --- | ---: | --- | ---: | ---: | ---: |',
+  ...industryPlanAllocations.map((item) => (
+    `| ${item.category} | **${item.code} ${item.name}** | ${formatCurrency.format(item.currentAmount)} | ${item.action} | ${formatCurrency.format(item.newCashBuy)} | ${formatCurrency.format(item.finalAmount)} | ${formatPercent.format(item.finalWeight)} |`
+  )),
+].join('\n');
 ---
 
 <BaseLayout title="我的持仓（模拟）" description="公开记录模拟持仓、交易明细、持仓成本和实时估算盈亏。" canonicalPath="/projects/holdings/">
@@ -321,8 +344,20 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
 
       <section class="content-section" aria-labelledby="target-allocation-title">
         <div class="section-head">
-          <h2 id="target-allocation-title">目标投资结构</h2>
-          <p>以 100 万目标组合为基准，用来对照后续买入和调仓进度。</p>
+          <div>
+            <h2 id="target-allocation-title">目标投资结构</h2>
+            <p>上方是 100 万基础目标组合，下方加入最终 20 万行业仓计划，用来对照后续买入和调仓进度。</p>
+          </div>
+          <button
+            class="copy-table-button"
+            type="button"
+            data-copy-table
+            data-copy-value={targetAllocationMarkdown}
+            data-copy-success="已复制目标投资结构表格。"
+            data-copy-status-id="target-allocation-copy-status"
+          >
+            复制表格
+          </button>
         </div>
 
         <div class="target-allocation-panel">
@@ -382,6 +417,68 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
               </tbody>
             </table>
           </div>
+          <p class="copy-table-status" id="target-allocation-copy-status" aria-live="polite"></p>
+        </div>
+
+        <div class="target-plan-block" id="industry-plan-title">
+          <div class="section-head">
+            <div>
+              <h3>行业仓加仓计划</h3>
+              <p>目标投资结构中行业仓最终为 {formatCurrency.format(industryPlanTotals.finalAmount)}；新增现金 {formatCurrency.format(industryPlanTotals.newCashBuy)}，现有人工智能 ETF 保留不加仓。</p>
+            </div>
+            <button
+              class="copy-table-button"
+              type="button"
+              data-copy-table
+              data-copy-value={industryPlanMarkdown}
+              data-copy-success="已复制计划持仓表格。"
+              data-copy-status-id="industry-plan-copy-status"
+            >
+              复制表格
+            </button>
+          </div>
+
+          <div class="holding-table-wrap" data-scroll-hint="横向滑动查看完整计划">
+            <table class="holding-table is-plan">
+              <thead>
+                <tr>
+                  <th>类别</th>
+                  <th>基金代码/名称</th>
+                  <th>当前已有</th>
+                  <th>操作</th>
+                  <th>新增资金买入</th>
+                  <th>最终持仓金额</th>
+                  <th>最终占行业仓比例</th>
+                </tr>
+              </thead>
+              <tbody>
+                {industryPlanAllocations.map((item) => (
+                  <tr class:list={[item.finalAmount === 0 && 'is-exit-plan']}>
+                    <td><strong>{item.category}</strong></td>
+                    <td>
+                      <strong>{item.code}</strong>
+                      <span>{item.name}</span>
+                    </td>
+                    <td>{formatCurrency.format(item.currentAmount)}</td>
+                    <td>{item.action}</td>
+                    <td>{formatCurrency.format(item.newCashBuy)}</td>
+                    <td><strong>{formatCurrency.format(item.finalAmount)}</strong></td>
+                    <td>{formatPercent.format(item.finalWeight)}</td>
+                  </tr>
+                ))}
+                <tr class="is-total">
+                  <td><strong>合计</strong></td>
+                  <td></td>
+                  <td>{formatCurrency.format(industryPlanTotals.currentAmount)}</td>
+                  <td></td>
+                  <td>{formatCurrency.format(industryPlanTotals.newCashBuy)}</td>
+                  <td><strong>{formatCurrency.format(industryPlanTotals.finalAmount)}</strong></td>
+                  <td>{formatPercent.format(1)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="copy-table-status" id="industry-plan-copy-status" aria-live="polite"></p>
         </div>
       </section>
 
@@ -410,8 +507,6 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
           <div class="position-chart-grid">
             {positions.map((position) => {
               const costShare = summary.totalCost > 0 ? position.cost / summary.totalCost : 0;
-              const costWidth = (position.cost / maxPositionCost) * 100;
-              const quantityWidth = (position.quantity / maxPositionQuantity) * 100;
               return (
                 <article class="position-visual-card" data-position-visual data-symbol={position.quoteSymbol}>
                   <div class="position-visual-head">
@@ -422,24 +517,15 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
                     <strong>{formatPercent.format(costShare)}</strong>
                   </div>
 
-                  <div class="position-bars">
-                    <div class="position-bar-row">
-                      <span>成本</span>
-                      <div class="position-bar-track">
-                        <i style={`--bar: ${costWidth}%;`}></i>
-                      </div>
-                      <strong>{formatCurrency.format(position.cost)}</strong>
-                    </div>
-                    <div class="position-bar-row">
-                      <span>份额</span>
-                      <div class="position-bar-track is-muted">
-                        <i style={`--bar: ${quantityWidth}%;`}></i>
-                      </div>
-                      <strong>{formatNumber.format(position.quantity)}</strong>
-                    </div>
-                  </div>
-
                   <dl class="position-visual-stats">
+                    <div>
+                      <dt>成本</dt>
+                      <dd>{formatCurrency.format(position.cost)}</dd>
+                    </div>
+                    <div>
+                      <dt>份额</dt>
+                      <dd>{formatNumber.format(position.quantity)}</dd>
+                    </div>
                     <div>
                       <dt>成本价</dt>
                       <dd>{formatPrice.format(position.cost / position.quantity)}</dd>
@@ -647,6 +733,7 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
           title: '入口',
           items: [
             { label: '项目页', href: '/projects/' },
+            { label: '行业仓加仓计划', href: '#industry-plan-title' },
             { label: '目标投资结构', href: '#target-allocation-title' },
             { label: '每日持仓日历', href: '#daily-calendar-title' },
             { label: '全部文章', href: '/posts/' },
@@ -658,6 +745,39 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
   </div>
 
 <script define:vars={{ positions, summary, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
+  const copyTableButtons = document.querySelectorAll('[data-copy-table]');
+  const copyPlainText = async (value) => {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const input = document.createElement('textarea');
+    input.value = value;
+    input.setAttribute('readonly', '');
+    input.style.position = 'fixed';
+    input.style.opacity = '0';
+    document.body.append(input);
+    input.select();
+    document.execCommand('copy');
+    input.remove();
+  };
+
+  copyTableButtons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      const copyTableStatus = button.dataset.copyStatusId
+        ? document.getElementById(button.dataset.copyStatusId)
+        : null;
+
+      try {
+        await copyPlainText(button.dataset.copyValue || '');
+        if (copyTableStatus) copyTableStatus.textContent = button.dataset.copySuccess || '已复制表格。';
+      } catch {
+        if (copyTableStatus) copyTableStatus.textContent = '复制失败，可以手动选中表格内容。';
+      }
+    });
+  });
+
   const calendarRoot = document.querySelector('[data-calendar-root]');
   if (calendarRoot) {
     const months = Array.from(calendarRoot.querySelectorAll('[data-calendar-month]'));
