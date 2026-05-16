@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import BackToTop from '../components/BackToTop.astro';
 import { DEFAULT_OG_IMAGE, MAIN_NAV_ITEMS, SITE_AUTHOR, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
   title?: string;
@@ -82,6 +83,7 @@ function isActiveNav(href: string) {
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImageUrl} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <Analytics />
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到正文</a>
