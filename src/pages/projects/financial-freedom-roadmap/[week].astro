@@ -1,0 +1,127 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageSidebar from '../../../components/PageSidebar.astro';
+import { weeklyProgressTemplates } from '../../../data/financial-freedom-plan';
+
+export function getStaticPaths() {
+  return weeklyProgressTemplates.map((template) => ({
+    params: { week: `week-${template.week}` },
+    props: { template },
+  }));
+}
+
+const { template } = Astro.props;
+---
+
+<BaseLayout title={template.title} description={`${template.title}的准备动作、阅读材料、产出清单和进展模板。`} canonicalPath={`/projects/financial-freedom-roadmap/week-${template.week}/`}>
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">Weekly Output</p>
+        <h1>{template.title}</h1>
+        <p class="lead">{template.objective}</p>
+      </section>
+
+      <section class="roadmap-progress-layout" aria-labelledby="preparation-title">
+        <article class="roadmap-progress-panel">
+          <h2 id="preparation-title">应该如何准备</h2>
+          <ul>
+            {template.preparation.map((item) => <li>{item}</li>)}
+          </ul>
+        </article>
+
+        <article class="roadmap-progress-panel">
+          <h2>阅读材料</h2>
+          <ul>
+            {template.reading.map((item) => <li>{item}</li>)}
+          </ul>
+        </article>
+
+        <article class="roadmap-progress-panel">
+          <h2>本周要列出的清单</h2>
+          <ul>
+            {template.listsToCreate.map((item) => <li>{item}</li>)}
+          </ul>
+        </article>
+
+        <article class="roadmap-progress-panel">
+          <h2>本周交付物</h2>
+          <ul>
+            {template.deliverables.map((item) => <li>{item}</li>)}
+          </ul>
+        </article>
+      </section>
+
+      <section class="content-section" aria-labelledby="reflection-title">
+        <div class="section-head">
+          <h2 id="reflection-title">复盘问题</h2>
+        </div>
+        <div class="roadmap-question-list">
+          {template.reflectionQuestions.map((item, index) => (
+            <article>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <p>{item}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="progress-template-title">
+        <div class="section-head">
+          <h2 id="progress-template-title">进展记录模板</h2>
+          <button class="copy-table-button" type="button" data-copy-week-template={template.template}>复制模板</button>
+        </div>
+        <article class="roadmap-template-card is-wide">
+          <pre><code>{template.template}</code></pre>
+        </article>
+        <p class="copy-table-status" data-week-template-status aria-live="polite"></p>
+      </section>
+    </div>
+
+    <PageSidebar
+      title={`第 ${template.week} 周`}
+      intro="每周页面用于记录实际进展。先复制模板，后续可以把完成内容沉淀成文章、项目记录或数据表。"
+      sections={[
+        {
+          title: '返回',
+          items: [
+            { label: '财务自由执行路线', href: '/projects/financial-freedom-roadmap/#weekly-output-title' },
+            { label: '阅读原文', href: '/posts/financial-freedom-investing-roadmap/' },
+            { label: '项目页', href: '/projects/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+
+  <script>
+    const button = document.querySelector('[data-copy-week-template]');
+    const status = document.querySelector('[data-week-template-status]');
+
+    const copyPlainText = async (value) => {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+        return;
+      }
+
+      const input = document.createElement('textarea');
+      input.value = value;
+      input.setAttribute('readonly', '');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.append(input);
+      input.select();
+      document.execCommand('copy');
+      input.remove();
+    };
+
+    button?.addEventListener('click', async () => {
+      try {
+        await copyPlainText(button.dataset.copyWeekTemplate || '');
+        if (status) status.textContent = '进展模板已复制。';
+      } catch {
+        if (status) status.textContent = '复制失败，可以手动选中模板内容。';
+      }
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,238 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+import { monthlyReviewFields, planPhases, riskRules, weeklyMilestones, weeklyTasks } from '../../data/financial-freedom-plan';
+
+const monthlyTemplate = monthlyReviewFields.map((field) => `${field}：`).join('\n');
+const tradeTemplate = `买入标的：
+买入日期：
+买入价格：
+仓位：
+买入理由：
+核心假设：
+我可能错在哪里：
+失效条件：
+目标持有周期：
+对应基准：`;
+const ipsTemplate = `当前可投资资产：
+每年可新增储蓄：
+5 年目标资产：
+财务自由年支出：
+可接受最大回撤：
+投资市场：
+禁止事项：
+投资基准：`;
+---
+
+<BaseLayout title="财务自由执行路线" description="把财务自由投资路线拆成阶段、产出物、风控规则和复盘模板。" canonicalPath="/projects/financial-freedom-roadmap/">
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">Execution Roadmap</p>
+        <h1>财务自由执行路线</h1>
+        <p class="lead">把“普通人想靠投资实现财务自由”的文章整理成可执行项目：先用 12–24 个月验证 edge，再决定是否放大主动仓。</p>
+      </section>
+
+      <section class="roadmap-summary" aria-label="执行路线总览">
+        <article>
+          <span>主线</span>
+          <strong>收入和储蓄率是发动机</strong>
+          <p>本金增长来自收入、储蓄和持续复盘，不把财务自由押在单一年化收益率上。</p>
+        </article>
+        <article>
+          <span>底盘</span>
+          <strong>核心仓负责长期复利</strong>
+          <p>70%-90% 核心仓放在宽基、全球配置、低成本 ETF、现金或短债里。</p>
+        </article>
+        <article>
+          <span>验证</span>
+          <strong>主动仓先证明 edge</strong>
+          <p>10%-30% 主动仓用于选股、行业轮动、量化策略或事件驱动的真实验证。</p>
+        </article>
+      </section>
+
+      <section class="content-section" aria-labelledby="phase-title">
+        <div class="section-head">
+          <h2 id="phase-title">阶段路线</h2>
+          <a href="/posts/financial-freedom-investing-roadmap/">阅读原文</a>
+        </div>
+
+        <div class="roadmap-phase-grid">
+          {planPhases.map((phase, index) => (
+            <article class="roadmap-phase-card" id={phase.id}>
+              <div class="roadmap-phase-head">
+                <span>{phase.label}</span>
+                <strong>{String(index + 1).padStart(2, '0')}</strong>
+              </div>
+              <h3>{phase.title}</h3>
+              <p class="roadmap-period">{phase.period}</p>
+              <p>{phase.objective}</p>
+
+              <div class="roadmap-phase-columns">
+                <div>
+                  <h4>产出物</h4>
+                  <ul>
+                    {phase.outputs.map((item) => <li>{item}</li>)}
+                  </ul>
+                </div>
+                <div>
+                  <h4>完成标准</h4>
+                  <ul>
+                    {phase.checks.map((item) => <li>{item}</li>)}
+                  </ul>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="weekly-output-title">
+        <div class="section-head">
+          <div>
+            <h2 id="weekly-output-title">每周产出档案</h2>
+            <p>先放 24 周占位；后续每周把实际进展、产出链接和复盘补到这里。</p>
+          </div>
+        </div>
+
+        <div class="roadmap-week-grid">
+          {weeklyMilestones.map((week) => (
+            <article class="roadmap-week-card" id={`week-${week.week}`}>
+              <div class="roadmap-week-head">
+                <span>{week.period}</span>
+                <strong>{week.phase}</strong>
+              </div>
+              <h3>{week.focus}</h3>
+              <div>
+                <h4>本周应该产出</h4>
+                <ul>
+                  {week.expectedOutputs.map((item) => <li>{item}</li>)}
+                </ul>
+              </div>
+              <div class="roadmap-week-progress">
+                <span>本周进展</span>
+                <p>{week.progress}</p>
+                {week.artifactHref && <a href={week.artifactHref}>查看进展模板</a>}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="templates-title">
+        <div class="section-head">
+          <h2 id="templates-title">执行模板</h2>
+        </div>
+
+        <div class="roadmap-template-grid">
+          <article class="roadmap-template-card">
+            <div class="roadmap-template-head">
+              <h3>IPS 模板</h3>
+              <button class="copy-table-button" type="button" data-copy-roadmap={ipsTemplate}>复制</button>
+            </div>
+            <pre><code>{ipsTemplate}</code></pre>
+          </article>
+          <article class="roadmap-template-card">
+            <div class="roadmap-template-head">
+              <h3>交易前置理由</h3>
+              <button class="copy-table-button" type="button" data-copy-roadmap={tradeTemplate}>复制</button>
+            </div>
+            <pre><code>{tradeTemplate}</code></pre>
+          </article>
+          <article class="roadmap-template-card">
+            <div class="roadmap-template-head">
+              <h3>月度复盘</h3>
+              <button class="copy-table-button" type="button" data-copy-roadmap={monthlyTemplate}>复制</button>
+            </div>
+            <pre><code>{monthlyTemplate}</code></pre>
+          </article>
+        </div>
+        <p class="copy-table-status" data-roadmap-copy-status aria-live="polite"></p>
+      </section>
+
+      <section class="content-section" aria-labelledby="execution-title">
+        <div class="section-head">
+          <h2 id="execution-title">周/月执行表</h2>
+        </div>
+
+        <div class="roadmap-table-grid">
+          <div class="holding-table-wrap">
+            <table class="holding-table is-compact">
+              <thead>
+                <tr>
+                  <th>频率</th>
+                  <th>任务</th>
+                </tr>
+              </thead>
+              <tbody>
+                {weeklyTasks.map((item) => (
+                  <tr>
+                    <td><strong>{item.cadence}</strong></td>
+                    <td>{item.task}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <article class="roadmap-rule-panel">
+            <h3>硬性风控规则</h3>
+            <ol>
+              {riskRules.map((rule) => <li>{rule}</li>)}
+            </ol>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <PageSidebar
+      title="财务自由路线"
+      intro="这个项目页不是收益承诺，而是把投资学习、主动仓验证和风控复盘变成可执行流程。"
+      sections={[
+        {
+          title: '执行入口',
+          items: [
+            { label: '项目页', href: '/projects/' },
+            { label: '阶段路线', href: '#phase-title' },
+            { label: '每周产出档案', href: '#weekly-output-title' },
+            { label: '执行模板', href: '#templates-title' },
+            { label: '周/月执行表', href: '#execution-title' },
+            { label: '阅读原文', href: '/posts/financial-freedom-investing-roadmap/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('[data-copy-roadmap]');
+    const status = document.querySelector('[data-roadmap-copy-status]');
+
+    const copyPlainText = async (value) => {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+        return;
+      }
+
+      const input = document.createElement('textarea');
+      input.value = value;
+      input.setAttribute('readonly', '');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.append(input);
+      input.select();
+      document.execCommand('copy');
+      input.remove();
+    };
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        try {
+          await copyPlainText(button.dataset.copyRoadmap || '');
+          if (status) status.textContent = '模板已复制。';
+        } catch {
+          if (status) status.textContent = '复制失败，可以手动选中模板内容。';
+        }
+      });
+    });
+  </script>
+</BaseLayout>

@@ -1346,6 +1346,523 @@ p {
   line-height: 1.55;
 }
 
+.valuation-board {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.valuation-status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 12px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-align: right;
+}
+
+.valuation-status span {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.valuation-status time {
+  font-variant-numeric: tabular-nums;
+}
+
+.valuation-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.valuation-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+}
+
+.valuation-actions .copy-table-status {
+  min-height: 0;
+  margin: 0;
+}
+
+.valuation-sort {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.valuation-sort span {
+  margin-right: 2px;
+  font-weight: 700;
+}
+
+.valuation-sort button {
+  min-height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: oklch(0.993 0.005 150 / 0.82);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.valuation-sort button:hover,
+.valuation-sort button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.valuation-card {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, oklch(0.995 0.006 150 / 0.88), oklch(0.982 0.012 86 / 0.72));
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+.valuation-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.valuation-card-head p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.valuation-card-head h2 {
+  margin: 0;
+  color: var(--text);
+  font-family:
+    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.advice-pill,
+.advice-text {
+  font-family:
+    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+}
+
+.advice-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.advice-pill.is-sell,
+.advice-text.is-sell {
+  color: oklch(0.45 0.12 28);
+}
+
+.advice-pill.is-buy,
+.advice-text.is-buy {
+  color: oklch(0.38 0.11 145);
+}
+
+.advice-pill.is-hold,
+.advice-text.is-hold {
+  color: oklch(0.43 0.1 78);
+}
+
+.valuation-price-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.valuation-price-row div,
+.valuation-advice-grid div,
+.valuation-detail-grid div {
+  min-width: 0;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+}
+
+.valuation-price-row span,
+.valuation-advice-grid dt,
+.valuation-detail-grid dt {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.valuation-price-row strong,
+.valuation-advice-grid dd {
+  display: block;
+  margin: 6px 0 0;
+  color: var(--text);
+  font-family:
+    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+  font-size: clamp(1.05rem, 2vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.16;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.valuation-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.valuation-detail-grid div:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+.valuation-detail-grid dd {
+  margin: 6px 0 0;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.valuation-gap-meter {
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--border) 72%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--accent-soft) 72%, var(--surface));
+}
+
+.valuation-gap-meter span {
+  display: block;
+  width: var(--gap);
+  height: 100%;
+  border-radius: inherit;
+  background: oklch(0.45 0.12 28);
+}
+
+.valuation-advice-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.valuation-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.roadmap-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 44px;
+}
+
+.roadmap-summary article,
+.roadmap-phase-card,
+.roadmap-week-card,
+.roadmap-template-card,
+.roadmap-rule-panel {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: oklch(0.993 0.005 150 / 0.76);
+  box-shadow: var(--shadow);
+}
+
+.roadmap-summary article {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+}
+
+.roadmap-summary span,
+.roadmap-period,
+.roadmap-phase-head span,
+.roadmap-template-card h3,
+.roadmap-rule-panel h3 {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.roadmap-summary strong {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.roadmap-summary p,
+.roadmap-phase-card p,
+.roadmap-phase-card li,
+.roadmap-rule-panel li {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.62;
+}
+
+.roadmap-phase-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.roadmap-phase-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.roadmap-phase-head,
+.roadmap-week-head,
+.roadmap-template-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.roadmap-phase-head strong {
+  color: var(--accent-strong);
+  font-family:
+    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+  font-size: 1.4rem;
+}
+
+.roadmap-week-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.roadmap-week-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.roadmap-week-head span,
+.roadmap-week-progress span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.roadmap-week-head strong {
+  color: var(--accent-strong);
+  font-size: 0.86rem;
+}
+
+.roadmap-week-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.roadmap-week-card h4 {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.roadmap-week-card ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.roadmap-week-card li,
+.roadmap-week-progress p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.roadmap-week-progress {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+}
+
+.roadmap-week-progress a {
+  color: var(--accent-strong);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.roadmap-progress-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 44px;
+}
+
+.roadmap-progress-panel,
+.roadmap-question-list article {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: oklch(0.993 0.005 150 / 0.76);
+  box-shadow: var(--shadow);
+}
+
+.roadmap-progress-panel {
+  padding: 20px;
+}
+
+.roadmap-progress-panel h2 {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-size: 1.15rem;
+}
+
+.roadmap-progress-panel ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.roadmap-progress-panel li {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.roadmap-question-list {
+  display: grid;
+  gap: 10px;
+}
+
+.roadmap-question-list article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+}
+
+.roadmap-question-list span {
+  color: var(--accent-strong);
+  font-family:
+    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+  font-weight: 800;
+}
+
+.roadmap-question-list p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.65;
+}
+
+.roadmap-template-card.is-wide {
+  padding: 18px;
+}
+
+.roadmap-phase-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.35rem;
+}
+
+.roadmap-phase-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.roadmap-phase-columns div {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+}
+
+.roadmap-phase-columns h4 {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.roadmap-phase-columns ul,
+.roadmap-rule-panel ol {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.roadmap-template-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.roadmap-template-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.roadmap-template-card h3,
+.roadmap-rule-panel h3 {
+  margin: 0;
+}
+
+.roadmap-template-card pre {
+  min-width: 0;
+  margin: 0;
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 14px;
+  color: var(--text);
+  font-size: 0.84rem;
+  line-height: 1.65;
+}
+
+.roadmap-table-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.roadmap-rule-panel {
+  padding: 18px;
+}
+
+.roadmap-rule-panel ol {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
 .holding-visual-panel {
   display: grid;
   gap: 18px;
@@ -2827,6 +3344,15 @@ p {
   .fear-summary,
   .fear-component-grid,
   .holding-metric-grid,
+  .valuation-price-row,
+  .valuation-advice-grid,
+  .valuation-detail-grid,
+  .roadmap-summary,
+  .roadmap-phase-columns,
+  .roadmap-week-grid,
+  .roadmap-progress-layout,
+  .roadmap-template-grid,
+  .roadmap-table-grid,
   .position-chart-grid,
   .qr-grid,
   .post-navigation {
@@ -2928,6 +3454,19 @@ p {
     align-items: flex-start;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .valuation-status {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .valuation-card {
+    padding: 18px 16px;
+  }
+
+  .valuation-card-head {
+    flex-direction: column;
   }
 
   .holding-table-wrap[data-scroll-hint]::before {

@@ -304,12 +304,17 @@ async function fetchFearIndexData(): Promise<FearIndexData> {
   const tencentStart = formatDate(start);
 
   const [vix, sp500, hs300, optbbs, ifFuture] = await Promise.all([
-    fetchFredSeries('VIXCLS').catch(() => []),
-    fetchFredSeries('SP500').catch(() => []),
-    fetchTencentKlines('sh000300', tencentStart).catch(() => []),
-    fetchOptbbsIvSeries().catch(() => []),
+    fetchFredSeries('VIXCLS'),
+    fetchFredSeries('SP500'),
+    fetchTencentKlines('sh000300', tencentStart),
+    fetchOptbbsIvSeries(),
     fetchIfMainFuture().catch(() => []),
   ]);
+
+  if (!vix.length) throw new Error('FRED VIXCLS returned no data');
+  if (!sp500.length) throw new Error('FRED SP500 returned no data');
+  if (!hs300.length) throw new Error('Tencent HS300 returned no data');
+  if (!optbbs.length) throw new Error('OptBBS IV returned no data');
 
   const sp500ByDate = byDate(sp500);
   const hs300ByDate = byDate(hs300);

@@ -1,0 +1,350 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+import { usValuations } from '../../data/us-valuations';
+
+const formatPercent = new Intl.NumberFormat('zh-CN', {
+  style: 'percent',
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+const getMoneyFormatter = (currency: 'USD') => new Intl.NumberFormat('zh-CN', {
+  style: 'currency',
+  currency,
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 3,
+});
+const getGap = (price: number, intrinsicValue: number) => (price / intrinsicValue) - 1;
+const getGapLabel = (gap: number) => `${gap >= 0 ? '高估' : '低估'} ${formatPercent.format(Math.abs(gap))}`;
+const getAdviceClass = (advice: string) => `is-${advice.toLowerCase()}`;
+---
+
+<BaseLayout title="美股内在价值" description="跟踪美股公司的内在价值、实时股价、估值差值和持有建议。" canonicalPath="/projects/us-valuation/">
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">US Equity Valuation</p>
+        <h1>美股内在价值</h1>
+        <p class="lead">把你给出的每股内在价值作为唯一估值基准，页面尝试读取实时行情，并自动计算当前价格相对内在价值的高估或低估幅度。</p>
+      </section>
+
+      <section class="valuation-board" aria-labelledby="valuation-summary-title" data-us-valuation-root>
+        <div class="section-head">
+          <div>
+            <h2 id="valuation-summary-title">估值看板</h2>
+            <p>行情由本站同源 JSON 提供，生成时抓取公开行情；建议和置信度只使用你提供的结论。</p>
+          </div>
+          <div class="valuation-status">
+            <span data-quote-status>正在获取美股行情...</span>
+            <time data-quote-time datetime="">--</time>
+          </div>
+        </div>
+
+        <div class="valuation-actions">
+          <button class="copy-table-button" type="button" data-copy-valuations>复制全部 Markdown</button>
+          <p class="copy-table-status" data-copy-valuations-status aria-live="polite"></p>
+        </div>
+
+        <div class="valuation-grid">
+          {usValuations.map((item) => {
+            const gap = getGap(item.fallbackPrice, item.intrinsicValue);
+            const moneyFormatter = getMoneyFormatter(item.currency);
+            return (
+              <article
+                class="valuation-card"
+                data-valuation-card
+                data-original-index={usValuations.indexOf(item)}
+                data-symbol={item.symbol}
+                data-display-symbol={item.displaySymbol ?? item.symbol}
+                data-company={item.company}
+                data-currency={item.currency}
+                data-intrinsic-value={item.intrinsicValue}
+                data-fair-value-range={item.fairValueRange}
+                data-range-status={item.rangeStatus}
+                data-fallback-price={item.fallbackPrice}
+                data-gap={gap}
+                data-advice-one-month={item.advice.oneMonth}
+                data-advice-three-months={item.advice.threeMonths}
+                data-advice-one-year={item.advice.oneYear}
+                data-advice-overall={item.advice.overall}
+                data-thesis={item.thesis}
+                data-key-risk={item.keyRisk}
+                data-tracking-metrics={item.trackingMetrics}
+                data-data-quality={item.dataQuality}
+                data-confidence={item.confidence}
+              >
+                <div class="valuation-card-head">
+                  <div>
+                    <p>{item.company}</p>
+                    <h2>{item.displaySymbol ?? item.symbol}</h2>
+                  </div>
+                  <span class:list={['advice-pill', getAdviceClass(item.advice.overall)]}>{item.advice.overall}</span>
+                </div>
+
+                <div class="valuation-price-row">
+                  <div>
+                    <span>当前股价</span>
+                    <strong data-live-price>{moneyFormatter.format(item.fallbackPrice)}</strong>
+                  </div>
+                  <div>
+                    <span>唯一基准每股内在价值</span>
+                    <strong data-intrinsic-label>{moneyFormatter.format(item.intrinsicValue)}</strong>
+                  </div>
+                  <div>
+                    <span>合理估值区间</span>
+                    <strong>{item.fairValueRange}</strong>
+                  </div>
+                  <div>
+                    <span>相对内在价值</span>
+                    <strong data-valuation-gap>{getGapLabel(gap)}</strong>
+                  </div>
+                  <div>
+                    <span>是否处于合理区间</span>
+                    <strong>{item.rangeStatus}</strong>
+                  </div>
+                </div>
+
+                <div class="valuation-gap-meter" aria-hidden="true">
+                  <span data-gap-meter style={`--gap: ${Math.min(Math.abs(gap) * 18, 100)}%;`}></span>
+                </div>
+
+                <dl class="valuation-advice-grid">
+                  <div>
+                    <dt>未来 1 个月</dt>
+                    <dd class:list={['advice-text', getAdviceClass(item.advice.oneMonth)]}>{item.advice.oneMonth}</dd>
+                  </div>
+                  <div>
+                    <dt>未来 3 个月</dt>
+                    <dd class:list={['advice-text', getAdviceClass(item.advice.threeMonths)]}>{item.advice.threeMonths}</dd>
+                  </div>
+                  <div>
+                    <dt>未来 1 年</dt>
+                    <dd class:list={['advice-text', getAdviceClass(item.advice.oneYear)]}>{item.advice.oneYear}</dd>
+                  </div>
+                  <div>
+                    <dt>综合建议</dt>
+                    <dd class:list={['advice-text', getAdviceClass(item.advice.overall)]}>{item.advice.overall}</dd>
+                  </div>
+                  <div>
+                    <dt>数据质量</dt>
+                    <dd>{item.dataQuality}</dd>
+                  </div>
+                </dl>
+
+                <dl class="valuation-detail-grid">
+                  <div>
+                    <dt>主要理由</dt>
+                    <dd>{item.thesis}</dd>
+                  </div>
+                  <div>
+                    <dt>最大风险</dt>
+                    <dd>{item.keyRisk}</dd>
+                  </div>
+                  <div>
+                    <dt>最需要跟踪的指标</dt>
+                    <dd>{item.trackingMetrics}</dd>
+                  </div>
+                  <div>
+                    <dt>结论置信度</dt>
+                    <dd>{item.confidence}</dd>
+                  </div>
+                </dl>
+
+                <p class="valuation-note">录入日期：{item.updatedAt}。股价来自本站行情缓存，内在价值和建议来自手动录入。</p>
+              </article>
+            );
+          })}
+        </div>
+
+        <div class="valuation-sort" aria-label="估值排序">
+          <span>排序</span>
+          <button type="button" data-sort-valuation="overvalued" aria-pressed="true">高估优先</button>
+          <button type="button" data-sort-valuation="undervalued" aria-pressed="false">低估优先</button>
+          <button type="button" data-sort-valuation="original" aria-pressed="false">录入顺序</button>
+        </div>
+      </section>
+    </div>
+
+    <PageSidebar
+      title="美股内在价值"
+      intro="这里不是自动估值模型，只负责展示你给出的内在价值和建议，并用实时行情计算偏离幅度。"
+      sections={[
+        {
+          title: '入口',
+          items: [
+            { label: '项目页', href: '/projects/' },
+            { label: '估值看板', href: '#valuation-summary-title' },
+            { label: '我的持仓（模拟）', href: '/projects/holdings/' },
+            { label: '恐慌指数', href: '/projects/fear-index/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+
+  <script define:vars={{ usValuations }}>
+    const root = document.querySelector('[data-us-valuation-root]');
+    const cards = Array.from(document.querySelectorAll('[data-valuation-card]'));
+    const grid = root?.querySelector('.valuation-grid');
+    const sortButtons = Array.from(document.querySelectorAll('[data-sort-valuation]'));
+    const status = root?.querySelector('[data-quote-status]');
+    const quoteTime = root?.querySelector('[data-quote-time]');
+    const copyButton = document.querySelector('[data-copy-valuations]');
+    const copyStatus = document.querySelector('[data-copy-valuations-status]');
+    let activeSort = 'overvalued';
+
+    const getMoneyFormatter = (currency) => new Intl.NumberFormat('zh-CN', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 3,
+    });
+    const percent = new Intl.NumberFormat('zh-CN', {
+      style: 'percent',
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
+
+    const setStatus = (message) => {
+      if (status) status.textContent = message;
+      if (quoteTime) {
+        const now = new Date();
+        quoteTime.dateTime = now.toISOString();
+        quoteTime.textContent = now.toLocaleString('zh-CN', { hour12: false });
+      }
+    };
+
+    const getGapLabel = (price, intrinsicValue) => {
+      const gap = price / intrinsicValue - 1;
+      return `${gap >= 0 ? '高估' : '低估'} ${percent.format(Math.abs(gap))}`;
+    };
+
+    const renderQuote = (symbol, price) => {
+      const card = cards.find((item) => item.dataset.symbol === symbol);
+      if (!card || !Number.isFinite(price) || price <= 0) return false;
+
+      const intrinsicValue = Number(card.dataset.intrinsicValue);
+      const gap = price / intrinsicValue - 1;
+      const money = getMoneyFormatter(card.dataset.currency || 'USD');
+      card.dataset.gap = String(gap);
+      card.dataset.currentPrice = String(price);
+      card.querySelector('[data-live-price]').textContent = money.format(price);
+      card.querySelector('[data-valuation-gap]').textContent = getGapLabel(price, intrinsicValue);
+      card.querySelector('[data-gap-meter]').style.setProperty('--gap', `${Math.min(Math.abs(gap) * 18, 100)}%`);
+      return true;
+    };
+
+    cards.forEach((card) => {
+      card.dataset.currentPrice = card.dataset.fallbackPrice;
+    });
+
+    const sortCards = (mode = activeSort) => {
+      if (!grid) return;
+
+      activeSort = mode;
+      const sortedCards = [...cards].sort((a, b) => {
+        if (mode === 'original') {
+          return Number(a.dataset.originalIndex) - Number(b.dataset.originalIndex);
+        }
+
+        const gapA = Number(a.dataset.gap);
+        const gapB = Number(b.dataset.gap);
+        return mode === 'undervalued' ? gapA - gapB : gapB - gapA;
+      });
+
+      sortedCards.forEach((card) => grid.append(card));
+      sortButtons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.sortValuation === mode));
+      });
+    };
+
+    sortButtons.forEach((button) => {
+      button.addEventListener('click', () => sortCards(button.dataset.sortValuation));
+    });
+
+    const copyPlainText = async (value) => {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+        return;
+      }
+
+      const input = document.createElement('textarea');
+      input.value = value;
+      input.setAttribute('readonly', '');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.append(input);
+      input.select();
+      document.execCommand('copy');
+      input.remove();
+    };
+
+    const buildValuationMarkdown = () => {
+      const rows = [
+        '| 公司 | 股票代码 | 当前股价 | 合理估值区间 | 唯一基准每股内在价值 | 当前价格相对基准内在价值 | 当前价格是否处于合理估值区间 | 未来 1 个月唯一建议 | 未来 3 个月唯一建议 | 未来 1 年唯一建议 | 综合唯一建议 | 主要理由 | 最大风险 | 最需要跟踪的指标 | 数据质量 | 结论置信度 |',
+        '| --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+      ];
+
+      const orderedCards = grid ? Array.from(grid.querySelectorAll('[data-valuation-card]')) : cards;
+
+      for (const card of orderedCards) {
+        rows.push([
+          card.dataset.company,
+          card.dataset.displaySymbol,
+          card.querySelector('[data-live-price]')?.textContent?.trim(),
+          card.dataset.fairValueRange,
+          card.querySelector('[data-intrinsic-label]')?.textContent?.trim(),
+          card.querySelector('[data-valuation-gap]')?.textContent?.trim(),
+          card.dataset.rangeStatus,
+          card.dataset.adviceOneMonth,
+          card.dataset.adviceThreeMonths,
+          card.dataset.adviceOneYear,
+          card.dataset.adviceOverall,
+          card.dataset.thesis,
+          card.dataset.keyRisk,
+          card.dataset.trackingMetrics,
+          card.dataset.dataQuality,
+          card.dataset.confidence,
+        ].map((value) => value || '').join(' | ').replace(/^/, '| ').replace(/$/, ' |'));
+      }
+
+      return rows.join('\n');
+    };
+
+    copyButton?.addEventListener('click', async () => {
+      try {
+        await copyPlainText(buildValuationMarkdown());
+        if (copyStatus) copyStatus.textContent = '已复制全部估值数据。';
+      } catch {
+        if (copyStatus) copyStatus.textContent = '复制失败，可以手动选中页面内容。';
+      }
+    });
+
+    const refreshQuotes = async () => {
+      try {
+        const response = await fetch(`/projects/us-valuation/quotes.json?_=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`Quote cache failed: ${response.status}`);
+
+        const payload = await response.json();
+        let rendered = 0;
+        const sources = new Set();
+
+        for (const quote of payload.quotes ?? []) {
+          if (renderQuote(quote.symbol, Number(quote.price))) {
+            rendered += 1;
+            if (quote.source) sources.add(quote.source);
+          }
+        }
+
+        sortCards();
+        setStatus(rendered > 0 ? `已更新 ${rendered} 个美股行情（${[...sources].join(' / ') || '缓存'}）` : '行情缓存为空，使用录入股价');
+      } catch {
+        sortCards();
+        setStatus('行情缓存读取失败，使用录入股价');
+      }
+    };
+
+    refreshQuotes();
+  </script>
+</BaseLayout>

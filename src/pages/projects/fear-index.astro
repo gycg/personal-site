@@ -11,11 +11,25 @@ const formatDateLabel = (date: string) => date.slice(5);
 
 function chartSeries(points: typeof data.us) {
   const available = points.filter((point) => point.fear !== null || point.index !== null);
-  const fearValues = available.map((point) => point.fear).filter((value): value is number => value !== null);
+  if (!available.length) {
+    return {
+      count: 0,
+      start: '',
+      middle: '',
+      end: '',
+      fearLine: '',
+      indexLine: '',
+      minIndex: null,
+      maxIndex: null,
+      midIndex: null,
+    };
+  }
+
   const indexValues = available.map((point) => point.index).filter((value): value is number => value !== null);
-  const minIndex = Math.min(...indexValues);
-  const maxIndex = Math.max(...indexValues);
-  const indexRange = Math.max(maxIndex - minIndex, 1);
+  const minIndex = indexValues.length ? Math.min(...indexValues) : null;
+  const maxIndex = indexValues.length ? Math.max(...indexValues) : null;
+  const midIndex = minIndex === null || maxIndex === null ? null : (minIndex + maxIndex) / 2;
+  const indexRange = minIndex === null || maxIndex === null ? 1 : Math.max(maxIndex - minIndex, 1);
 
   const fearLine = available
     .map((point, index) => {
@@ -31,6 +45,7 @@ function chartSeries(points: typeof data.us) {
     .map((point, index) => {
       if (point.index === null) return null;
       const x = available.length <= 1 ? 0 : (index / (available.length - 1)) * 100;
+      if (minIndex === null) return null;
       const y = 92 - ((point.index - minIndex) / indexRange) * 80;
       return `${x.toFixed(2)},${y.toFixed(2)}`;
     })
@@ -46,7 +61,7 @@ function chartSeries(points: typeof data.us) {
     indexLine,
     minIndex,
     maxIndex,
-    midIndex: (minIndex + maxIndex) / 2,
+    midIndex,
   };
 }
 
