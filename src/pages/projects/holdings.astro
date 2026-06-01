@@ -552,8 +552,11 @@ const industryPlanMarkdown = [
 
       <section class="content-section" aria-labelledby="daily-calendar-title">
         <div class="section-head">
-          <h2 id="daily-calendar-title">每日持仓日历</h2>
-          <p>每个交易日显示当日涨跌额；下方小字为截至当天的累计浮盈。</p>
+          <div>
+            <h2 id="daily-calendar-title">每日持仓日历</h2>
+            <p>每个交易日显示当日涨跌额；下方小字为截至当天的累计浮盈。</p>
+          </div>
+          <p class="holding-calendar-status" data-calendar-status>正在刷新最新日 K 数据...</p>
         </div>
 
         <div class="holding-calendar" aria-label="每日持仓涨跌日历" data-calendar-root>
@@ -607,7 +610,7 @@ const industryPlanMarkdown = [
               </div>
             </>
           ) : (
-            <p class="empty">构建时未取得日 K 数据，暂时无法生成日历。</p>
+            <p class="empty">正在获取最新日 K 数据...</p>
           )}
         </div>
       </section>
@@ -744,7 +747,7 @@ const industryPlanMarkdown = [
     />
   </div>
 
-<script define:vars={{ positions, summary, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
+<script define:vars={{ positions, summary, trades, firstTradeDate, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
   const copyTableButtons = document.querySelectorAll('[data-copy-table]');
   const copyPlainText = async (value) => {
     if (navigator.clipboard && window.isSecureContext) {
@@ -778,12 +781,16 @@ const industryPlanMarkdown = [
     });
   });
 
-  const calendarRoot = document.querySelector('[data-calendar-root]');
-  if (calendarRoot) {
+  function initCalendarPager() {
+    const calendarRoot = document.querySelector('[data-calendar-root]');
+    if (!calendarRoot) return;
+
     const months = Array.from(calendarRoot.querySelectorAll('[data-calendar-month]'));
     const label = calendarRoot.querySelector('[data-calendar-label]');
     const previous = calendarRoot.querySelector('[data-calendar-prev]');
     const next = calendarRoot.querySelector('[data-calendar-next]');
+    if (!months.length || !label || !previous || !next) return;
+
     let current = months.findIndex((month) => !month.hidden);
     if (current < 0) current = Math.max(months.length - 1, 0);
 
@@ -807,6 +814,8 @@ const industryPlanMarkdown = [
     renderCalendarMonth();
   }
 
+  initCalendarPager();
+
   const currencyFormatter = new Intl.NumberFormat('zh-CN', {
     style: 'currency',
     currency: 'CNY',
@@ -828,6 +837,275 @@ const industryPlanMarkdown = [
     notation: 'compact',
     maximumFractionDigits: 2,
   });
+  const weekdayLabels = ['一', '二', '三', '四', '五', '六', '日'];
+
+  function getTradeDate(trade) {
+    return trade.executedAt.slice(0, 10);
+  }
+
+  function normalizeBrowserKlinePayload(payload) {
+    const data = payload.data;
+    if (!data?.klines?.length) return null;
+
+    const symbol = `${Number(data.market) === 1 ? 'sh' : 'sz'}${data.code}`;
+    const rows = data.klines
+      .map((line) => {
+        const parts = line.split(',');
+        const close = Number(parts[2]);
+        return parts[0] && Number.isFinite(close) ? { date: parts[0], close } : null;
+      })
+      .filter(Boolean);
+
+    return rows.length ? { symbol, rows } : null;
+  }
+
+  function normalizeBrowserTencentKlinePayload(payload, position) {
+    const rows = payload.data?.[position.quoteSymbol]?.qfqday ?? payload.data?.[position.quoteSymbol]?.day ?? [];
+    const normalizedRows = rows
+      .map((row) => {
+        const close = Number(row[2]);
+        return row[0] && Number.isFinite(close) ? { date: row[0], close } : null;
+      })
+      .filter(Boolean);
+
+    return normalizedRows.length ? { symbol: position.quoteSymbol, rows: normalizedRows } : null;
+  }
+
+  async function loadBrowserKlineGroup(position) {
+    const marketPrefix = position.market === 'sh' ? '1' : '0';
+    const fields1 = 'f1,f2,f3,f4,f5,f6';
+    const fields2 = 'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61';
+    const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${marketPrefix}.${position.code}&fields1=${fields1}&fields2=${fields2}&klt=101&fqt=1&beg=${firstTradeDate}&end=20500101`;
+
+    try {
+      const response = await fetch(`${url}&_=${Date.now()}`, { cache: 'no-store' });
+      if (response.ok) {
+        const kline = normalizeBrowserKlinePayload(await response.json());
+        if (kline) return kline;
+      }
+    } catch (error) {
+      console.warn(`Eastmoney kline failed for ${position.code}`, error);
+    }
+
+    try {
+      const start = getTradeDate([...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt))[0]);
+      const tencentUrl = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${position.quoteSymbol},day,${start},2050-01-01,1600,qfq`;
+      const response = await fetch(`${tencentUrl}&_=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) return null;
+      return normalizeBrowserTencentKlinePayload(await response.json(), position);
+    } catch (error) {
+      console.warn(`Tencent kline failed for ${position.code}`, error);
+      return null;
+    }
+  }
+
+  function calculateBrowserDailyPoints(klineGroups) {
+    const klineBySymbol = new Map(klineGroups.map((group) => [group.symbol, group.rows]));
+    const allDates = [...new Set(klineGroups.flatMap((group) => group.rows.map((row) => row.date)))].sort();
+    const sortedTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
+    const stateById = new Map(positions.map((position) => [position.id, { quantity: 0, cost: 0, realizedProfit: 0 }]));
+    const latestCloseBySymbol = new Map();
+    let tradeIndex = 0;
+    let previousProfit = null;
+
+    return allDates.map((date) => {
+      for (const [symbol, rows] of klineBySymbol.entries()) {
+        const row = rows.find((item) => item.date === date);
+        if (row) latestCloseBySymbol.set(symbol, row.close);
+      }
+
+      while (tradeIndex < sortedTrades.length && getTradeDate(sortedTrades[tradeIndex]) <= date) {
+        const trade = sortedTrades[tradeIndex];
+        const state = stateById.get(trade.securityId);
+
+        if (state) {
+          if (trade.side === '买入') {
+            state.quantity += trade.quantity;
+            state.cost += trade.amount + trade.fee;
+          } else {
+            const averageCost = state.quantity > 0 ? state.cost / state.quantity : 0;
+            const closingCost = averageCost * trade.quantity;
+            state.quantity -= trade.quantity;
+            state.cost -= closingCost;
+            state.realizedProfit += trade.amount - trade.fee - closingCost;
+          }
+        }
+
+        tradeIndex += 1;
+      }
+
+      let marketValue = 0;
+      let cost = 0;
+      let realizedProfit = 0;
+
+      for (const position of positions) {
+        const state = stateById.get(position.id);
+        const close = latestCloseBySymbol.get(position.quoteSymbol);
+        if (!state || !close) continue;
+
+        marketValue += state.quantity * close;
+        cost += state.cost;
+        realizedProfit += state.realizedProfit;
+      }
+
+      if (marketValue <= 0 && cost <= 0) return null;
+
+      const profit = marketValue - cost + realizedProfit;
+      const dailyChange = previousProfit === null ? 0 : profit - previousProfit;
+      previousProfit = profit;
+
+      return {
+        date,
+        profit,
+        dailyChange,
+        trades: sortedTrades.filter((trade) => getTradeDate(trade) === date),
+      };
+    }).filter(Boolean);
+  }
+
+  function getBrowserDailyTradeSummary(point) {
+    if (!point.trades.length) return '无交易';
+
+    return point.trades
+      .map((trade) => {
+        const position = positions.find((item) => item.id === trade.securityId);
+        return `${trade.side}${position?.name ?? ''} ${trade.quantity.toLocaleString('zh-CN')}份`;
+      })
+      .join(' / ');
+  }
+
+  function createCalendarDay(cell) {
+    const article = document.createElement('article');
+    article.className = 'holding-calendar-day';
+
+    if (!cell.point) article.classList.add('is-muted');
+    if (cell.point?.dailyChange >= 0) article.classList.add('is-profit');
+    if (cell.point?.dailyChange < 0) article.classList.add('is-loss');
+    if (cell.point?.trades.length) article.classList.add('has-trade');
+
+    const time = document.createElement('time');
+    time.dateTime = cell.date;
+    time.textContent = String(cell.day);
+    article.append(time);
+
+    if (!cell.point) {
+      const empty = document.createElement('span');
+      empty.textContent = '--';
+      article.append(empty);
+      return article;
+    }
+
+    const change = document.createElement('strong');
+    change.textContent = `${cell.point.dailyChange >= 0 ? '+' : ''}${currencyFormatter.format(cell.point.dailyChange)}`;
+    article.append(change);
+
+    const profit = document.createElement('span');
+    profit.textContent = currencyFormatter.format(cell.point.profit);
+    article.append(profit);
+
+    const tradesLabel = document.createElement('p');
+    tradesLabel.textContent = getBrowserDailyTradeSummary(cell.point);
+    article.append(tradesLabel);
+
+    return article;
+  }
+
+  function renderBrowserCalendar(points) {
+    const calendarRoot = document.querySelector('[data-calendar-root]');
+    if (!calendarRoot || !points.length) return;
+
+    const pointByDate = new Map(points.map((point) => [point.date, point]));
+    const start = new Date(`${points[0].date}T00:00:00`);
+    const end = new Date(`${points.at(-1).date}T00:00:00`);
+    const months = [];
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+
+    while (cursor <= end) {
+      const year = cursor.getFullYear();
+      const month = cursor.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const leadingBlanks = (new Date(year, month, 1).getDay() + 6) % 7;
+      const cells = [
+        ...Array.from({ length: leadingBlanks }, () => ({ isBlank: true })),
+        ...Array.from({ length: daysInMonth }, (_, index) => {
+          const day = index + 1;
+          const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          return { day, date, point: pointByDate.get(date), isBlank: false };
+        }),
+      ];
+
+      months.push({ label: `${year}年${month + 1}月`, cells });
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+
+    calendarRoot.replaceChildren();
+    const toolbar = document.createElement('div');
+    toolbar.className = 'holding-calendar-toolbar';
+    toolbar.innerHTML = '<button type="button" data-calendar-prev aria-label="上一个月">‹</button><strong data-calendar-label></strong><button type="button" data-calendar-next aria-label="下一个月">›</button>';
+    calendarRoot.append(toolbar);
+
+    const pages = document.createElement('div');
+    pages.className = 'holding-calendar-pages';
+    pages.setAttribute('aria-live', 'polite');
+
+    months.forEach((month, index) => {
+      const monthElement = document.createElement('article');
+      monthElement.className = 'holding-calendar-month';
+      monthElement.dataset.calendarMonth = '';
+      monthElement.dataset.calendarLabel = month.label;
+      monthElement.hidden = index !== months.length - 1;
+
+      const heading = document.createElement('h3');
+      heading.textContent = month.label;
+      monthElement.append(heading);
+
+      const weekdays = document.createElement('div');
+      weekdays.className = 'holding-calendar-weekdays';
+      weekdays.setAttribute('aria-hidden', 'true');
+      weekdayLabels.forEach((label) => {
+        const span = document.createElement('span');
+        span.textContent = label;
+        weekdays.append(span);
+      });
+      monthElement.append(weekdays);
+
+      const grid = document.createElement('div');
+      grid.className = 'holding-calendar-grid';
+      month.cells.forEach((cell) => {
+        if (cell.isBlank) {
+          const blank = document.createElement('div');
+          blank.className = 'holding-calendar-day is-empty';
+          blank.setAttribute('aria-hidden', 'true');
+          grid.append(blank);
+          return;
+        }
+        grid.append(createCalendarDay(cell));
+      });
+      monthElement.append(grid);
+      pages.append(monthElement);
+    });
+
+    calendarRoot.append(pages);
+    initCalendarPager();
+  }
+
+  async function refreshDailyCalendar() {
+    const status = document.querySelector('[data-calendar-status]');
+
+    try {
+      const groups = (await Promise.all(positions.map(loadBrowserKlineGroup))).filter(Boolean);
+      if (!groups.length) throw new Error('No browser kline data returned');
+
+      const points = calculateBrowserDailyPoints(groups);
+      if (!points.length) throw new Error('No daily portfolio points calculated');
+
+      renderBrowserCalendar(points);
+      if (status) status.textContent = `已刷新至 ${points.at(-1).date}`;
+    } catch (error) {
+      console.warn(error);
+      if (status) status.textContent = '实时刷新失败，当前展示构建时快照';
+    }
+  }
 
   function setText(selector, value) {
     const element = document.querySelector(selector);
@@ -1101,5 +1379,6 @@ const industryPlanMarkdown = [
 
   loadQuotes();
   loadTargetMetrics();
+  refreshDailyCalendar();
 </script>
 </BaseLayout>

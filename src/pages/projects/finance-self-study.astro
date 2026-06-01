@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+import { financeStudyCategories, financeStudyPath, financeTextbooks } from '../../data/finance-self-study';
+
+const categoryCounts = financeStudyCategories.map((category) => ({
+  category,
+  count: financeTextbooks.filter((item) => item.category === category).length,
+}));
+---
+
+<BaseLayout title="金融学自学" description="把金融学、公司金融、投资学、估值、计量和衍生品教材整理成一条可执行的自学路径。" canonicalPath="/projects/finance-self-study/">
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">Finance Self Study</p>
+        <h1>金融学自学</h1>
+        <p class="lead">把金融学教材按学习阶段和能力方向重新整理：先搭框架，再补公司金融和财报，随后进入投资学、估值、计量和衍生品。</p>
+      </section>
+
+      <section class="finance-study-summary" aria-label="金融学自学总览">
+        <article>
+          <span>教材数量</span>
+          <strong>{financeTextbooks.length}</strong>
+          <p>覆盖金融学总论、公司金融、投资学、估值、计量、时间序列、衍生品和财报分析。</p>
+        </article>
+        <article>
+          <span>推荐主线</span>
+          <strong>先框架，后工具</strong>
+          <p>不要一开始就钻衍生品或时间序列，先把金融体系、公司价值和财报语言学清楚。</p>
+        </article>
+        <article>
+          <span>学习产出</span>
+          <strong>每本书都要落成笔记</strong>
+          <p>每个模块至少产出一页框架图、一份术语表和一组可复盘的问题清单。</p>
+        </article>
+      </section>
+
+      <section class="content-section" aria-labelledby="finance-path-title">
+        <div class="section-head">
+          <div>
+            <h2 id="finance-path-title">推荐学习顺序</h2>
+            <p>按“理解金融系统 -> 看懂公司 -> 评价资产 -> 使用工具”的顺序推进。</p>
+          </div>
+        </div>
+
+        <div class="finance-study-path">
+          {financeStudyPath.map((stage) => (
+            <article class="finance-study-stage">
+              <div class="finance-study-stage-head">
+                <span>{stage.stage}</span>
+                <h3>{stage.title}</h3>
+              </div>
+              <div class="finance-study-chips">
+                {stage.categories.map((category) => <a href={`#category-${category}`}>{category}</a>)}
+              </div>
+              <p>{stage.output}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="finance-category-title">
+        <div class="section-head">
+          <h2 id="finance-category-title">模块索引</h2>
+        </div>
+
+        <div class="finance-category-grid">
+          {categoryCounts.map((item) => (
+            <a class="finance-category-card" href={`#category-${item.category}`}>
+              <span>{item.category}</span>
+              <strong>{item.count} 本</strong>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="finance-books-title">
+        <div class="section-head">
+          <div>
+            <h2 id="finance-books-title">推荐教材清单</h2>
+            <p>保留原始表格信息，并按类别聚合，后续可以继续补阅读进度和笔记链接。</p>
+          </div>
+        </div>
+
+        {financeStudyCategories.map((category) => (
+          <section class="finance-book-group" id={`category-${category}`} aria-labelledby={`category-title-${category}`}>
+            <div class="finance-book-group-head">
+              <h3 id={`category-title-${category}`}>{category}</h3>
+              <span>{financeTextbooks.filter((item) => item.category === category).length} 本</span>
+            </div>
+
+            <div class="holding-table-wrap">
+              <table class="holding-table finance-book-table">
+                <thead>
+                  <tr>
+                    <th>推荐教材</th>
+                    <th>适合人群</th>
+                    <th>学习重点</th>
+                    <th>难度</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {financeTextbooks.filter((item) => item.category === category).map((item) => (
+                    <tr>
+                      <td><strong>{item.title}</strong></td>
+                      <td>{item.audience}</td>
+                      <td>{item.focus}</td>
+                      <td><span class="finance-difficulty">{item.difficulty}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ))}
+      </section>
+    </div>
+
+    <PageSidebar
+      title="金融学自学"
+      intro="这个项目页用于管理金融学教材和学习顺序，后续可以继续加阅读进度、笔记链接和每周产出。"
+      sections={[
+        {
+          title: '项目入口',
+          items: [
+            { label: '项目页', href: '/projects/' },
+            { label: '学习顺序', href: '#finance-path-title' },
+            { label: '模块索引', href: '#finance-category-title' },
+            { label: '教材清单', href: '#finance-books-title' },
+            { label: '财务自由路线', href: '/projects/financial-freedom-roadmap/' },
+            { label: '我的持仓（模拟）', href: '/projects/holdings/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+</BaseLayout>

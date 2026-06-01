@@ -19,6 +19,18 @@ export interface ProjectEntry {
 
 export const projects: ProjectEntry[] = [
   {
+    eyebrow: 'Finance Self Study / Textbook Map',
+    title: '金融学自学',
+    description: '把金融学、公司金融、投资学、估值、计量经济学、金融时间序列、衍生品和财报分析教材整理成一条可执行的自学路线。',
+    status: '已上线',
+    meta: [
+      { label: '定位', value: '学习路线' },
+      { label: '内容', value: '教材 / 顺序 / 模块' },
+      { label: '状态', value: '已上线' },
+    ],
+    links: [{ label: '查看金融学自学', href: '/projects/finance-self-study/' }],
+  },
+  {
     eyebrow: 'Financial Freedom / Execution System',
     title: '财务自由执行路线',
     description: '把“普通人想靠投资实现财务自由”的路线拆成阶段、产出物、风控规则和复盘模板，用 12–24 个月验证主动投资 edge。',
