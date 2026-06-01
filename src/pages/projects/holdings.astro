@@ -838,6 +838,8 @@ const industryPlanMarkdown = [
     maximumFractionDigits: 2,
   });
   const weekdayLabels = ['一', '二', '三', '四', '五', '六', '日'];
+  let browserDailyPoints = [];
+  let latestLiveQuotes = [];
 
   function getTradeDate(trade) {
     return trade.executedAt.slice(0, 10);
@@ -876,26 +878,30 @@ const industryPlanMarkdown = [
     const fields1 = 'f1,f2,f3,f4,f5,f6';
     const fields2 = 'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61';
     const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${marketPrefix}.${position.code}&fields1=${fields1}&fields2=${fields2}&klt=101&fqt=1&beg=${firstTradeDate}&end=20500101`;
+    const start = getTradeDate([...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt))[0]);
+    const tencentUrl = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${position.quoteSymbol},day,${start},2050-01-01,1600,qfq`;
 
     try {
-      const response = await fetch(`${url}&_=${Date.now()}`, { cache: 'no-store' });
+      const response = await fetch(`${tencentUrl}&_=${Date.now()}`, { cache: 'no-store' });
       if (response.ok) {
-        const kline = normalizeBrowserKlinePayload(await response.json());
+        const kline = normalizeBrowserTencentKlinePayload(await response.json(), position);
         if (kline) return kline;
       }
     } catch (error) {
-      console.warn(`Eastmoney kline failed for ${position.code}`, error);
+      console.warn(`Tencent kline failed for ${position.code}`, error);
     }
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     try {
-      const start = getTradeDate([...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt))[0]);
-      const tencentUrl = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${position.quoteSymbol},day,${start},2050-01-01,1600,qfq`;
-      const response = await fetch(`${tencentUrl}&_=${Date.now()}`, { cache: 'no-store' });
+      const response = await fetch(`${url}&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal });
       if (!response.ok) return null;
-      return normalizeBrowserTencentKlinePayload(await response.json(), position);
+      return normalizeBrowserKlinePayload(await response.json());
     } catch (error) {
-      console.warn(`Tencent kline failed for ${position.code}`, error);
+      console.warn(`Eastmoney kline failed for ${position.code}`, error);
       return null;
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
@@ -1089,6 +1095,44 @@ const industryPlanMarkdown = [
     initCalendarPager();
   }
 
+  function mergeLiveQuotesIntoCalendar(quotes) {
+    if (!browserDailyPoints.length || quotes.length < positions.length) return false;
+
+    const quoteBySymbol = new Map(quotes.map((quote) => [quote.symbol, quote]));
+    const liveDate = quotes
+      .map((quote) => quote.updatedAt?.slice(0, 10))
+      .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date))
+      .sort()
+      .at(-1);
+    if (!liveDate) return false;
+
+    let marketValue = 0;
+    for (const position of positions) {
+      const quote = quoteBySymbol.get(position.quoteSymbol);
+      if (!quote?.price) return false;
+      marketValue += quote.price * position.quantity;
+    }
+
+    const profit = marketValue - summary.totalCost + summary.realizedProfit;
+    const points = [...browserDailyPoints];
+    const latestPoint = points.at(-1);
+    const replacingLatest = latestPoint?.date === liveDate;
+    const previousPoint = replacingLatest ? points.at(-2) : latestPoint;
+    const livePoint = {
+      date: liveDate,
+      profit,
+      dailyChange: previousPoint ? profit - previousPoint.profit : 0,
+      trades: trades.filter((trade) => getTradeDate(trade) === liveDate),
+    };
+
+    if (replacingLatest) points[points.length - 1] = livePoint;
+    else if (!latestPoint || liveDate > latestPoint.date) points.push(livePoint);
+    else return false;
+
+    renderBrowserCalendar(points);
+    return true;
+  }
+
   async function refreshDailyCalendar() {
     const status = document.querySelector('[data-calendar-status]');
 
@@ -1099,8 +1143,10 @@ const industryPlanMarkdown = [
       const points = calculateBrowserDailyPoints(groups);
       if (!points.length) throw new Error('No daily portfolio points calculated');
 
-      renderBrowserCalendar(points);
-      if (status) status.textContent = `已刷新至 ${points.at(-1).date}`;
+      browserDailyPoints = points;
+      const hasLivePoint = mergeLiveQuotesIntoCalendar(latestLiveQuotes);
+      if (!hasLivePoint) renderBrowserCalendar(points);
+      if (status) status.textContent = `已刷新至 ${(hasLivePoint ? latestLiveQuotes.map((quote) => quote.updatedAt?.slice(0, 10)).sort().at(-1) : points.at(-1).date)}`;
     } catch (error) {
       console.warn(error);
       if (status) status.textContent = '实时刷新失败，当前展示构建时快照';
@@ -1184,6 +1230,7 @@ const industryPlanMarkdown = [
   }
 
   function renderHoldings(quotes) {
+    latestLiveQuotes = quotes;
     const quoteBySymbol = new Map(quotes.map((quote) => [quote.symbol, quote]));
     let totalMarketValue = 0;
     let hasAllQuotes = true;
@@ -1231,6 +1278,7 @@ const industryPlanMarkdown = [
 
     setStatus(hasAllQuotes ? '实时行情已更新' : '部分行情未返回');
     updateQuoteTime(quotes);
+    mergeLiveQuotesIntoCalendar(quotes);
   }
 
   function setTargetCell(selector, code, value, state = '') {
@@ -1325,15 +1373,21 @@ const industryPlanMarkdown = [
   async function loadEastmoneyQuotes() {
     const fields = ['f2', 'f12', 'f13', 'f14', 'f18', 'f124'].join(',');
     const url = `https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=${eastmoneySecids.join(',')}&fields=${fields}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Eastmoney quote request failed: ${response.status}`);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) throw new Error(`Eastmoney quote request failed: ${response.status}`);
 
-    const payload = await response.json();
-    const quotes = (payload.data?.diff ?? []).map(normalizeEastmoneyQuote).filter(Boolean);
-    if (!quotes.length) throw new Error('Eastmoney quote response is empty');
+      const payload = await response.json();
+      const quotes = (payload.data?.diff ?? []).map(normalizeEastmoneyQuote).filter(Boolean);
+      if (!quotes.length) throw new Error('Eastmoney quote response is empty');
 
-    return quotes;
+      return quotes;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   function loadTencentQuotes() {
