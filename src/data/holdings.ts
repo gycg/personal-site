@@ -74,9 +74,41 @@ export const securities: Security[] = [
     market: 'sz',
     note: '易方达中债新综指 LOF A',
   },
+  {
+    id: 'star-chip-etf',
+    name: '科创芯片ETF',
+    code: '588200',
+    market: 'sh',
+    note: '嘉实上证科创板芯片 ETF',
+  },
+  {
+    id: 'rongda-photosensitive',
+    name: '容大感光',
+    code: '300576',
+    market: 'sz',
+    note: '深圳市容大感光科技股份有限公司',
+  },
 ];
 
 export const trades: Trade[] = [
+  {
+    executedAt: '2026-06-01 13:24:33',
+    securityId: 'star-chip-etf',
+    price: 3.446,
+    quantity: 2900,
+    amount: 9993.4,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-05-26 09:25:00',
+    securityId: 'rongda-photosensitive',
+    price: 50.0,
+    quantity: 100,
+    amount: 5000.0,
+    fee: 5.0,
+    side: '买入',
+  },
   {
     executedAt: '2026-05-12 09:25:01',
     securityId: 'brokerage-etf',
