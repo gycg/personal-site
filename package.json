@@ -17,6 +17,7 @@
   "dependencies": {
     "@astrojs/mdx": "4.0.8",
     "@astrojs/sitemap": "3.2.1",
+    "@vercel/analytics": "^2.0.1",
     "astro": "5.18.1"
   },
   "devDependencies": {
