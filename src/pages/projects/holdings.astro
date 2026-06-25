@@ -14,12 +14,13 @@ import {
 } from '../../data/holdings';
 
 const positions = calculatePositions();
+const activePositions = positions.filter((position) => position.quantity !== 0);
 const summary = calculatePortfolioSummary();
 const displayTrades = [...trades].sort((a, b) => b.executedAt.localeCompare(a.executedAt));
 const chronologicalTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
 const eastmoneySecids = securities.map(getEastmoneySecid);
 const tencentSymbols = securities.map(getQuoteSymbol);
-const maxTradeAmount = Math.max(...trades.map((trade) => trade.amount + trade.fee), 1);
+const maxTradeAmount = Math.max(...trades.map((trade) => trade.amount + trade.fee + (trade.tax ?? 0)), 1);
 const firstTradeDate = chronologicalTrades[0]?.executedAt.slice(0, 10).replaceAll('-', '') ?? '20260416';
 const targetTotalAmount = targetAllocations.reduce((sum, item) => sum + (item.amount ?? 0), 0);
 const industryPlanTotals = industryPlanAllocations.reduce(
@@ -46,6 +47,7 @@ const targetAllocationGroups = [...targetAllocations.reduce((groups, item) => {
   return groups;
 }, new Map<string, { category: string; amount: number; weight: number; funds: typeof targetAllocations }>()).values()];
 const targetEastmoneySecids = targetAllocations.map((item) => `${item.market === 'sh' ? '1' : '0'}.${item.code}`);
+const cashEventSides = new Set(['现金分红', '利息归本', '红利税补缴']);
 
 type KlineGroup = {
   symbol: string;
@@ -164,12 +166,16 @@ function calculateDailyPortfolioPoints(klineGroups: KlineGroup[]): DailyPortfoli
           if (trade.side === '买入') {
             state.quantity += trade.quantity;
             state.cost += trade.amount + trade.fee;
+          } else if (trade.side === '红股入账') {
+            state.quantity += trade.quantity;
+          } else if (cashEventSides.has(trade.side)) {
+            state.realizedProfit += trade.amount;
           } else {
             const averageCost = state.quantity > 0 ? state.cost / state.quantity : 0;
             const closingCost = averageCost * trade.quantity;
             state.quantity -= trade.quantity;
             state.cost -= closingCost;
-            state.realizedProfit += trade.amount - trade.fee - closingCost;
+            state.realizedProfit += trade.amount - trade.fee - (trade.tax ?? 0) - closingCost;
           }
         }
 
@@ -205,7 +211,7 @@ function calculateDailyPortfolioPoints(klineGroups: KlineGroup[]): DailyPortfoli
     }));
 }
 
-const dailyKlineResults = await Promise.allSettled(positions.map(fetchKlineGroup));
+const dailyKlineResults = await Promise.allSettled(activePositions.map(fetchKlineGroup));
 const dailyKlineGroups = dailyKlineResults
   .filter((result): result is PromiseFulfilledResult<KlineGroup> => result.status === 'fulfilled' && Boolean(result.value))
   .map((result) => result.value);
@@ -233,6 +239,7 @@ const formatPercent = new Intl.NumberFormat('zh-CN', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+const formatAverageCost = (cost: number, quantity: number) => quantity > 0 ? formatPrice.format(cost / quantity) : '--';
 const weekdayLabels = ['一', '二', '三', '四', '五', '六', '日'];
 const dailyPointByDate = new Map(dailyPortfolioPoints.map((point) => [point.date, point]));
 const dailyCalendarMonths = (() => {
@@ -280,6 +287,7 @@ const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
   return point.trades
     .map((trade) => {
       const security = getSecurityById(trade.securityId);
+      if (cashEventSides.has(trade.side)) return `${security?.name ?? ''}${trade.side} ${formatCurrency.format(trade.amount)}`;
       return `${trade.side}${security?.name ?? ''} ${formatNumber.format(trade.quantity)}份`;
     })
     .join(' / ');
@@ -330,9 +338,24 @@ const industryPlanMarkdown = [
             <p>按实时价格估算</p>
           </article>
           <article class="holding-metric">
-            <span>总浮盈</span>
+            <span>持仓浮盈</span>
+            <strong data-total-unrealized-profit>--</strong>
+            <p data-total-unrealized-profit-rate>收益率 --</p>
+          </article>
+          <article class="holding-metric">
+            <span>已实现收益</span>
+            <strong>{formatCurrency.format(summary.realizedProfit)}</strong>
+            <p>含清仓 {formatCurrency.format(summary.closedRealizedProfit)}</p>
+          </article>
+          <article class="holding-metric">
+            <span>券商口径收益</span>
+            <strong data-broker-style-profit>--</strong>
+            <p data-broker-style-profit-rate>持仓浮盈 + 持仓分红</p>
+          </article>
+          <article class="holding-metric">
+            <span>累计收益</span>
             <strong data-total-profit>--</strong>
-            <p data-total-profit-rate>收益率 --</p>
+            <p data-total-profit-rate>含已清仓收益</p>
           </article>
           <article class="holding-metric">
             <span>累计手续费</span>
@@ -489,7 +512,7 @@ const industryPlanMarkdown = [
 
         <div class="holding-visual-panel" aria-label="持仓图表">
           <div class="allocation-strip" aria-label="按成本占比展示持仓结构">
-            {positions.map((position) => {
+            {activePositions.map((position) => {
               const share = summary.totalCost > 0 ? (position.cost / summary.totalCost) * 100 : 0;
               return (
                 <div
@@ -505,7 +528,7 @@ const industryPlanMarkdown = [
           </div>
 
           <div class="position-chart-grid">
-            {positions.map((position) => {
+            {activePositions.map((position) => {
               const costShare = summary.totalCost > 0 ? position.cost / summary.totalCost : 0;
               return (
                 <article class="position-visual-card" data-position-visual data-symbol={position.quoteSymbol}>
@@ -528,7 +551,7 @@ const industryPlanMarkdown = [
                     </div>
                     <div>
                       <dt>成本价</dt>
-                      <dd>{formatPrice.format(position.cost / position.quantity)}</dd>
+                      <dd>{formatAverageCost(position.cost, position.quantity)}</dd>
                     </div>
                     <div>
                       <dt>现价</dt>
@@ -623,20 +646,28 @@ const industryPlanMarkdown = [
         <div class="trade-timeline" aria-label="买入卖出时间线">
           {chronologicalTrades.map((trade) => {
             const security = getSecurityById(trade.securityId);
-            const tradeCost = trade.amount + trade.fee;
+            const tradeCost = trade.amount + trade.fee + (trade.tax ?? 0);
             const barWidth = (tradeCost / maxTradeAmount) * 100;
+            const isBuy = trade.side === '买入' || trade.side === '红股入账' || cashEventSides.has(trade.side);
             return (
-              <article class:list={['trade-event', trade.side === '买入' ? 'is-buy' : 'is-sell']}>
+              <article class:list={['trade-event', isBuy ? 'is-buy' : 'is-sell']}>
                 <time>{trade.executedAt.slice(5, 16)}</time>
                 <div class="trade-event-main">
                   <div class="trade-event-head">
                     <strong>{security?.name}</strong>
-                    <span>{trade.side} {formatNumber.format(trade.quantity)} 份</span>
+                    <span>{trade.side}{trade.quantity > 0 ? ` ${formatNumber.format(trade.quantity)} 份` : ''}</span>
                   </div>
                   <div class="trade-event-bar">
                     <i style={`--bar: ${barWidth}%;`}></i>
                   </div>
-                  <p>{formatPrice.format(trade.price)} · {formatCurrency.format(trade.amount)} · 手续费 {formatCurrency.format(trade.fee)}</p>
+                  <p>
+                    {trade.price > 0 ? formatPrice.format(trade.price) : '无成交价'}
+                    {' · '}
+                    {formatCurrency.format(trade.amount)}
+                    {' · '}
+                    费用 {formatCurrency.format(trade.fee + (trade.tax ?? 0))}
+                    {trade.note ? ` · ${trade.note}` : ''}
+                  </p>
                 </div>
               </article>
             );
@@ -665,7 +696,7 @@ const industryPlanMarkdown = [
               </tr>
             </thead>
             <tbody>
-              {positions.map((position) => (
+              {activePositions.map((position) => (
                 <tr data-position-row data-symbol={position.quoteSymbol}>
                   <td>
                     <strong>{position.name}</strong>
@@ -673,7 +704,7 @@ const industryPlanMarkdown = [
                   </td>
                   <td>{position.code}</td>
                   <td>{formatNumber.format(position.quantity)}</td>
-                  <td>{formatPrice.format(position.cost / position.quantity)}</td>
+                  <td>{formatAverageCost(position.cost, position.quantity)}</td>
                   <td>{formatCurrency.format(position.cost)}</td>
                   <td data-current-price>--</td>
                   <td data-market-value>--</td>
@@ -700,8 +731,9 @@ const industryPlanMarkdown = [
                 <th>成交价</th>
                 <th>成交量</th>
                 <th>成交金额</th>
-                <th>手续费</th>
+                <th>费用</th>
                 <th>方向</th>
+                <th>备注</th>
               </tr>
             </thead>
             <tbody>
@@ -714,11 +746,12 @@ const industryPlanMarkdown = [
                       <strong>{security?.name}</strong>
                       <span>{security?.code}</span>
                     </td>
-                    <td>{formatPrice.format(trade.price)}</td>
-                    <td>{formatNumber.format(trade.quantity)}</td>
+                    <td>{trade.price > 0 ? formatPrice.format(trade.price) : '--'}</td>
+                    <td>{trade.quantity > 0 ? formatNumber.format(trade.quantity) : '--'}</td>
                     <td>{formatCurrency.format(trade.amount)}</td>
-                    <td>{formatCurrency.format(trade.fee)}</td>
-                    <td><span class:list={['trade-side', trade.side === '买入' ? 'is-buy' : 'is-sell']}>{trade.side}</span></td>
+                    <td>{formatCurrency.format(trade.fee + (trade.tax ?? 0))}</td>
+                    <td><span class:list={['trade-side', trade.side === '卖出' ? 'is-sell' : 'is-buy']}>{trade.side}</span></td>
+                    <td>{trade.note ?? ''}</td>
                   </tr>
                 );
               })}
@@ -747,7 +780,8 @@ const industryPlanMarkdown = [
     />
   </div>
 
-<script define:vars={{ positions, summary, trades, firstTradeDate, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
+<script define:vars={{ positions: activePositions, summary, trades, firstTradeDate, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
+  const cashEventSides = new Set(['现金分红', '利息归本', '红利税补缴']);
   const copyTableButtons = document.querySelectorAll('[data-copy-table]');
   const copyPlainText = async (value) => {
     if (navigator.clipboard && window.isSecureContext) {
@@ -928,12 +962,16 @@ const industryPlanMarkdown = [
           if (trade.side === '买入') {
             state.quantity += trade.quantity;
             state.cost += trade.amount + trade.fee;
+          } else if (trade.side === '红股入账') {
+            state.quantity += trade.quantity;
+          } else if (cashEventSides.has(trade.side)) {
+            state.realizedProfit += trade.amount;
           } else {
             const averageCost = state.quantity > 0 ? state.cost / state.quantity : 0;
             const closingCost = averageCost * trade.quantity;
             state.quantity -= trade.quantity;
             state.cost -= closingCost;
-            state.realizedProfit += trade.amount - trade.fee - closingCost;
+            state.realizedProfit += trade.amount - trade.fee - (trade.tax ?? 0) - closingCost;
           }
         }
 
@@ -975,6 +1013,7 @@ const industryPlanMarkdown = [
     return point.trades
       .map((trade) => {
         const position = positions.find((item) => item.id === trade.securityId);
+        if (cashEventSides.has(trade.side)) return `${position?.name ?? ''}${trade.side} ${currencyFormatter.format(trade.amount)}`;
         return `${trade.side}${position?.name ?? ''} ${trade.quantity.toLocaleString('zh-CN')}份`;
       })
       .join(' / ');
@@ -1267,12 +1306,24 @@ const industryPlanMarkdown = [
       }
     }
 
-    const totalProfit = totalMarketValue - summary.totalCost + summary.realizedProfit;
+    const totalUnrealizedProfit = totalMarketValue - summary.totalCost;
+    const totalUnrealizedProfitRate = summary.totalCost > 0 ? totalUnrealizedProfit / summary.totalCost : 0;
+    const brokerStyleProfit = totalUnrealizedProfit + summary.activeRealizedProfit;
+    const brokerStyleProfitRate = summary.totalCost > 0 ? brokerStyleProfit / summary.totalCost : 0;
+    const totalProfit = totalUnrealizedProfit + summary.realizedProfit;
     const totalProfitRate = summary.totalCost > 0 ? totalProfit / summary.totalCost : 0;
 
     setText('[data-total-market-value]', currencyFormatter.format(totalMarketValue));
+    setText('[data-total-unrealized-profit]', currencyFormatter.format(totalUnrealizedProfit));
+    setText('[data-total-unrealized-profit-rate]', `收益率 ${percentFormatter.format(totalUnrealizedProfitRate)}`);
+    setText('[data-broker-style-profit]', currencyFormatter.format(brokerStyleProfit));
+    setText('[data-broker-style-profit-rate]', `收益率 ${percentFormatter.format(brokerStyleProfitRate)}`);
     setText('[data-total-profit]', currencyFormatter.format(totalProfit));
     setText('[data-total-profit-rate]', `收益率 ${percentFormatter.format(totalProfitRate)}`);
+    document.querySelector('[data-total-unrealized-profit]')?.classList.toggle('is-negative', totalUnrealizedProfit < 0);
+    document.querySelector('[data-total-unrealized-profit]')?.classList.toggle('is-positive', totalUnrealizedProfit >= 0);
+    document.querySelector('[data-broker-style-profit]')?.classList.toggle('is-negative', brokerStyleProfit < 0);
+    document.querySelector('[data-broker-style-profit]')?.classList.toggle('is-positive', brokerStyleProfit >= 0);
     document.querySelector('[data-total-profit]')?.classList.toggle('is-negative', totalProfit < 0);
     document.querySelector('[data-total-profit]')?.classList.toggle('is-positive', totalProfit >= 0);
 

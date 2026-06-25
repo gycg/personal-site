@@ -19,6 +19,18 @@ export interface ProjectEntry {
 
 export const projects: ProjectEntry[] = [
   {
+    eyebrow: 'A-share Tech / One-year Roadmap',
+    title: 'A股科技与未来产业研究路线',
+    description: '把 A 股科技与未来产业研究拆成 12 个月执行项目：每周 6-8 小时，覆盖公司研究、产业学习、估值训练和博客输出。',
+    status: '计划中',
+    meta: [
+      { label: '定位', value: '年度投研项目' },
+      { label: '内容', value: '公司 / 产业 / 估值 / 博客' },
+      { label: '节奏', value: '12 个月' },
+    ],
+    links: [{ label: '查看研究路线', href: '/projects/a-share-tech-research-roadmap/' }],
+  },
+  {
     eyebrow: 'Finance Self Study / Textbook Map',
     title: '金融学自学',
     description: '把金融学、公司金融、投资学、估值、计量经济学、金融时间序列、衍生品和财报分析教材整理成一条可执行的自学路线。',

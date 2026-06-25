@@ -65,6 +65,7 @@
 
 - 项目页数据统一维护在 `src/data/projects.ts`，页面只负责渲染。
 - 新增项目时优先补齐 `eyebrow`、`title`、`description`、`status`、`meta` 和 `links`。
+- A股科技研究路线的专项维护规则见 `docs/a-share-tech-research-series-notes.md`，该系列的月度清单和执行记录优先维护在 `src/data/a-share-tech-research-plan.ts` 的 `monthlyExecutions`。
 - 持仓页表格保留横向滚动，小屏必须显示滑动提示。
 - 持仓页日 K 线优先使用东方财富，失败时用腾讯日 K 兜底，避免构建时单一行情源失败导致日历缺月份。
 - 恐慌指数图表在小屏下允许横向查看，避免压缩到不可读。

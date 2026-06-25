@@ -1,0 +1,858 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+import {
+  annualResearchOutputs,
+  blogPublishingWorkflow,
+  companyResearchLayers,
+  executionGuardrails,
+  monthlyAcceptanceScore,
+  monthlyExecutions,
+  monthlyResearchPlan,
+  researchWorkflowSteps,
+  weeklyResearchCadence,
+} from '../../data/a-share-tech-research-plan';
+
+const monthlyScoreTotal = monthlyAcceptanceScore.reduce((total, item) => total + item.score, 0);
+const executionSummaries = monthlyExecutions.map((month) => {
+  const completedCount = month.weeklyChecklists.filter((week) => week.status === '已完成').length;
+  const articleRecords = month.weeklyChecklists.flatMap((week) => {
+    if (!week.articleHref || !week.articleTitle || !week.articleSummary) {
+      return [];
+    }
+
+    return [
+      {
+        month: month.month,
+        week: week.week,
+        title: week.articleTitle,
+        summary: week.articleSummary,
+        href: week.articleHref,
+        label: `第 ${month.month} 月第 ${week.week} 周 · ${week.title}`,
+      },
+    ];
+  });
+
+  return {
+    ...month,
+    completedCount,
+    articleRecords,
+    completionRate: Math.round((completedCount / month.weeklyChecklists.length) * 100),
+  };
+});
+
+const executionArticleRecords = executionSummaries.flatMap((month) => month.articleRecords);
+---
+
+<BaseLayout
+  title="A股科技与未来产业研究路线"
+  description="一套按每周 6-8 小时设计的一年 A 股科技与未来产业研究项目，覆盖公司研究、产业学习、估值训练和博客输出。"
+  canonicalPath="/projects/a-share-tech-research-roadmap/"
+>
+  <div class="page-grid">
+    <div>
+      <section class="hero tech-research-hero">
+        <p class="eyebrow">A-share Tech Research</p>
+        <h1>A股科技与未来产业研究路线</h1>
+        <p class="lead">把一年 A 股科技与未来产业研究拆成可以执行的项目：每周 6-8 小时，一个月只解决一个大问题，持续沉淀公司档案、产业链研究、估值模型和公开博客。</p>
+      </section>
+
+      <section class="tech-research-dashboard" aria-label="项目总览">
+        <article>
+          <span>周期</span>
+          <strong>12 个月</strong>
+          <p>不追求一次性研究完所有方向，而是每月聚焦一个核心问题。</p>
+        </article>
+        <article>
+          <span>节奏</span>
+          <strong>6-8 小时/周</strong>
+          <p>周中碎片化推进原始资料、财务表和产业知识，周末完成深度研究与写作。</p>
+        </article>
+        <article>
+          <span>核心约束</span>
+          <strong>2-3 家/月</strong>
+          <p>每月只研究少数公司，避免材料越攒越多、结论越来越少。</p>
+        </article>
+      </section>
+
+      <p class="tech-research-principle">
+        一个月只解决一个大问题，研究 2-3 家公司，完成 1 份研究成果，发布 2 篇核心博客。
+      </p>
+
+      <section class="content-section" id="annual-outputs" aria-labelledby="annual-outputs-title">
+        <div class="section-head">
+          <div>
+            <h2 id="annual-outputs-title">年度最终成果</h2>
+            <p>这不是阅读清单，而是一套要交付的研究资产。</p>
+          </div>
+        </div>
+
+        <div class="tech-output-grid">
+          {annualResearchOutputs.map((item) => (
+            <article class="tech-output-card">
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+              <p>{item.note}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" id="company-layers" aria-labelledby="company-layers-title">
+        <div class="section-head">
+          <div>
+            <h2 id="company-layers-title">研究对象分层</h2>
+            <p>重点公司做深，对比公司做参照，全球公司用来校准产业坐标。</p>
+          </div>
+        </div>
+
+        <div class="tech-company-grid">
+          {companyResearchLayers.map((layer) => (
+            <article class="tech-company-card">
+              <div class="tech-card-head">
+                <span>{layer.layer}</span>
+                <strong>{layer.time}</strong>
+              </div>
+              <p>{layer.purpose}</p>
+              <div class="tech-pill-row">
+                {layer.companies.map((company) => <span>{company}</span>)}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" id="workflow" aria-labelledby="workflow-title">
+        <div class="section-head">
+          <div>
+            <h2 id="workflow-title">每家公司七步法</h2>
+            <p>用固定流程研究所有公司，减少情绪和临时兴趣对结论的影响。</p>
+          </div>
+        </div>
+
+        <div class="tech-step-grid">
+          {researchWorkflowSteps.map((item) => (
+            <article class="tech-step-card">
+              <div class="tech-card-head">
+                <span>{item.step}</span>
+                <strong>{item.title}</strong>
+              </div>
+              <p>{item.goal}</p>
+              <ul>
+                {item.outputs.map((output) => <li>{output}</li>)}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" id="monthly-roadmap" aria-labelledby="monthly-roadmap-title">
+        <div class="section-head">
+          <div>
+            <h2 id="monthly-roadmap-title">全年 12 个月路线</h2>
+            <p>每个月围绕一个核心问题展开，最终必须落到研究成果和博客输出。</p>
+          </div>
+        </div>
+
+        <div class="tech-month-grid">
+          {monthlyResearchPlan.map((month) => (
+            <article class="tech-month-card" id={`month-${month.month}`}>
+              <div class="tech-month-topline">
+                <span>第 {month.month} 个月</span>
+                <strong>{month.title}</strong>
+              </div>
+              <p class="tech-core-question">{month.coreQuestion}</p>
+
+              <div class="tech-month-companies">
+                <span>研究公司</span>
+                <div class="tech-pill-row">
+                  {month.companies.map((company) => <span>{company}</span>)}
+                  {month.globalCoordinates?.map((company) => <span class="is-muted">{company}</span>)}
+                </div>
+              </div>
+
+              <div class="tech-month-columns">
+                <div>
+                  <h3>每周重点</h3>
+                  <ol>
+                    {month.weeklyFocus.map((item) => <li>{item}</li>)}
+                  </ol>
+                </div>
+                <div>
+                  <h3>交付物</h3>
+                  <ul>
+                    {month.deliverables.map((item) => <li>{item}</li>)}
+                  </ul>
+                </div>
+              </div>
+
+              <div class="tech-month-columns is-bottom">
+                <div>
+                  <h3>核心博客</h3>
+                  <ul>
+                    {month.blogTopics.map((item) => <li>{item}</li>)}
+                  </ul>
+                </div>
+                <div>
+                  <h3>月末验收</h3>
+                  <ul>
+                    {month.acceptance.map((item) => <li>{item}</li>)}
+                  </ul>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" id="weekly-cadence" aria-labelledby="weekly-cadence-title">
+        <div class="section-head">
+          <div>
+            <h2 id="weekly-cadence-title">每周固定时间表</h2>
+            <p>把 7 小时拆成原始资料、财务整理、产业学习、反方证据和写作。</p>
+          </div>
+        </div>
+
+        <div class="tech-table-wrap">
+          <table class="tech-research-table">
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>投入</th>
+                <th>任务</th>
+                <th>产出</th>
+              </tr>
+            </thead>
+            <tbody>
+              {weeklyResearchCadence.map((item) => (
+                <tr>
+                  <td><strong>{item.day}</strong></td>
+                  <td>{item.time}</td>
+                  <td>{item.focus}</td>
+                  <td>{item.output}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="content-section" id="blog-workflow" aria-labelledby="blog-workflow-title">
+        <div class="section-head">
+          <div>
+            <h2 id="blog-workflow-title">博客发布流程</h2>
+            <p>每篇博客都从一个具体问题开始，用写作反过来检查研究是否真的形成判断。</p>
+          </div>
+        </div>
+
+        <div class="tech-blog-flow">
+          {blogPublishingWorkflow.map((item) => (
+            <article>
+              <span>{item.step}</span>
+              <h3>{item.title}</h3>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" id="acceptance" aria-labelledby="acceptance-title">
+        <div class="section-head">
+          <div>
+            <h2 id="acceptance-title">验收标准与限制</h2>
+            <p>月底用 10 分制判断是否继续推进；落后时优先砍可选文章，不把任务堆到下个月。</p>
+          </div>
+        </div>
+
+        <div class="tech-review-layout">
+          <article class="tech-score-card">
+            <div class="tech-card-head">
+              <span>月度评分</span>
+              <strong>{monthlyScoreTotal} 分</strong>
+            </div>
+            <ul>
+              {monthlyAcceptanceScore.map((item) => (
+                <li>
+                  <span>{item.item}</span>
+                  <strong>{item.score} 分</strong>
+                </li>
+              ))}
+            </ul>
+            <p>8-10 分按计划完成；6-7 分基本完成；4-5 分需要缩减；0-3 分暂停新公司，先补旧任务。</p>
+          </article>
+
+          <article class="tech-guardrail-card">
+            <div class="tech-card-head">
+              <span>执行限制</span>
+              <strong>硬约束</strong>
+            </div>
+            <ul>
+              {executionGuardrails.map((item) => <li>{item}</li>)}
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="content-section" id="monthly-execution" aria-labelledby="monthly-execution-title">
+        <div class="section-head">
+          <div>
+            <h2 id="monthly-execution-title">月度执行看板</h2>
+            <p>把年度路线拆成按月推进的执行单元，每个月都保留目标、状态、每周清单和文章记录。</p>
+          </div>
+        </div>
+
+        <div class="tech-execution-months">
+          {executionSummaries.map((month) => (
+            <article class="tech-execution-month" id={`execution-month-${month.month}`}>
+              <div class="tech-month-topline">
+                <span>第 {month.month} 个月 · {month.status}</span>
+                <strong>{month.title}</strong>
+              </div>
+              <p class="tech-core-question">{month.objective}</p>
+              <p>{month.summary}</p>
+
+              <div class="tech-month-one-status" aria-label={`第 ${month.month} 个月完成状态`}>
+                <article>
+                  <span>清单进度</span>
+                  <strong>{month.completedCount}/{month.weeklyChecklists.length}</strong>
+                  <p>每周任务按状态更新，避免计划和执行记录脱节。</p>
+                </article>
+                <article>
+                  <span>文章记录</span>
+                  <strong>{month.articleRecords.length} 篇</strong>
+                  <p>已发布文章会自动进入执行记录，并回链到对应周清单。</p>
+                </article>
+                <article>
+                  <span>月度闭环</span>
+                  <strong>{month.completionRate}%</strong>
+                  <p>完成度只表示执行进度，不代表研究结论已经最终成立。</p>
+                </article>
+              </div>
+
+              <div class="tech-weekly-checklist-grid">
+                {month.weeklyChecklists.map((week) => (
+                  <article class="tech-weekly-checklist-card" id={`month-${month.month}-week-${week.week}`}>
+                    <div class="tech-card-head">
+                      <span>第 {week.week} 周 · {week.status}</span>
+                      {week.articleHref ? <a href={week.articleHref}>查看记录</a> : <strong>待执行</strong>}
+                    </div>
+                    <h3>{week.title}</h3>
+                    <p>{week.objective}</p>
+                    <div class="tech-month-columns">
+                      <div>
+                        <h4>本周清单</h4>
+                        <ol>
+                          {week.checklist.map((item) => <li>{item}</li>)}
+                        </ol>
+                      </div>
+                      <div>
+                        <h4>交付物</h4>
+                        <ul>
+                          {week.deliverables.map((item) => <li>{item}</li>)}
+                        </ul>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="content-section" id="execution-records" aria-labelledby="execution-records-title">
+        <div class="section-head">
+          <div>
+            <h2 id="execution-records-title">执行记录</h2>
+            <p>把项目计划落到具体文章，每一篇记录一次真实研究动作、资料来源和阶段性结论。</p>
+          </div>
+        </div>
+
+        <div class="tech-execution-log">
+          {executionArticleRecords.map((record) => (
+            <article>
+              <span>{record.label}</span>
+              <h3><a href={record.href}>{record.title}</a></h3>
+              <p>{record.summary}</p>
+            </article>
+          ))}
+          {executionArticleRecords.length === 0 && (
+            <article>
+              <span>暂无记录</span>
+              <h3>执行文章发布后会显示在这里</h3>
+              <p>先维护月度清单，再发布文章，最后把文章链接回填到数据文件。</p>
+            </article>
+          )}
+        </div>
+      </section>
+    </div>
+
+    <PageSidebar
+      title="年度研究项目"
+      intro="核心链条：提出问题 -> 阅读原始资料 -> 建立财务数据 -> 理解产业位置 -> 寻找反面证据 -> 估值 -> 写成博客 -> 定期复盘。"
+      sections={[
+        {
+          title: '项目导航',
+          items: [
+            { label: '项目列表', href: '/projects/' },
+            { label: '年度成果', href: '#annual-outputs' },
+            { label: '研究对象', href: '#company-layers' },
+            { label: '七步研究法', href: '#workflow' },
+            { label: '12 个月路线', href: '#monthly-roadmap' },
+            { label: '每周节奏', href: '#weekly-cadence' },
+            { label: '博客流程', href: '#blog-workflow' },
+            { label: '验收标准', href: '#acceptance' },
+            { label: '月度执行', href: '#monthly-execution' },
+            { label: '执行记录', href: '#execution-records' },
+          ],
+        },
+        {
+          title: '相关项目',
+          items: [
+            { label: '金融学自学', href: '/projects/finance-self-study/' },
+            { label: '财务自由执行路线', href: '/projects/financial-freedom-roadmap/' },
+            { label: '我的持仓（模拟）', href: '/projects/holdings/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+
+  <style>
+    .tech-research-hero h1 {
+      max-width: 9.8em;
+    }
+
+    .tech-research-dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .tech-research-dashboard article,
+    .tech-output-card,
+    .tech-company-card,
+    .tech-step-card,
+    .tech-month-card,
+    .tech-execution-month,
+    .tech-blog-flow article,
+    .tech-execution-log article,
+    .tech-weekly-checklist-card,
+    .tech-month-one-status article,
+    .tech-score-card,
+    .tech-guardrail-card,
+    .tech-first-week {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: color-mix(in oklch, var(--surface) 88%, var(--accent-soft));
+      box-shadow: var(--shadow);
+    }
+
+    .tech-research-dashboard article,
+    .tech-output-card,
+    .tech-company-card,
+    .tech-step-card,
+    .tech-blog-flow article,
+    .tech-execution-log article,
+    .tech-weekly-checklist-card,
+    .tech-month-one-status article,
+    .tech-score-card,
+    .tech-guardrail-card {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+    }
+
+    .tech-research-dashboard span,
+    .tech-output-card span,
+    .tech-card-head span,
+    .tech-month-topline span,
+    .tech-month-companies > span,
+    .tech-blog-flow span,
+    .tech-execution-log span,
+    .tech-month-one-status span {
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tech-research-dashboard strong,
+    .tech-output-card strong,
+    .tech-card-head strong,
+    .tech-month-topline strong,
+    .tech-month-one-status strong {
+      color: var(--text);
+      font-family:
+        "Noto Serif SC", "Songti SC", "Source Han Serif SC", serif;
+      font-size: 1.18rem;
+      line-height: 1.2;
+    }
+
+    .tech-research-dashboard p,
+    .tech-output-card p,
+    .tech-company-card p,
+    .tech-step-card p,
+    .tech-execution-month > p,
+    .tech-blog-flow p,
+    .tech-execution-log p,
+    .tech-month-one-status p,
+    .tech-score-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .tech-research-principle {
+      margin: 0 0 52px;
+      border-left: 4px solid var(--mark);
+      border-radius: 10px;
+      background: color-mix(in oklch, var(--surface) 78%, var(--accent-soft));
+      padding: 18px 22px;
+      color: var(--text);
+      font-family:
+        "Noto Serif SC", "Songti SC", "Source Han Serif SC", serif;
+      font-size: 1.18rem;
+      line-height: 1.8;
+    }
+
+    .tech-output-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .tech-output-card strong {
+      color: var(--accent-strong);
+      font-size: 1.35rem;
+    }
+
+    .tech-company-grid,
+    .tech-step-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .tech-company-card {
+      background: color-mix(in oklch, var(--surface) 92%, var(--mark) 8%);
+    }
+
+    .tech-card-head,
+    .tech-month-topline {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .tech-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tech-pill-row span {
+      border: 1px solid var(--border-soft);
+      border-radius: 999px;
+      background: var(--surface);
+      padding: 5px 9px;
+      color: var(--accent-strong);
+      font-size: 0.78rem;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .tech-pill-row span.is-muted {
+      color: var(--muted);
+      background: color-mix(in oklch, var(--surface) 84%, var(--border));
+    }
+
+    .tech-step-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tech-step-card ul,
+    .tech-month-card ul,
+    .tech-month-card ol,
+    .tech-guardrail-card ul,
+    .tech-first-week {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+
+    .tech-step-card li,
+    .tech-month-card li,
+    .tech-guardrail-card li,
+    .tech-first-week li {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .tech-month-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .tech-month-card {
+      display: grid;
+      gap: 16px;
+      padding: 22px;
+      background: color-mix(in oklch, var(--surface) 90%, var(--accent-soft));
+    }
+
+    .tech-execution-months {
+      display: grid;
+      gap: 18px;
+    }
+
+    .tech-execution-month {
+      display: grid;
+      gap: 16px;
+      padding: 22px;
+      background:
+        linear-gradient(135deg, color-mix(in oklch, var(--mark) 12%, transparent), transparent 38%),
+        color-mix(in oklch, var(--surface) 90%, var(--accent-soft));
+    }
+
+    .tech-core-question {
+      margin: 0;
+      border-top: 1px solid var(--border-soft);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 13px 0;
+      color: var(--text);
+      font-weight: 700;
+      line-height: 1.65;
+    }
+
+    .tech-month-companies {
+      display: grid;
+      gap: 8px;
+    }
+
+    .tech-month-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .tech-month-columns.is-bottom {
+      border-top: 1px solid var(--border-soft);
+      padding-top: 14px;
+    }
+
+    .tech-month-columns > div {
+      min-width: 0;
+    }
+
+    .tech-month-columns h3,
+    .tech-blog-flow h3 {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 0.96rem;
+    }
+
+    .tech-weekly-checklist-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .tech-month-one-status {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .tech-month-one-status article {
+      background: color-mix(in oklch, var(--surface) 86%, var(--mark) 14%);
+    }
+
+    .tech-month-one-status strong {
+      color: var(--accent-strong);
+      font-size: 1.32rem;
+    }
+
+    .tech-weekly-checklist-card {
+      display: grid;
+      gap: 14px;
+      padding: 20px;
+      background: color-mix(in oklch, var(--surface) 90%, var(--mark) 10%);
+    }
+
+    .tech-weekly-checklist-card h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 1.18rem;
+    }
+
+    .tech-weekly-checklist-card h4 {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .tech-weekly-checklist-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .tech-weekly-checklist-card a {
+      color: var(--accent-strong);
+      font-size: 0.86rem;
+      font-weight: 800;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+    }
+
+    .tech-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .tech-research-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    .tech-research-table th,
+    .tech-research-table td {
+      border-bottom: 1px solid var(--border-soft);
+      padding: 13px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .tech-research-table th {
+      background: color-mix(in oklch, var(--surface) 82%, var(--accent-soft));
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .tech-research-table td {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .tech-research-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .tech-research-table strong {
+      color: var(--text);
+    }
+
+    .tech-blog-flow {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .tech-execution-log {
+      display: grid;
+      gap: 12px;
+    }
+
+    .tech-execution-log h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 1.08rem;
+      line-height: 1.45;
+    }
+
+    .tech-execution-log h3 a {
+      color: inherit;
+      text-decoration-color: color-mix(in oklch, var(--accent) 42%, transparent);
+      text-underline-offset: 4px;
+    }
+
+    .tech-execution-log h3 a:hover {
+      color: var(--accent-strong);
+    }
+
+    .tech-review-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .tech-score-card ul {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tech-score-card li {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-soft);
+      padding-bottom: 8px;
+      color: var(--muted);
+    }
+
+    .tech-score-card li strong {
+      color: var(--accent-strong);
+      white-space: nowrap;
+    }
+
+    .tech-first-week {
+      display: grid;
+      gap: 10px;
+      padding: 20px 22px 20px 42px;
+      background: color-mix(in oklch, var(--surface) 90%, var(--mark) 10%);
+    }
+
+    @media (max-width: 1100px) {
+      .tech-output-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .tech-research-dashboard,
+      .tech-month-one-status,
+      .tech-step-grid,
+      .tech-month-columns,
+      .tech-blog-flow,
+      .tech-review-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .tech-output-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .tech-output-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tech-card-head,
+      .tech-month-topline {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .tech-month-card {
+        padding: 18px;
+      }
+    }
+  </style>
+</BaseLayout>

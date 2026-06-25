@@ -13,7 +13,9 @@ export type Trade = {
   quantity: number;
   amount: number;
   fee: number;
-  side: '买入' | '卖出';
+  tax?: number;
+  side: '买入' | '卖出' | '红股入账' | '现金分红' | '利息归本' | '红利税补缴';
+  note?: string;
 };
 
 export type TargetAllocation = {
@@ -88,9 +90,131 @@ export const securities: Security[] = [
     market: 'sz',
     note: '深圳市容大感光科技股份有限公司',
   },
+  {
+    id: 'csi-300-etf',
+    name: '沪深300ETF',
+    code: '510300',
+    market: 'sh',
+    note: '华泰柏瑞沪深300 ETF',
+  },
+  {
+    id: 'dividend-etf',
+    name: '红利ETF',
+    code: '515080',
+    market: 'sh',
+    note: '招商中证红利 ETF',
+  },
+  {
+    id: 'hk-innovative-medicine',
+    name: '香港创新药ETF',
+    code: '159530',
+    market: 'sz',
+    note: '易方达中证港股通创新药 ETF',
+  },
 ];
 
 export const trades: Trade[] = [
+  {
+    executedAt: '2026-06-23 19:18:55',
+    securityId: 'dividend-etf',
+    price: 0,
+    quantity: 0,
+    amount: 374.0,
+    fee: 0,
+    side: '现金分红',
+  },
+  {
+    executedAt: '2026-06-22 11:32:48',
+    securityId: 'rongda-photosensitive',
+    price: 0,
+    quantity: 0,
+    amount: 23.51,
+    fee: 0,
+    side: '利息归本',
+  },
+  {
+    executedAt: '2026-06-22 11:32:49',
+    securityId: 'rongda-photosensitive',
+    price: 0,
+    quantity: 0,
+    amount: -1.4,
+    fee: 0,
+    side: '红利税补缴',
+  },
+  {
+    executedAt: '2026-06-22 09:30:00',
+    securityId: 'hk-innovative-medicine',
+    price: 1.645,
+    quantity: 6100,
+    amount: 10034.5,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-06-18 09:30:17',
+    securityId: 'rongda-photosensitive',
+    price: 51.21,
+    quantity: 110,
+    amount: 5633.1,
+    fee: 5.0,
+    tax: 2.82,
+    side: '卖出',
+    note: '卖出成交价由用户补充；印花税 2.82 元按成交金额约 0.05% 计。',
+  },
+  {
+    executedAt: '2026-06-15 09:25:01',
+    securityId: 'dividend-etf',
+    price: 1.592,
+    quantity: 12500,
+    amount: 19900.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-06-12 09:53:07',
+    securityId: 'csi-300-etf',
+    price: 4.806,
+    quantity: 4200,
+    amount: 20185.2,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-06-09 19:33:17',
+    securityId: 'rongda-photosensitive',
+    price: 0,
+    quantity: 10,
+    amount: 0,
+    fee: 0,
+    side: '红股入账',
+  },
+  {
+    executedAt: '2026-06-03 09:25:01',
+    securityId: 'dividend-etf',
+    price: 1.596,
+    quantity: 6200,
+    amount: 9895.2,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-06-03 09:25:01',
+    securityId: 'csi-300-etf',
+    price: 4.938,
+    quantity: 2000,
+    amount: 9876.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-06-03 09:25:00',
+    securityId: 'bond-index-lof',
+    price: 1.787,
+    quantity: 5600,
+    amount: 10007.2,
+    fee: 5.0,
+    side: '买入',
+  },
   {
     executedAt: '2026-06-01 13:24:33',
     securityId: 'star-chip-etf',
@@ -304,62 +428,62 @@ export const industryPlanAllocations: IndustryPlanAllocation[] = [
     newCashBuy: 35000,
     switchedCashBuy: 0,
     finalAmount: 35000,
-    finalWeight: 0.175,
+    finalWeight: 0.1748,
   },
   {
     category: '科创芯片',
     code: '588200',
     name: '科创芯片ETF嘉实',
-    currentAmount: 0,
-    action: '新买',
-    newCashBuy: 35000,
+    currentAmount: 9998.4,
+    action: '继续加仓',
+    newCashBuy: 25001.6,
     switchedCashBuy: 0,
     finalAmount: 35000,
-    finalWeight: 0.175,
+    finalWeight: 0.1748,
   },
   {
     category: '创新药',
     code: '516080',
     name: '创新药ETF易方达',
-    currentAmount: 10000,
-    action: '保留并加仓',
-    newCashBuy: 30000,
+    currentAmount: 40054.5,
+    action: '已达目标，暂不加仓',
+    newCashBuy: 0,
     switchedCashBuy: 0,
-    finalAmount: 40000,
-    finalWeight: 0.2,
+    finalAmount: 40054.5,
+    finalWeight: 0.2001,
   },
   {
     category: '电网设备',
     code: '159320',
     name: '电网设备ETF广发',
-    currentAmount: 10000,
-    action: '保留并加仓',
-    newCashBuy: 30000,
+    currentAmount: 9791,
+    action: '继续加仓',
+    newCashBuy: 30209,
     switchedCashBuy: 0,
     finalAmount: 40000,
-    finalWeight: 0.2,
+    finalWeight: 0.1998,
   },
   {
     category: '券商',
     code: '512000',
     name: '券商ETF华宝 或同类券商ETF',
-    currentAmount: 0,
-    action: '新买',
-    newCashBuy: 40000,
+    currentAmount: 20965,
+    action: '继续加仓',
+    newCashBuy: 19035,
     switchedCashBuy: 0,
     finalAmount: 40000,
-    finalWeight: 0.2,
+    finalWeight: 0.1998,
   },
   {
     category: 'AI软件/应用',
     code: '159819',
     name: '人工智能ETF易方达',
-    currentAmount: 10000,
-    action: '保留不加仓',
+    currentAmount: 10144,
+    action: '已达目标，暂不加仓',
     newCashBuy: 0,
     switchedCashBuy: 0,
-    finalAmount: 10000,
-    finalWeight: 0.05,
+    finalAmount: 10144,
+    finalWeight: 0.0507,
   },
 ];
 
@@ -406,9 +530,19 @@ export function calculatePositions() {
       continue;
     }
 
+    if (trade.side === '红股入账') {
+      position.quantity += trade.quantity;
+      continue;
+    }
+
+    if (trade.side === '现金分红' || trade.side === '利息归本' || trade.side === '红利税补缴') {
+      position.realizedProfit += trade.amount;
+      continue;
+    }
+
     const averageCost = position.quantity > 0 ? position.cost / position.quantity : 0;
     const closingCost = averageCost * trade.quantity;
-    const proceeds = trade.amount - trade.fee;
+    const proceeds = trade.amount - trade.fee - (trade.tax ?? 0);
 
     position.quantity -= trade.quantity;
     position.cost -= closingCost;
@@ -421,11 +555,20 @@ export function calculatePositions() {
 
 export function calculatePortfolioSummary() {
   const positions = calculatePositions();
+  const activeRealizedProfit = positions
+    .filter((position) => position.quantity !== 0)
+    .reduce((sum, position) => sum + position.realizedProfit, 0);
+  const closedRealizedProfit = positions
+    .filter((position) => position.quantity === 0)
+    .reduce((sum, position) => sum + position.realizedProfit, 0);
+
   return {
     totalCost: positions.reduce((sum, position) => sum + position.cost, 0),
     totalQuantity: positions.reduce((sum, position) => sum + position.quantity, 0),
-    totalFees: trades.reduce((sum, trade) => sum + trade.fee, 0),
+    totalFees: trades.reduce((sum, trade) => sum + trade.fee + (trade.tax ?? 0), 0),
     totalBuyAmount: positions.reduce((sum, position) => sum + position.buyAmount, 0),
     realizedProfit: positions.reduce((sum, position) => sum + position.realizedProfit, 0),
+    activeRealizedProfit,
+    closedRealizedProfit,
   };
 }

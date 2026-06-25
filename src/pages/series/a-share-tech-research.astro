@@ -1,0 +1,62 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+import { compareSeriesPosts, estimateReadingMinutes, getPostUrl } from '../../lib/posts';
+
+const seriesTitle = 'A股科技与未来产业研究路线';
+const posts = (await getCollection('posts', ({ data }) => data.series === seriesTitle && !data.draft)).sort(compareSeriesPosts);
+---
+
+<BaseLayout
+  title={seriesTitle}
+  description="按年度项目推进的 A 股科技与未来产业研究记录，从研究意义、财报练习、公司拆解到月度复盘。"
+  canonicalPath="/series/a-share-tech-research/"
+>
+  <div class="page-grid">
+    <div>
+      <section class="hero">
+        <p class="eyebrow">专题</p>
+        <h1>{seriesTitle}</h1>
+        <p class="lead">这个专题按执行顺序整理 A 股科技与未来产业研究文章。项目页负责展示年度计划和月度看板，专题页负责按顺序阅读已经发布的文章。</p>
+      </section>
+
+      <section class="content-section" aria-labelledby="series-posts-title">
+        <div class="section-head">
+          <div>
+            <h2 id="series-posts-title">阅读顺序</h2>
+            <p>目前已发布 {posts.length} 篇，建议按顺序阅读，先理解研究意义，再进入财报练习和公司对比。</p>
+          </div>
+          <a href="/projects/a-share-tech-research-roadmap/">查看项目看板</a>
+        </div>
+
+        <ol class="series-reading-list">
+          {posts.map((post) => (
+            <li>
+              <a href={getPostUrl(post)}>
+                <span>第 {post.data.seriesOrder} 篇 · {estimateReadingMinutes(post)} 分钟</span>
+                <strong>{post.data.title}</strong>
+                <p>{post.data.description}</p>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </div>
+
+    <PageSidebar
+      title="A股科技研究"
+      intro="阅读路径关注文章顺序；项目看板关注每月计划、执行状态和交付物。"
+      sections={[
+        {
+          title: '相关入口',
+          items: [
+            { label: '年度项目看板', href: '/projects/a-share-tech-research-roadmap/' },
+            { label: '全部专题', href: '/series/' },
+            { label: '标签：A股科技研究路线', href: '/tags/A股科技研究路线/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+</BaseLayout>
