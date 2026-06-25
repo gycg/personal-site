@@ -58,18 +58,6 @@ export const projects: ProjectEntry[] = [
     ],
   },
   {
-    eyebrow: 'US Valuation / Live Quotes',
-    title: '美股内在价值',
-    description: '记录美股公司的每股内在价值、实时股价、相对估值差值和不同持有周期建议。内在价值由手动录入，行情通过公开接口刷新。',
-    status: '已上线',
-    meta: [
-      { label: '定位', value: '美股估值看板' },
-      { label: '内容', value: '股价 / 内在价值 / 建议' },
-      { label: '状态', value: '已上线' },
-    ],
-    links: [{ label: '查看美股内在价值', href: '/projects/us-valuation/' }],
-  },
-  {
     eyebrow: 'Portfolio Tracker / Live Quotes',
     title: '我的持仓（模拟）',
     description: '记录当前 ETF 持仓、买入卖出明细、持仓成本和估算盈亏。页面会尝试读取实时行情，方便把交易记录和当前市值放在一起复盘。',
@@ -80,18 +68,6 @@ export const projects: ProjectEntry[] = [
       { label: '状态', value: '已上线' },
     ],
     links: [{ label: '查看持仓（模拟）', href: '/projects/holdings/' }],
-  },
-  {
-    eyebrow: 'Fear Index / A-share & US',
-    title: '恐慌指数',
-    description: '把 A 股期权波动率、PCR、股指期货贴水压力和美股 VIX 历史分位数做成每日恐慌分数，并和沪深300、标普500放在同一张图里观察。',
-    status: '已上线',
-    meta: [
-      { label: '定位', value: '风险温度计' },
-      { label: '内容', value: 'A股 / 美股 / 指数对照' },
-      { label: '状态', value: '已上线' },
-    ],
-    links: [{ label: '查看指数', href: '/projects/fear-index/' }],
   },
   {
     eyebrow: 'Astro / Markdown / Vercel',

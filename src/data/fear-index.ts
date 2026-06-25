@@ -304,17 +304,12 @@ async function fetchFearIndexData(): Promise<FearIndexData> {
   const tencentStart = formatDate(start);
 
   const [vix, sp500, hs300, optbbs, ifFuture] = await Promise.all([
-    fetchFredSeries('VIXCLS'),
-    fetchFredSeries('SP500'),
-    fetchTencentKlines('sh000300', tencentStart),
-    fetchOptbbsIvSeries(),
+    fetchFredSeries('VIXCLS').catch(() => []),
+    fetchFredSeries('SP500').catch(() => []),
+    fetchTencentKlines('sh000300', tencentStart).catch(() => []),
+    fetchOptbbsIvSeries().catch(() => []),
     fetchIfMainFuture().catch(() => []),
   ]);
-
-  if (!vix.length) throw new Error('FRED VIXCLS returned no data');
-  if (!sp500.length) throw new Error('FRED SP500 returned no data');
-  if (!hs300.length) throw new Error('Tencent HS300 returned no data');
-  if (!optbbs.length) throw new Error('OptBBS IV returned no data');
 
   const sp500ByDate = byDate(sp500);
   const hs300ByDate = byDate(hs300);
@@ -353,9 +348,13 @@ async function fetchFearIndexData(): Promise<FearIndexData> {
   const pcrRank = percentileSeries(pcrPoints, FIVE_YEAR_DAYS, true);
   const basisRank = percentileSeries(basisPoints, FIVE_YEAR_DAYS, false);
 
-  const cn = optbbs
-    .filter((point) => point.date >= formatDate(oneYearStart))
-    .map((point) => {
+  const cnSource = optbbs.length
+    ? optbbs.filter((point) => point.date >= formatDate(oneYearStart))
+    : hs300
+      .filter((point) => point.date >= formatDate(oneYearStart))
+      .map((point) => ({ date: point.date, iv300: null, ivMidSmall: null }));
+
+  const cn = cnSource.map((point) => {
       const iv300 = iv300Rank.get(point.date) ?? null;
       const ivMidSmall = ivMidSmallRank.get(point.date) ?? null;
       const pcr = pcrRank.get(point.date) ?? null;
