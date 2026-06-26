@@ -105,11 +105,11 @@ export const securities: Security[] = [
     note: '招商中证红利 ETF',
   },
   {
-    id: 'hk-innovative-medicine',
-    name: '香港创新药ETF',
+    id: 'robot-etf',
+    name: '机器人ETF',
     code: '159530',
     market: 'sz',
-    note: '易方达中证港股通创新药 ETF',
+    note: '易方达国证机器人产业 ETF',
   },
 ];
 
@@ -143,7 +143,7 @@ export const trades: Trade[] = [
   },
   {
     executedAt: '2026-06-22 09:30:00',
-    securityId: 'hk-innovative-medicine',
+    securityId: 'robot-etf',
     price: 1.645,
     quantity: 6100,
     amount: 10034.5,
@@ -428,7 +428,7 @@ export const industryPlanAllocations: IndustryPlanAllocation[] = [
     newCashBuy: 35000,
     switchedCashBuy: 0,
     finalAmount: 35000,
-    finalWeight: 0.1748,
+    finalWeight: 0.1665,
   },
   {
     category: '科创芯片',
@@ -439,7 +439,7 @@ export const industryPlanAllocations: IndustryPlanAllocation[] = [
     newCashBuy: 25001.6,
     switchedCashBuy: 0,
     finalAmount: 35000,
-    finalWeight: 0.1748,
+    finalWeight: 0.1665,
   },
   {
     category: '创新药',
@@ -450,7 +450,7 @@ export const industryPlanAllocations: IndustryPlanAllocation[] = [
     newCashBuy: 0,
     switchedCashBuy: 0,
     finalAmount: 40054.5,
-    finalWeight: 0.2001,
+    finalWeight: 0.1907,
   },
   {
     category: '电网设备',
@@ -461,7 +461,7 @@ export const industryPlanAllocations: IndustryPlanAllocation[] = [
     newCashBuy: 30209,
     switchedCashBuy: 0,
     finalAmount: 40000,
-    finalWeight: 0.1998,
+    finalWeight: 0.1904,
   },
   {
     category: '券商',
@@ -472,7 +472,7 @@ export const industryPlanAllocations: IndustryPlanAllocation[] = [
     newCashBuy: 19035,
     switchedCashBuy: 0,
     finalAmount: 40000,
-    finalWeight: 0.1998,
+    finalWeight: 0.1904,
   },
   {
     category: 'AI软件/应用',
@@ -483,7 +483,18 @@ export const industryPlanAllocations: IndustryPlanAllocation[] = [
     newCashBuy: 0,
     switchedCashBuy: 0,
     finalAmount: 10144,
-    finalWeight: 0.0507,
+    finalWeight: 0.0483,
+  },
+  {
+    category: '机器人',
+    code: '159530',
+    name: '机器人ETF易方达',
+    currentAmount: 10039.5,
+    action: '观察仓，暂不加仓',
+    newCashBuy: 0,
+    switchedCashBuy: 0,
+    finalAmount: 10039.5,
+    finalWeight: 0.0477,
   },
 ];
 
