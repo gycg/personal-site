@@ -780,7 +780,7 @@ const industryPlanMarkdown = [
     />
   </div>
 
-<script define:vars={{ positions: activePositions, summary, trades, firstTradeDate, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
+<script define:vars={{ positions, activePositions, summary, trades, firstTradeDate, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
   const cashEventSides = new Set(['现金分红', '利息归本', '红利税补缴']);
   const copyTableButtons = document.querySelectorAll('[data-copy-table]');
   const copyPlainText = async (value) => {
@@ -872,6 +872,7 @@ const industryPlanMarkdown = [
     maximumFractionDigits: 2,
   });
   const weekdayLabels = ['一', '二', '三', '四', '五', '六', '日'];
+  const positionById = new Map(positions.map((position) => [position.id, position]));
   let browserDailyPoints = [];
   let latestLiveQuotes = [];
 
@@ -1012,7 +1013,7 @@ const industryPlanMarkdown = [
 
     return point.trades
       .map((trade) => {
-        const position = positions.find((item) => item.id === trade.securityId);
+        const position = positionById.get(trade.securityId);
         if (cashEventSides.has(trade.side)) return `${position?.name ?? ''}${trade.side} ${currencyFormatter.format(trade.amount)}`;
         return `${trade.side}${position?.name ?? ''} ${trade.quantity.toLocaleString('zh-CN')}份`;
       })
@@ -1135,7 +1136,7 @@ const industryPlanMarkdown = [
   }
 
   function mergeLiveQuotesIntoCalendar(quotes) {
-    if (!browserDailyPoints.length || quotes.length < positions.length) return false;
+    if (!browserDailyPoints.length || quotes.length < activePositions.length) return false;
 
     const quoteBySymbol = new Map(quotes.map((quote) => [quote.symbol, quote]));
     const liveDate = quotes
@@ -1146,7 +1147,7 @@ const industryPlanMarkdown = [
     if (!liveDate) return false;
 
     let marketValue = 0;
-    for (const position of positions) {
+    for (const position of activePositions) {
       const quote = quoteBySymbol.get(position.quoteSymbol);
       if (!quote?.price) return false;
       marketValue += quote.price * position.quantity;
@@ -1274,7 +1275,7 @@ const industryPlanMarkdown = [
     let totalMarketValue = 0;
     let hasAllQuotes = true;
 
-    for (const position of positions) {
+    for (const position of activePositions) {
       const row = document.querySelector(`[data-position-row][data-symbol="${position.quoteSymbol}"]`);
       if (!row) continue;
 

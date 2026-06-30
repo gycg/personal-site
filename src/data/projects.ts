@@ -72,7 +72,7 @@ export const projects: ProjectEntry[] = [
   {
     eyebrow: 'Astro / Markdown / Vercel',
     title: '个人博客',
-    description: '公开写作入口，用来沉淀股票入门、公司研究、AI 投研和财务自由实验。结构上保持轻量，方便长期维护和持续写作。',
+    description: '公开写作入口，用来沉淀股票入门、公司研究、LLM 算法工程、AI 技术观察和财务自由实验。结构上保持轻量，方便长期维护和持续写作。',
     status: '持续迭代中',
     meta: [
       { label: '定位', value: '个人研究主页' },
@@ -96,13 +96,13 @@ export const projects: ProjectEntry[] = [
     ],
   },
   {
-    eyebrow: 'AI Workflow / In Progress',
-    title: 'AI 财报阅读工作流',
-    description: '用 AI 辅助整理年报、季报、公告和研报，提取关键数据和风险点。AI 负责提高效率，最终判断仍然回到原始材料和商业逻辑。',
+    eyebrow: 'LLM Workflow / In Progress',
+    title: 'LLM 工程与 AI 研究工作流',
+    description: '整理 LLM 算法工程、AI 行业研究和投研资料处理流程。包括资料抽取、技术调研、评测清单、原型验证和结构化输出。',
     status: '打磨中',
     meta: [
-      { label: '定位', value: 'AI 投研工具' },
-      { label: '内容', value: '公告 / 财报 / 提纲' },
+      { label: '定位', value: 'LLM 工程工作流' },
+      { label: '内容', value: '调研 / 评测 / 原型' },
       { label: '状态', value: '打磨中' },
     ],
   },

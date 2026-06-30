@@ -1008,6 +1008,111 @@ p {
   margin: 0;
 }
 
+.section-directory {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+}
+
+.section-card {
+  min-height: 214px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 24px;
+  color: var(--text);
+  background:
+    linear-gradient(145deg, oklch(0.993 0.005 150 / 0.72), transparent 72%),
+    transparent;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.section-card:hover {
+  background-color: color-mix(in oklch, var(--surface) 78%, var(--accent-soft));
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+.section-card.is-primary {
+  background:
+    linear-gradient(145deg, color-mix(in oklch, var(--accent-soft) 62%, var(--surface)), transparent 74%),
+    var(--surface);
+}
+
+.section-card span,
+.section-card em {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.section-card strong {
+  font-family:
+    "Noto Serif SC", "Songti SC", "Source Han Serif SC", serif;
+  font-size: 1.46rem;
+  font-weight: 600;
+  line-height: 1.16;
+}
+
+.section-card p {
+  max-width: 34em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.72;
+}
+
+.section-card em {
+  align-self: end;
+  width: fit-content;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft);
+  color: var(--accent-strong);
+  text-transform: none;
+}
+
+.topic-map {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.topic-map article {
+  padding: 26px 24px 28px;
+}
+
+.topic-map article + article {
+  border-left: 1px solid var(--border-soft);
+}
+
+.topic-map h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.topic-map p {
+  color: var(--muted);
+}
+
+.topic-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
 .series-path {
   display: grid;
   gap: 0;
@@ -3596,6 +3701,8 @@ p {
   }
 
   .path-grid,
+  .section-directory,
+  .topic-map,
   .home-stats,
   .project-note-grid,
   .project-meta-grid,
@@ -3620,6 +3727,11 @@ p {
   }
 
   .path-card + .path-card {
+    border-left: 0;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .topic-map article + article {
     border-left: 0;
     border-top: 1px solid var(--border-soft);
   }

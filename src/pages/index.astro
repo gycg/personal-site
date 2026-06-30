@@ -7,7 +7,10 @@ import { comparePostsNewest, estimateReadingMinutes, getPostUrl } from '../lib/p
 
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(comparePostsNewest);
 const posts = allPosts.slice(0, 5);
-const stockBasicsCount = allPosts.filter((post) => post.data.tags.includes('从零看懂股票')).length;
+const investmentCount = allPosts.filter((post) => post.data.tags.includes('投资研究')).length;
+const llmCount = allPosts.filter((post) =>
+  post.data.tags.some((tag) => ['LLM', '大模型', '算法工程', 'AI工程'].includes(tag))
+).length;
 const tagCount = new Set(allPosts.flatMap((post) => post.data.tags)).size;
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
@@ -22,20 +25,20 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
       <section class="hero">
         <div class="home-masthead">
           <p class="eyebrow">长坡厚雪 · Research Notes</p>
-          <p>股票研究 / 公司分析 / AI 投研</p>
+          <p>Investment / LLM / Engineering</p>
         </div>
-        <h1>一个大厂程序员的长期投资研究笔记</h1>
+        <h1>一个程序员的长期研究博客</h1>
         <p class="lead">
-          用工程化方法研究股票、公司和 AI 投研工具。这里不荐股，不喊单，专注沉淀可复盘的研究过程、投资框架和通往财务自由的长期实验。
+          这里同时记录两条主线：用工程化方法研究股票、公司和长期资产积累；也沉淀 LLM 算法工程师视角下的大模型技术、工程实践与行业研究。
         </p>
         <div class="home-stats" aria-label="站点概览">
           <a href="/posts/">
             <strong>{allPosts.length}</strong>
             <span>公开文章</span>
           </a>
-          <a href="/series/stock-basics/">
-            <strong>{stockBasicsCount}</strong>
-            <span>入门专题</span>
+          <a href="/tags/投资研究/">
+            <strong>{investmentCount}</strong>
+            <span>投研文章</span>
           </a>
           <a href="/posts/">
             <strong>{tagCount}</strong>
@@ -46,24 +49,74 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
 
       <section class="content-section" aria-labelledby="reading-paths">
         <div class="section-head">
-          <h2 id="reading-paths">阅读路径</h2>
+          <h2 id="reading-paths">全部板块</h2>
+          <span>按用途选择入口</span>
         </div>
-        <div class="path-grid">
-          <a class="path-card" href="/series/stock-basics/">
-            <span>入门</span>
-            <strong>从零看懂股票</strong>
-            <p>按顺序理解股票、行情、收益来源和基础概念。</p>
+        <div class="section-directory">
+          <a class="section-card is-primary" href="/posts/">
+            <span>Archive</span>
+            <strong>文章归档</strong>
+            <p>所有公开文章的时间线入口，适合查看最新更新、历史记录和不同主题的完整列表。</p>
+            <em>{allPosts.length} 篇</em>
           </a>
-          <a class="path-card" href="/tags/财报分析/">
-            <span>研究</span>
-            <strong>公司研究笔记</strong>
-            <p>从财报、产业逻辑和跟踪指标看公司。</p>
+          <a class="section-card" href="/series/">
+            <span>Series</span>
+            <strong>专题路线</strong>
+            <p>把需要按顺序阅读的内容组织成路线，包括股票入门、A 股科技研究等长期专题。</p>
+            <em>结构化阅读</em>
           </a>
-          <a class="path-card" href="/about/#method">
-            <span>边界</span>
-            <strong>研究方法</strong>
-            <p>说明数据来源、风险声明和内容边界。</p>
+          <a class="section-card" href="/projects/">
+            <span>Projects</span>
+            <strong>项目与系统</strong>
+            <p>展示投资研究路线、金融学自学、持仓复盘、内容工作流和长期维护的工具项目。</p>
+            <em>工具 / 路线 / 复盘</em>
           </a>
+          <a class="section-card" href="/tags/投资研究/">
+            <span>Investment</span>
+            <strong>投资研究</strong>
+            <p>记录股票入门、公司研究、财报拆解、商业模式、估值框架和风险跟踪。</p>
+            <em>{investmentCount} 篇</em>
+          </a>
+          <a class="section-card" href="/search/?q=LLM">
+            <span>LLM Engineering</span>
+            <strong>LLM 算法工程</strong>
+            <p>面向 LLM 算法工程师的技术博客，覆盖模型、RAG、Agent、评测、推理优化、训练数据与行业技术趋势。</p>
+            <em>{llmCount > 0 ? `${llmCount} 篇` : '建设中'}</em>
+          </a>
+          <a class="section-card" href="/about/#method">
+            <span>Principles</span>
+            <strong>方法与边界</strong>
+            <p>说明研究方法、资料来源、AI 使用边界、投资内容边界和联系方式。</p>
+            <em>先读这个</em>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="topic-map">
+        <div class="section-head">
+          <h2 id="topic-map">两条主线</h2>
+        </div>
+        <div class="topic-map">
+          <article>
+            <p class="post-meta">Investment Research</p>
+            <h3>投研与资产积累</h3>
+            <p>从“看懂股票”开始，逐步进入公司研究、财报分析、商业模式、估值训练、组合跟踪和财务自由路线。强调可复盘、可验证，不荐股。</p>
+            <div class="topic-links">
+              <a class="tag" href="/series/stock-basics/">从零看懂股票</a>
+              <a class="tag" href="/series/a-share-tech-research/">A股科技研究</a>
+              <a class="tag" href="/projects/financial-freedom-roadmap/">财务自由路线</a>
+            </div>
+          </article>
+          <article>
+            <p class="post-meta">LLM Industry & Technology</p>
+            <h3>LLM 算法工程与行业研究</h3>
+            <p>后续会系统整理大模型技术研究、算法工程实践和行业观察，包括模型能力、数据工程、RAG/Agent、评测体系、推理部署和应用落地。</p>
+            <div class="topic-links">
+              <a class="tag" href="/search/?q=LLM">LLM 搜索</a>
+              <a class="tag" href="/search/?q=大模型">大模型</a>
+              <a class="tag" href="/search/?q=AI算力">AI 算力</a>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -90,19 +143,29 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
     </div>
 
     <PageSidebar
-      title="研究方向"
+      title="站点导航"
       compact
-      intro="股票、公司研究、AI 投研工具，以及普通人如何长期积累资产。"
+      intro="投资研究与 LLM 算法工程并行更新：一边研究资产和公司，一边沉淀大模型技术与行业观察。"
       sections={[
         {
-          title: '入口',
+          title: '主要入口',
           items: [
             { label: '文章归档', href: '/posts/' },
-            { label: '专题浏览', href: '/series/' },
-            { label: '从零看懂股票', href: '/series/stock-basics/' },
-            { label: '研究方法', href: '/about/#method' },
+            { label: '专题路线', href: '/series/' },
             { label: '项目页', href: '/projects/' },
+            { label: '搜索', href: '/search/' },
             { label: '关于页', href: '/about/' },
+          ],
+        },
+        {
+          title: '内容主线',
+          items: [
+            { label: '投资研究', href: '/tags/投资研究/' },
+            { label: '从零看懂股票', href: '/series/stock-basics/' },
+            { label: 'A股科技研究', href: '/series/a-share-tech-research/' },
+            { label: 'LLM 算法工程', href: '/search/?q=LLM' },
+            { label: 'AI 算力与大模型产业', href: '/search/?q=AI算力' },
+            { label: '研究方法', href: '/about/#method' },
           ],
         },
         {
