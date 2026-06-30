@@ -19,6 +19,18 @@ export interface ProjectEntry {
 
 export const projects: ProjectEntry[] = [
   {
+    eyebrow: 'A-share Rotation / Free Data',
+    title: 'A股行业轮动观察',
+    description: '用免费公开行情数据搭建行业轮动仪表盘，观察涨跌热力、相对强弱、RRG、上涨家数占比、成交额占比和资金流。',
+    status: '已上线',
+    meta: [
+      { label: '定位', value: '轮动观察工具' },
+      { label: '数据', value: '免费公开接口' },
+      { label: '图表', value: '热力 / RRG / 强弱' },
+    ],
+    links: [{ label: '查看行业轮动', href: '/projects/a-share-sector-rotation/' }],
+  },
+  {
     eyebrow: 'A-share Tech / One-year Roadmap',
     title: 'A股科技与未来产业研究路线',
     description: '把 A 股科技与未来产业研究拆成 12 个月执行项目：每周 6-8 小时，覆盖公司研究、产业学习、估值训练和博客输出。',

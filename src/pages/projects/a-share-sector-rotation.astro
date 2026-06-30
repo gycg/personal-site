@@ -1,0 +1,807 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageSidebar from '../../components/PageSidebar.astro';
+---
+
+<BaseLayout
+  title="A股行业轮动观察"
+  description="用免费公开行情数据观察 A 股行业轮动：涨跌热力、相对强弱、RRG、上涨家数占比、成交额占比和资金流。"
+  canonicalPath="/projects/a-share-sector-rotation/"
+>
+  <div class="page-grid">
+    <div>
+      <section class="hero sector-rotation-hero">
+        <p class="eyebrow">A-share Sector Rotation</p>
+        <h1>A股行业轮动观察</h1>
+        <p class="lead">
+          用一组图回答行业轮动里的不同问题：谁最强、强弱是否持续、处于哪个轮动阶段、行业内部有没有扩散、资金是否过热。
+          数据优先使用免费公开接口；拿不到稳定免费数据的指标会明确标注。
+        </p>
+      </section>
+
+      <section class="sector-source-note" aria-label="数据源说明">
+        <strong>数据口径说明</strong>
+        <p>
+          当前版本使用东方财富免费行情接口的板块数据和板块历史 K 线，属于东方财富行业/主题板块口径，
+          不是严格的申万一级行业口径。申万一级/二级行业、PE/PB 分位、北向资金行业拆分等数据如果没有稳定免费源，本页不会伪造。
+        </p>
+      </section>
+
+      <section class="sector-dashboard" aria-label="行业轮动控制台" data-sector-root>
+        <div class="sector-toolbar">
+          <div>
+            <span>数据频率</span>
+            <select data-frequency aria-label="选择历史 K 线频率">
+              <option value="101" selected>日频</option>
+              <option value="102">周频</option>
+              <option value="103">月频</option>
+            </select>
+          </div>
+          <div>
+            <span>观察窗口</span>
+            <select data-window-size aria-label="选择观察窗口">
+              <option value="45">45 个交易周期</option>
+              <option value="80" selected>80 个交易周期</option>
+              <option value="120">120 个交易周期</option>
+            </select>
+          </div>
+          <button type="button" data-refresh-sector>刷新数据</button>
+        </div>
+
+        <p class="sector-status" data-sector-status>正在读取免费行情数据...</p>
+
+        <div class="sector-metric-grid" aria-label="数据概览">
+          <article>
+            <span>板块池</span>
+            <strong data-sector-count>--</strong>
+            <p>东方财富免费板块列表</p>
+          </article>
+          <article>
+            <span>最新时间</span>
+            <strong data-sector-time>--</strong>
+            <p>以行情接口返回时间为准</p>
+          </article>
+          <article>
+            <span>基准</span>
+            <strong>沪深300</strong>
+            <p>相对强弱与 RRG 使用该基准</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="rotation-framework-title">
+        <div class="section-head">
+          <div>
+            <h2 id="rotation-framework-title">观察框架</h2>
+            <p>每张图只回答一个问题，组合起来看行业轮动。</p>
+          </div>
+        </div>
+
+        <div class="rotation-framework-grid">
+          <article>
+            <span>01</span>
+            <strong>热力图</strong>
+            <p>看谁在动，谁强谁弱。</p>
+          </article>
+          <article>
+            <span>02</span>
+            <strong>相对强弱</strong>
+            <p>看是否持续跑赢沪深300。</p>
+          </article>
+          <article>
+            <span>03</span>
+            <strong>RRG</strong>
+            <p>看处于领先、转弱、落后还是改善。</p>
+          </article>
+          <article>
+            <span>04</span>
+            <strong>上涨家数</strong>
+            <p>看行情是扩散还是少数龙头支撑。</p>
+          </article>
+          <article>
+            <span>05</span>
+            <strong>成交占比</strong>
+            <p>看强势行业是否开始拥挤。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="sector-heatmap-title">
+        <div class="section-head">
+          <div>
+            <h2 id="sector-heatmap-title">行业涨跌幅热力图</h2>
+            <p>颜色表示最新涨跌幅，面积按成交额分层。适合每天/每周复盘。</p>
+          </div>
+        </div>
+        <div class="sector-heatmap" data-sector-heatmap aria-label="行业涨跌幅热力图"></div>
+      </section>
+
+      <section class="content-section" aria-labelledby="sector-core-title">
+        <div class="section-head">
+          <div>
+            <h2 id="sector-core-title">核心轮动图</h2>
+            <p>用相对强弱、RRG、上涨家数和成交占比交叉确认。</p>
+          </div>
+        </div>
+
+        <div class="sector-chart-grid">
+          <article class="sector-chart-panel is-wide">
+            <div class="sector-panel-head">
+              <div>
+                <span>Relative Strength</span>
+                <h3>行业相对强弱曲线</h3>
+              </div>
+              <p>行业指数 / 沪深300，起点归一到 100。</p>
+            </div>
+            <div class="sector-svg-wrap" data-relative-chart></div>
+            <div class="sector-legend" data-relative-legend></div>
+          </article>
+
+          <article class="sector-chart-panel">
+            <div class="sector-panel-head">
+              <div>
+                <span>RRG</span>
+                <h3>相对轮动图</h3>
+              </div>
+              <p>右上强且加速，左上弱但改善。</p>
+            </div>
+            <div class="sector-svg-wrap" data-rrg-chart></div>
+          </article>
+
+          <article class="sector-chart-panel">
+            <div class="sector-panel-head">
+              <div>
+                <span>Breadth</span>
+                <h3>上涨家数占比</h3>
+              </div>
+              <p>用上涨家数 / 上涨下跌家数估算内部扩散。</p>
+            </div>
+            <div class="sector-bar-list" data-breadth-list></div>
+          </article>
+
+          <article class="sector-chart-panel">
+            <div class="sector-panel-head">
+              <div>
+                <span>Crowding</span>
+                <h3>行业成交额占比</h3>
+              </div>
+              <p>成交额占比过高时，短期波动可能放大。</p>
+            </div>
+            <div class="sector-bar-list" data-turnover-list></div>
+          </article>
+
+          <article class="sector-chart-panel">
+            <div class="sector-panel-head">
+              <div>
+                <span>Flow</span>
+                <h3>主力净流入</h3>
+              </div>
+              <p>免费接口字段，作为资金配合的粗略参考。</p>
+            </div>
+            <div class="sector-bar-list" data-flow-list></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="sector-ranking-title">
+        <div class="section-head">
+          <div>
+            <h2 id="sector-ranking-title">强弱排行</h2>
+            <p>快速看最强、最弱、放量和资金异动板块。</p>
+          </div>
+        </div>
+
+        <div class="holding-table-wrap" data-scroll-hint="横向滑动查看完整排行">
+          <table class="holding-table sector-ranking-table">
+            <thead>
+              <tr>
+                <th>板块</th>
+                <th data-ranking-return-head>窗口涨跌幅</th>
+                <th>成交额</th>
+                <th>主力净流入</th>
+                <th>上涨家数</th>
+                <th>下跌家数</th>
+              </tr>
+            </thead>
+            <tbody data-ranking-body>
+              <tr>
+                <td colspan="6">正在加载...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="content-section" aria-labelledby="sector-availability-title">
+        <div class="section-head">
+          <div>
+            <h2 id="sector-availability-title">免费数据可用性</h2>
+            <p>能直接免费获取的先做；没有稳定免费源的明确标注。</p>
+          </div>
+        </div>
+
+        <div class="sector-availability-list">
+          <article class="is-available">
+            <strong>已接入</strong>
+            <p>板块涨跌幅、成交额、历史 K 线、上涨/下跌家数、主力净流入。</p>
+          </article>
+          <article class="is-limited">
+            <strong>有限可用</strong>
+            <p>RRG 和相对强弱基于免费板块指数 K 线计算，口径依赖东方财富板块数据。</p>
+          </article>
+          <article class="is-missing">
+            <strong>暂未接入</strong>
+            <p>严格申万行业、PE/PB 分位、盈利增速、北向资金行业拆分、ETF 份额变化，没有稳定免费接口时不展示结论。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <PageSidebar
+      title="行业轮动"
+      intro="周频为主、日频辅助、月频确认；先看强弱，再看持续性和拥挤度。"
+      sections={[
+        {
+          title: '页面导航',
+          items: [
+            { label: '数据控制台', href: '#main-content' },
+            { label: '观察框架', href: '#rotation-framework-title' },
+            { label: '涨跌热力图', href: '#sector-heatmap-title' },
+            { label: '核心轮动图', href: '#sector-core-title' },
+            { label: '强弱排行', href: '#sector-ranking-title' },
+            { label: '免费数据说明', href: '#sector-availability-title' },
+          ],
+        },
+        {
+          title: '相关项目',
+          items: [
+            { label: 'A股科技研究路线', href: '/projects/a-share-tech-research-roadmap/' },
+            { label: '我的持仓（模拟）', href: '/projects/holdings/' },
+            { label: '项目页', href: '/projects/' },
+          ],
+        },
+      ]}
+    />
+  </div>
+
+  <script>
+    const root = document.querySelector('[data-sector-root]');
+    const statusEl = document.querySelector('[data-sector-status]');
+    const heatmapEl = document.querySelector('[data-sector-heatmap]');
+    const rankingBody = document.querySelector('[data-ranking-body]');
+    const refreshButton = document.querySelector('[data-refresh-sector]');
+    const frequencySelect = document.querySelector('[data-frequency]');
+    const windowSelect = document.querySelector('[data-window-size]');
+    const countEl = document.querySelector('[data-sector-count]');
+    const timeEl = document.querySelector('[data-sector-time]');
+    const relativeChartEl = document.querySelector('[data-relative-chart]');
+    const relativeLegendEl = document.querySelector('[data-relative-legend]');
+    const rrgChartEl = document.querySelector('[data-rrg-chart]');
+    const breadthListEl = document.querySelector('[data-breadth-list]');
+    const turnoverListEl = document.querySelector('[data-turnover-list]');
+    const flowListEl = document.querySelector('[data-flow-list]');
+    const benchmarkSecid = '1.000300';
+    const palette = ['#2f6f53', '#9a6a19', '#2f6588', '#8a4d2b', '#6b6e2e', '#3e6a6c'];
+    const cachePrefix = 'sector-rotation:v1:';
+    const cacheTtlMs = 20 * 60 * 1000;
+    const staleTtlMs = 48 * 60 * 60 * 1000;
+
+    const currencyFormatter = new Intl.NumberFormat('zh-CN', {
+      style: 'currency',
+      currency: 'CNY',
+      notation: 'compact',
+      maximumFractionDigits: 2,
+    });
+    const percentFormatter = new Intl.NumberFormat('zh-CN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    function setStatus(message, tone = '') {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.dataset.tone = tone;
+    }
+
+    function formatTimestamp(value) {
+      const timestamp = Number(value);
+      if (!Number.isFinite(timestamp) || timestamp <= 0) return '--';
+      const date = new Date(timestamp * 1000);
+      const pad = (item) => String(item).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function readCache(key, maxAgeMs = staleTtlMs) {
+      try {
+        const raw = localStorage.getItem(cachePrefix + key);
+        if (!raw) return null;
+        const cached = JSON.parse(raw);
+        if (!cached?.savedAt || Date.now() - cached.savedAt > maxAgeMs) return null;
+        return cached;
+      } catch {
+        return null;
+      }
+    }
+
+    function writeCache(key, value) {
+      try {
+        localStorage.setItem(cachePrefix + key, JSON.stringify({
+          savedAt: Date.now(),
+          value,
+        }));
+      } catch {
+        // localStorage may be disabled or full; network data can still render.
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function fetchJson(url, cacheKey) {
+      const freshCache = readCache(cacheKey, cacheTtlMs);
+      if (freshCache) return { value: freshCache.value, source: 'fresh-cache' };
+
+      let lastError;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        try {
+          const response = await fetch(`${url}&_=${Date.now()}-${attempt}`, {
+            cache: 'no-store',
+            signal: controller.signal,
+            headers: {
+              Accept: 'application/json,text/plain,*/*',
+            },
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const text = await response.text();
+          if (!text.trim()) throw new Error('empty response');
+          const value = JSON.parse(text.replace(/^[^(]+\((.*)\);?$/, '$1'));
+          writeCache(cacheKey, value);
+          return { value, source: 'network' };
+        } catch (error) {
+          lastError = error;
+          await sleep(300 + attempt * 650);
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
+
+      const staleCache = readCache(cacheKey, staleTtlMs);
+      if (staleCache) return { value: staleCache.value, source: 'stale-cache', savedAt: staleCache.savedAt };
+      throw lastError ?? new Error('fetch failed');
+    }
+
+    async function mapLimit(items, limit, mapper) {
+      const results = new Array(items.length);
+      let index = 0;
+      const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (index < items.length) {
+          const current = index;
+          index += 1;
+          try {
+            results[current] = { status: 'fulfilled', value: await mapper(items[current], current) };
+          } catch (reason) {
+            results[current] = { status: 'rejected', reason };
+          }
+        }
+      });
+      await Promise.all(workers);
+      return results;
+    }
+
+    function normalizeSector(item) {
+      const amount = Number(item.f6);
+      const upCount = Number(item.f104);
+      const downCount = Number(item.f105);
+      return {
+        code: item.f12,
+        name: item.f14,
+        close: Number(item.f2),
+        pct: Number(item.f3),
+        change: Number(item.f4),
+        volume: Number(item.f5),
+        amount: Number.isFinite(amount) ? amount : 0,
+        mainNet: Number(item.f62),
+        upCount: Number.isFinite(upCount) ? upCount : 0,
+        downCount: Number.isFinite(downCount) ? downCount : 0,
+        updatedAt: item.f124,
+      };
+    }
+
+    async function loadSectorList() {
+      const fields = 'f12,f14,f2,f3,f4,f5,f6,f62,f104,f105,f124';
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=500&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:90+t:2&fields=${fields}`;
+      const { value: payload, source, savedAt } = await fetchJson(url, 'sector-list');
+      const rows = payload.data?.diff ?? [];
+      return {
+        sectors: rows.map(normalizeSector).filter((item) => item.code && item.name && Number.isFinite(item.pct)),
+        source,
+        savedAt,
+      };
+    }
+
+    function normalizeKlinePayload(payload) {
+      const rows = payload.data?.klines ?? [];
+      return rows
+        .map((line) => {
+          const parts = line.split(',');
+          const close = Number(parts[2]);
+          const amount = Number(parts[6]);
+          if (!parts[0] || !Number.isFinite(close)) return null;
+          return { date: parts[0], close, amount: Number.isFinite(amount) ? amount : 0 };
+        })
+        .filter(Boolean);
+    }
+
+    async function loadKline(secid, frequency, windowSize) {
+      const fields1 = 'f1,f2,f3,f4,f5,f6';
+      const fields2 = 'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61';
+      const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=${fields1}&fields2=${fields2}&klt=${frequency}&fqt=1&beg=20250101&end=20500101`;
+      const { value: payload, source, savedAt } = await fetchJson(url, `kline:${secid}:${frequency}`);
+      return {
+        rows: normalizeKlinePayload(payload).slice(-windowSize),
+        source,
+        savedAt,
+      };
+    }
+
+    function getHeatColor(value, maxAbs) {
+      const intensity = Math.min(Math.abs(value) / Math.max(maxAbs, 1), 1);
+      if (value >= 0) {
+        const lightness = 94 - intensity * 52;
+        const saturation = 30 + intensity * 22;
+        return `hsl(145 ${saturation}% ${lightness}%)`;
+      }
+      const lightness = 94 - intensity * 48;
+      const saturation = 34 + intensity * 24;
+      return `hsl(16 ${saturation}% ${lightness}%)`;
+    }
+
+    function getFrequencyLabel(frequency) {
+      if (frequency === '102') return '周频';
+      if (frequency === '103') return '月频';
+      return '日频';
+    }
+
+    function getWindowStats(rows) {
+      if (!rows?.length) return null;
+      const first = rows[0];
+      const latest = rows.at(-1);
+      if (!first?.close || !latest?.close) return null;
+
+      return {
+        pct: ((latest.close / first.close) - 1) * 100,
+        amount: rows.reduce((sum, row) => sum + (row.amount || 0), 0),
+        periods: rows.length,
+        start: first.date,
+        end: latest.date,
+      };
+    }
+
+    function mergeWindowStats(sectors, histories) {
+      return sectors.map((sector) => {
+        const stats = getWindowStats(histories.get(sector.code));
+        return {
+          ...sector,
+          windowPct: stats?.pct ?? sector.pct,
+          windowAmount: stats?.amount ?? sector.amount,
+          windowPeriods: stats?.periods ?? 0,
+          windowStart: stats?.start ?? '',
+          windowEnd: stats?.end ?? '',
+        };
+      });
+    }
+
+    function renderHeatmap(sectors, valueKey = 'pct', amountKey = 'amount') {
+      if (!heatmapEl) return;
+      const items = [...sectors]
+        .sort((a, b) => Math.abs(b[valueKey]) - Math.abs(a[valueKey]))
+        .slice(0, 42);
+      const maxAmount = Math.max(...items.map((item) => item[amountKey]), 1);
+      const sortedAbsValues = items.map((item) => Math.abs(item[valueKey])).sort((a, b) => a - b);
+      const maxAbs = sortedAbsValues[Math.floor(sortedAbsValues.length * 0.9)] || sortedAbsValues.at(-1) || 1;
+
+      heatmapEl.replaceChildren(...items.map((item) => {
+        const card = document.createElement('article');
+        const value = item[valueKey];
+        const size = 0.78 + (item[amountKey] / maxAmount) * 0.7;
+        card.style.setProperty('--heat', getHeatColor(value, maxAbs));
+        card.style.setProperty('--scale', String(size));
+        card.title = `${item.name} ${value >= 0 ? '+' : ''}${percentFormatter.format(value)}%，成交额 ${currencyFormatter.format(item[amountKey])}`;
+        card.innerHTML = `
+          <strong>${item.name}</strong>
+          <span>${value >= 0 ? '+' : ''}${percentFormatter.format(value)}%</span>
+          <em>${currencyFormatter.format(item[amountKey])}</em>
+        `;
+        return card;
+      }));
+    }
+
+    function renderRanking(sectors, valueKey = 'pct') {
+      if (!rankingBody) return;
+      const strongest = [...sectors].sort((a, b) => b[valueKey] - a[valueKey]).slice(0, 12);
+      const weakest = [...sectors].sort((a, b) => a[valueKey] - b[valueKey]).slice(0, 8);
+      const rows = [...strongest, ...weakest].filter((item, index, arr) => arr.findIndex((row) => row.code === item.code) === index);
+      rankingBody.replaceChildren(...rows.map((item) => {
+        const value = item[valueKey];
+        const tr = document.createElement('tr');
+        tr.className = value >= 0 ? 'is-profit' : 'is-loss';
+        tr.innerHTML = `
+          <td><strong>${item.name}</strong><span>${item.code}</span></td>
+          <td>${value >= 0 ? '+' : ''}${percentFormatter.format(value)}%</td>
+          <td>${currencyFormatter.format(item.amount)}</td>
+          <td>${currencyFormatter.format(item.mainNet || 0)}</td>
+          <td>${item.upCount}</td>
+          <td>${item.downCount}</td>
+        `;
+        return tr;
+      }));
+    }
+
+    function renderBarList(container, rows, options) {
+      if (!container) return;
+      const maxValue = Math.max(...rows.map((row) => Math.abs(row.value)), 1);
+      container.replaceChildren(...rows.map((row) => {
+        const item = document.createElement('article');
+        item.className = row.value >= 0 ? 'is-positive' : 'is-negative';
+        item.innerHTML = `
+          <div>
+            <strong>${row.name}</strong>
+            <span>${row.label}</span>
+          </div>
+          <i style="--bar: ${(Math.abs(row.value) / maxValue) * 100}%"></i>
+        `;
+        if (options?.accent) item.dataset.accent = options.accent;
+        return item;
+      }));
+    }
+
+    function makeSvg(width, height, content) {
+      return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-hidden="true">${content}</svg>`;
+    }
+
+    function pointsToPolyline(points) {
+      return points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ');
+    }
+
+    function renderRelativeChart(seriesList) {
+      if (!relativeChartEl || !relativeLegendEl) return;
+      if (!seriesList.length) {
+        relativeChartEl.innerHTML = '<p class="empty">免费历史 K 线暂时不可用。</p>';
+        relativeLegendEl.replaceChildren();
+        return;
+      }
+
+      const width = 720;
+      const height = 310;
+      const pad = 28;
+      const allValues = seriesList.flatMap((series) => series.values.map((item) => item.value));
+      const min = Math.min(...allValues);
+      const max = Math.max(...allValues);
+      const span = Math.max(max - min, 1);
+      const lastLength = Math.max(...seriesList.map((series) => series.values.length));
+      const lines = seriesList.map((series, index) => {
+        const color = palette[index % palette.length];
+        const points = series.values.map((item, pointIndex) => ({
+          x: pad + (pointIndex / Math.max(lastLength - 1, 1)) * (width - pad * 2),
+          y: height - pad - ((item.value - min) / span) * (height - pad * 2),
+        }));
+        const last = points.at(-1);
+        return `
+          <polyline points="${pointsToPolyline(points)}" stroke="${color}" />
+          ${last ? `<circle cx="${last.x}" cy="${last.y}" r="3.8" fill="${color}" />` : ''}
+        `;
+      }).join('');
+      const grid = [0, 1, 2, 3].map((item) => {
+        const y = pad + item * ((height - pad * 2) / 3);
+        return `<line x1="${pad}" y1="${y}" x2="${width - pad}" y2="${y}" class="grid-line" />`;
+      }).join('');
+
+      relativeChartEl.innerHTML = makeSvg(width, height, `${grid}${lines}`);
+      relativeLegendEl.replaceChildren(...seriesList.map((series, index) => {
+        const item = document.createElement('span');
+        item.style.setProperty('--legend', palette[index % palette.length]);
+        item.textContent = series.name;
+        return item;
+      }));
+    }
+
+    function buildRelativeSeries(sectors, histories, benchmarkRows) {
+      const benchmarkByDate = new Map(benchmarkRows.map((row) => [row.date, row.close]));
+      return sectors.map((sector) => {
+        const rows = histories.get(sector.code) ?? [];
+        const relativeRows = rows
+          .map((row) => {
+            const benchmark = benchmarkByDate.get(row.date);
+            if (!benchmark) return null;
+            return { date: row.date, raw: row.close / benchmark };
+          })
+          .filter(Boolean);
+        const first = relativeRows[0]?.raw;
+        if (!first) return null;
+        return {
+          name: sector.name,
+          values: relativeRows.map((row) => ({ date: row.date, value: (row.raw / first) * 100 })),
+        };
+      }).filter(Boolean);
+    }
+
+    function renderRrgChart(sectors, histories, benchmarkRows) {
+      if (!rrgChartEl) return;
+      const benchmarkByDate = new Map(benchmarkRows.map((row) => [row.date, row.close]));
+      const dots = sectors.map((sector) => {
+        const relativeRows = (histories.get(sector.code) ?? [])
+          .map((row) => {
+            const benchmark = benchmarkByDate.get(row.date);
+            if (!benchmark) return null;
+            return { date: row.date, rs: row.close / benchmark };
+          })
+          .filter(Boolean);
+        if (relativeRows.length < 24) return null;
+        const latest = relativeRows.at(-1).rs;
+        const previous = relativeRows.at(-6)?.rs ?? relativeRows[0].rs;
+        const window = relativeRows.slice(-20).map((row) => row.rs);
+        const avg = window.reduce((sum, value) => sum + value, 0) / window.length;
+        return {
+          name: sector.name,
+          strength: ((latest / avg) - 1) * 100,
+          momentum: ((latest / previous) - 1) * 100,
+          pct: sector.pct,
+        };
+      }).filter(Boolean);
+
+      if (!dots.length) {
+        rrgChartEl.innerHTML = '<p class="empty">RRG 需要足够历史 K 线，当前免费数据暂时不足。</p>';
+        return;
+      }
+
+      const width = 420;
+      const height = 360;
+      const pad = 42;
+      const bound = Math.max(3, Math.min(10, Math.max(...dots.flatMap((dot) => [Math.abs(dot.strength), Math.abs(dot.momentum)])) * 1.1));
+      const project = (dot) => ({
+        x: pad + ((Math.max(-bound, Math.min(bound, dot.strength)) + bound) / (bound * 2)) * (width - pad * 2),
+        y: height - pad - ((Math.max(-bound, Math.min(bound, dot.momentum)) + bound) / (bound * 2)) * (height - pad * 2),
+      });
+      const labels = `
+        <text x="${width - pad}" y="${pad - 14}" text-anchor="end">领先</text>
+        <text x="${width - pad}" y="${height - 12}" text-anchor="end">转弱</text>
+        <text x="${pad}" y="${height - 12}">落后</text>
+        <text x="${pad}" y="${pad - 14}">改善</text>
+      `;
+      const points = dots.slice(0, 22).map((dot) => {
+        const point = project(dot);
+        return `
+          <g>
+            <circle cx="${point.x}" cy="${point.y}" r="${dot.pct >= 0 ? 5 : 4}" class="${dot.pct >= 0 ? 'is-up' : 'is-down'}" />
+            <text x="${point.x + 7}" y="${point.y + 4}">${dot.name.slice(0, 5)}</text>
+          </g>
+        `;
+      }).join('');
+      rrgChartEl.innerHTML = makeSvg(width, height, `
+        <line x1="${pad}" y1="${height / 2}" x2="${width - pad}" y2="${height / 2}" class="axis-line" />
+        <line x1="${width / 2}" y1="${pad}" x2="${width / 2}" y2="${height - pad}" class="axis-line" />
+        ${labels}
+        ${points}
+      `);
+    }
+
+    async function loadDashboard() {
+      if (!root) return;
+      const frequency = frequencySelect?.value ?? '101';
+      const windowSize = Number(windowSelect?.value ?? 80);
+      refreshButton.disabled = true;
+      setStatus('正在读取东方财富免费板块数据...');
+
+      try {
+        const sectorResult = await loadSectorList();
+        const sectors = sectorResult.sectors;
+        if (!sectors.length) throw new Error('板块列表为空');
+
+        const totalAmount = sectors.reduce((sum, item) => sum + item.amount, 0) || 1;
+        const latestTime = formatTimestamp(Math.max(...sectors.map((item) => Number(item.updatedAt) || 0)));
+        if (countEl) countEl.textContent = `${sectors.length}`;
+        if (timeEl) timeEl.textContent = latestTime;
+
+        if (heatmapEl) heatmapEl.innerHTML = '<p class="empty">正在按所选窗口计算涨跌幅...</p>';
+        if (rankingBody) rankingBody.innerHTML = '<tr><td colspan="6">正在按所选窗口计算...</td></tr>';
+
+        const topByPct = [...sectors].sort((a, b) => b.pct - a.pct).slice(0, 8);
+        const topByAmount = [...sectors].sort((a, b) => b.amount - a.amount).slice(0, 8);
+        const topByAbsPct = [...sectors].sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct)).slice(0, 20);
+        const topByFlow = [...sectors].sort((a, b) => Math.abs(b.mainNet || 0) - Math.abs(a.mainNet || 0)).slice(0, 12);
+        const selected = [...topByPct, ...topByAmount, ...topByAbsPct, ...topByFlow]
+          .filter((item, index, arr) => arr.findIndex((row) => row.code === item.code) === index)
+          .slice(0, 48);
+
+        renderBarList(
+          breadthListEl,
+          [...sectors]
+            .map((item) => {
+              const total = item.upCount + item.downCount;
+              return {
+                name: item.name,
+                value: total ? (item.upCount / total) * 100 : 0,
+                label: `${item.upCount} 涨 / ${item.downCount} 跌`,
+              };
+            })
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 10),
+          { accent: 'breadth' },
+        );
+
+        renderBarList(
+          turnoverListEl,
+          [...sectors]
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 10)
+            .map((item) => ({
+              name: item.name,
+              value: (item.amount / totalAmount) * 100,
+              label: `${percentFormatter.format((item.amount / totalAmount) * 100)}%`,
+            })),
+          { accent: 'turnover' },
+        );
+
+        renderBarList(
+          flowListEl,
+          [...sectors]
+            .sort((a, b) => Math.abs(b.mainNet || 0) - Math.abs(a.mainNet || 0))
+            .slice(0, 10)
+            .map((item) => ({
+              name: item.name,
+              value: item.mainNet || 0,
+              label: currencyFormatter.format(item.mainNet || 0),
+            })),
+          { accent: 'flow' },
+        );
+
+        const frequencyLabel = getFrequencyLabel(frequency);
+        const listCacheLabel = sectorResult.source === 'network'
+          ? ''
+          : `（板块列表使用${sectorResult.source === 'fresh-cache' ? '本地缓存' : '过期缓存'}）`;
+        setStatus(`正在读取板块历史 K 线，按${frequencyLabel} ${windowSize} 个周期重算热力图、排行、相对强弱和 RRG...${listCacheLabel}`);
+        const benchmarkResult = await loadKline(benchmarkSecid, frequency, windowSize);
+        const benchmarkRows = benchmarkResult.rows;
+        const historyResults = await mapLimit(selected, 4, async (sector) => [
+          sector.code,
+          await loadKline(`90.${sector.code}`, frequency, windowSize),
+        ]);
+        const histories = new Map(historyResults
+          .filter((result) => result.status === 'fulfilled' && result.value[1]?.rows?.length)
+          .map((result) => [result.value[0], result.value[1].rows]));
+
+        const windowSectors = mergeWindowStats(selected, histories);
+        const rankingHead = document.querySelector('[data-ranking-return-head]');
+        if (rankingHead) rankingHead.textContent = `${frequencyLabel}${windowSize}周期涨跌幅`;
+        renderHeatmap(windowSectors, 'windowPct', 'windowAmount');
+        renderRanking(windowSectors, 'windowPct');
+
+        const relativeSectors = [...windowSectors].sort((a, b) => b.windowPct - a.windowPct).slice(0, 6);
+        renderRelativeChart(buildRelativeSeries(relativeSectors, histories, benchmarkRows));
+        renderRrgChart(windowSectors, histories, benchmarkRows);
+
+        const failedCount = historyResults.filter((result) => result.status === 'rejected').length;
+        const cacheCount = historyResults.filter((result) => result.status === 'fulfilled' && result.value[1]?.source !== 'network').length;
+        const benchmarkCacheLabel = benchmarkResult.source === 'network' ? '' : '；基准使用本地缓存';
+        const cacheLabel = cacheCount > 0 ? `；${cacheCount} 个板块使用本地缓存` : '';
+        const failLabel = failedCount > 0 ? `；${failedCount} 个板块暂未返回` : '';
+        setStatus(`已按${frequencyLabel} ${windowSize} 个周期刷新。免费数据源：东方财富板块行情；最新时间 ${latestTime}${listCacheLabel}${benchmarkCacheLabel}${cacheLabel}${failLabel}。`);
+      } catch (error) {
+        console.warn(error);
+        setStatus('免费数据暂时获取失败，且本地没有可用缓存：可能是接口限流、网络失败或浏览器阻止跨域请求。页面不会用模拟数据替代真实行情。', 'error');
+        if (rankingBody) rankingBody.innerHTML = '<tr><td colspan="6">免费数据暂时获取失败。</td></tr>';
+        if (heatmapEl) heatmapEl.innerHTML = '<p class="empty">免费数据暂时获取失败。</p>';
+      } finally {
+        refreshButton.disabled = false;
+      }
+    }
+
+    refreshButton?.addEventListener('click', loadDashboard);
+    frequencySelect?.addEventListener('change', loadDashboard);
+    windowSelect?.addEventListener('change', loadDashboard);
+    loadDashboard();
+  </script>
+</BaseLayout>
