@@ -116,6 +116,20 @@ import PageSidebar from '../../components/PageSidebar.astro';
         <div class="sector-heatmap" data-sector-heatmap aria-label="行业涨跌幅热力图"></div>
       </section>
 
+      <section class="content-section" aria-labelledby="sector-daily-history-title">
+        <div class="section-head">
+          <div>
+            <h2 id="sector-daily-history-title">历史交易日热力图</h2>
+            <p>首次用板块日 K 线生成最近 10 个交易日；之后每次打开会把新完成的交易日追加进本地历史库。</p>
+          </div>
+        </div>
+        <div class="sector-history-panel">
+          <div class="sector-date-tabs" data-sector-date-tabs aria-label="选择交易日"></div>
+          <div class="sector-history-meta" data-sector-history-meta></div>
+          <div class="sector-heatmap is-history" data-sector-history-heatmap aria-label="历史交易日行业热力图"></div>
+        </div>
+      </section>
+
       <section class="content-section" aria-labelledby="sector-core-title">
         <div class="section-head">
           <div>
@@ -247,6 +261,7 @@ import PageSidebar from '../../components/PageSidebar.astro';
             { label: '数据控制台', href: '#main-content' },
             { label: '观察框架', href: '#rotation-framework-title' },
             { label: '涨跌热力图', href: '#sector-heatmap-title' },
+            { label: '历史交易日热力图', href: '#sector-daily-history-title' },
             { label: '核心轮动图', href: '#sector-core-title' },
             { label: '强弱排行', href: '#sector-ranking-title' },
             { label: '免费数据说明', href: '#sector-availability-title' },
@@ -268,6 +283,9 @@ import PageSidebar from '../../components/PageSidebar.astro';
     const root = document.querySelector('[data-sector-root]');
     const statusEl = document.querySelector('[data-sector-status]');
     const heatmapEl = document.querySelector('[data-sector-heatmap]');
+    const historyHeatmapEl = document.querySelector('[data-sector-history-heatmap]');
+    const historyTabsEl = document.querySelector('[data-sector-date-tabs]');
+    const historyMetaEl = document.querySelector('[data-sector-history-meta]');
     const rankingBody = document.querySelector('[data-ranking-body]');
     const refreshButton = document.querySelector('[data-refresh-sector]');
     const frequencySelect = document.querySelector('[data-frequency]');
@@ -283,6 +301,10 @@ import PageSidebar from '../../components/PageSidebar.astro';
     const benchmarkSecid = '1.000300';
     const palette = ['#2f6f53', '#9a6a19', '#2f6588', '#8a4d2b', '#6b6e2e', '#3e6a6c'];
     const cachePrefix = 'sector-rotation:v1:';
+    const snapshotPrefix = 'sector-rotation:snapshot:v1:';
+    const snapshotIndexKey = 'sector-rotation:snapshot-index:v1';
+    const dailySnapshotPrefix = 'sector-rotation:daily-history:v1:';
+    const dailySnapshotIndexKey = 'sector-rotation:daily-history-index:v1';
     const cacheTtlMs = 20 * 60 * 1000;
     const staleTtlMs = 48 * 60 * 60 * 1000;
 
@@ -309,6 +331,103 @@ import PageSidebar from '../../components/PageSidebar.astro';
       const date = new Date(timestamp * 1000);
       const pad = (item) => String(item).padStart(2, '0');
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function getDateFromTimestamp(value) {
+      const formatted = formatTimestamp(value);
+      return /^\d{4}-\d{2}-\d{2}/.test(formatted) ? formatted.slice(0, 10) : '';
+    }
+
+    function saveSnapshot(date, sectors) {
+      if (!date || !sectors?.length) return;
+      try {
+        const snapshot = {
+          savedAt: Date.now(),
+          date,
+          sectors: sectors.map((item) => ({
+            code: item.code,
+            name: item.name,
+            pct: item.pct,
+            amount: item.amount,
+            mainNet: item.mainNet,
+            upCount: item.upCount,
+            downCount: item.downCount,
+            updatedAt: item.updatedAt,
+          })),
+        };
+        localStorage.setItem(snapshotPrefix + date, JSON.stringify(snapshot));
+        const index = JSON.parse(localStorage.getItem(snapshotIndexKey) || '[]');
+        const nextIndex = [date, ...index.filter((item) => item !== date)].slice(0, 80);
+        localStorage.setItem(snapshotIndexKey, JSON.stringify(nextIndex));
+      } catch {
+        // Snapshot storage is best-effort and should not block rendering.
+      }
+    }
+
+    function saveDailyHistorySnapshots(snapshots) {
+      if (!snapshots?.length) return;
+      try {
+        const index = JSON.parse(localStorage.getItem(dailySnapshotIndexKey) || '[]');
+        const dates = new Set(index);
+        const isInitialSeed = index.length === 0;
+
+        snapshots.forEach((snapshot) => {
+          if (!snapshot?.date || !snapshot.items?.length) return;
+          if (dates.has(snapshot.date)) return;
+          dates.add(snapshot.date);
+          const sourceType = isInitialSeed ? 'initial-10-daily-kline' : 'daily-append-kline';
+          localStorage.setItem(dailySnapshotPrefix + snapshot.date, JSON.stringify({
+            savedAt: Date.now(),
+            date: snapshot.date,
+            sourceType,
+            sourceLabel: isInitialSeed ? '初始10日：东方财富日 K 线生成' : '后续追加：东方财富日 K 线生成',
+            sourceDetail: isInitialSeed
+              ? '首次打开时，用东方财富板块日 K 线回填最近 10 个交易日；按相邻两个交易日收盘价计算单日涨跌幅'
+              : '打开页面时发现新的已完成交易日，用东方财富板块日 K 线追加；按相邻两个交易日收盘价计算单日涨跌幅',
+            items: snapshot.items.map((item) => ({
+              code: item.code,
+              name: item.name,
+              dailyPct: item.dailyPct,
+              dailyAmount: item.dailyAmount,
+              sourceLabel: item.sourceLabel,
+              sourceDetail: item.sourceDetail,
+              mainNet: item.mainNet,
+              upCount: item.upCount,
+              downCount: item.downCount,
+            })),
+          }));
+        });
+
+        const nextIndex = [...dates].sort((a, b) => b.localeCompare(a)).slice(0, 120);
+        localStorage.setItem(dailySnapshotIndexKey, JSON.stringify(nextIndex));
+      } catch {
+        // Daily history storage is best-effort and should not block rendering.
+      }
+    }
+
+    function readDailyHistorySnapshots() {
+      try {
+        const index = JSON.parse(localStorage.getItem(dailySnapshotIndexKey) || '[]');
+        return index
+          .map((date) => {
+            const raw = localStorage.getItem(dailySnapshotPrefix + date);
+            if (!raw) return null;
+            const snapshot = JSON.parse(raw);
+            if (!snapshot?.date || !snapshot.items?.length) return null;
+            return {
+              date: snapshot.date,
+              savedAt: snapshot.savedAt,
+              sourceType: snapshot.sourceType || 'eastmoney-daily-kline',
+              sourceLabel: snapshot.sourceLabel || '东方财富板块日 K 线生成',
+              sourceDetail: snapshot.sourceDetail || '按相邻两个日 K 收盘价计算单日涨跌幅',
+              items: snapshot.items.filter((item) => Number.isFinite(item.dailyPct)),
+            };
+          })
+          .filter(Boolean)
+          .sort((a, b) => b.date.localeCompare(a.date));
+      } catch {
+        return [];
+      }
     }
 
     function readCache(key, maxAgeMs = staleTtlMs) {
@@ -447,6 +566,90 @@ import PageSidebar from '../../components/PageSidebar.astro';
       };
     }
 
+    function buildDailySnapshots(sectors, histories, limit = 10, itemLimit = 30) {
+      const sectorByCode = new Map(sectors.map((sector) => [sector.code, sector]));
+      const snapshots = new Map();
+
+      for (const [code, rows] of histories.entries()) {
+        if (!rows?.length) continue;
+        for (let index = 1; index < rows.length; index += 1) {
+          const previous = rows[index - 1];
+          const current = rows[index];
+          if (!previous?.close || !current?.close) continue;
+          const sector = sectorByCode.get(code);
+          if (!sector) continue;
+          const date = current.date;
+          const items = snapshots.get(date) ?? [];
+          items.push({
+            ...sector,
+            dailyPct: ((current.close / previous.close) - 1) * 100,
+            dailyAmount: current.amount || sector.amount,
+            sourceLabel: '东方财富板块日 K 线',
+            sourceDetail: `${previous.date} 收盘价到 ${current.date} 收盘价计算涨跌幅；成交额取 ${current.date} 板块日 K`,
+          });
+          snapshots.set(date, items);
+        }
+      }
+
+      return [...snapshots.entries()]
+        .sort(([a], [b]) => b.localeCompare(a))
+        .slice(0, limit)
+        .map(([date, items]) => ({
+          date,
+          sourceType: 'eastmoney-daily-kline',
+          sourceLabel: '东方财富板块日 K 线生成',
+          sourceDetail: '按相邻两个交易日收盘价计算单日涨跌幅，成交额来自该交易日板块日 K',
+          items: items
+            .sort((a, b) => Math.abs(b.dailyPct) - Math.abs(a.dailyPct))
+            .slice(0, itemLimit),
+        }));
+    }
+
+    function renderHistoryHeatmap(snapshot) {
+      if (!historyHeatmapEl) return;
+      if (!snapshot?.items?.length) {
+        if (historyMetaEl) historyMetaEl.textContent = '';
+        historyHeatmapEl.innerHTML = '<p class="empty">历史交易日数据暂时不可用。</p>';
+        return;
+      }
+      if (historyMetaEl) {
+        const savedAt = snapshot.savedAt ? `；保存时间 ${formatTimestamp(snapshot.savedAt / 1000)}` : '';
+        historyMetaEl.textContent = `${snapshot.date}：${snapshot.sourceLabel || '东方财富板块日 K 线生成'}。${snapshot.sourceDetail || '按相邻两个交易日收盘价计算单日涨跌幅'}${savedAt}`;
+      }
+      renderHeatmap(snapshot.items, 'dailyPct', 'dailyAmount', historyHeatmapEl, 30);
+    }
+
+    function renderDailyHistory(snapshots) {
+      if (!historyTabsEl || !historyHeatmapEl) return;
+      if (!snapshots.length) {
+        historyTabsEl.replaceChildren();
+        if (historyMetaEl) historyMetaEl.textContent = '';
+        historyHeatmapEl.innerHTML = '<p class="empty">历史交易日数据暂时不可用。</p>';
+        return;
+      }
+
+      historyTabsEl.replaceChildren(...snapshots.map((snapshot, index) => {
+        const button = document.createElement('button');
+        const dateLabel = document.createElement('strong');
+        const sourceLabel = document.createElement('span');
+        button.type = 'button';
+        dateLabel.textContent = snapshot.date.slice(5);
+        sourceLabel.textContent = snapshot.sourceLabel || '日 K 线生成';
+        button.append(dateLabel, sourceLabel);
+        button.dataset.date = snapshot.date;
+        button.title = `${snapshot.date}：${snapshot.sourceDetail || snapshot.sourceLabel || '东方财富板块日 K 线生成'}`;
+        button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+        button.addEventListener('click', () => {
+          historyTabsEl.querySelectorAll('button').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+          button.setAttribute('aria-pressed', 'true');
+          renderHistoryHeatmap(snapshot);
+        });
+        return button;
+      }));
+
+      renderHistoryHeatmap(snapshots[0]);
+    }
+
     function getHeatColor(value, maxAbs) {
       const intensity = Math.min(Math.abs(value) / Math.max(maxAbs, 1), 1);
       if (value >= 0) {
@@ -494,22 +697,22 @@ import PageSidebar from '../../components/PageSidebar.astro';
       });
     }
 
-    function renderHeatmap(sectors, valueKey = 'pct', amountKey = 'amount') {
-      if (!heatmapEl) return;
+    function renderHeatmap(sectors, valueKey = 'pct', amountKey = 'amount', container = heatmapEl, limit = 42) {
+      if (!container) return;
       const items = [...sectors]
         .sort((a, b) => Math.abs(b[valueKey]) - Math.abs(a[valueKey]))
-        .slice(0, 42);
+        .slice(0, limit);
       const maxAmount = Math.max(...items.map((item) => item[amountKey]), 1);
       const sortedAbsValues = items.map((item) => Math.abs(item[valueKey])).sort((a, b) => a - b);
       const maxAbs = sortedAbsValues[Math.floor(sortedAbsValues.length * 0.9)] || sortedAbsValues.at(-1) || 1;
 
-      heatmapEl.replaceChildren(...items.map((item) => {
+      container.replaceChildren(...items.map((item) => {
         const card = document.createElement('article');
         const value = item[valueKey];
         const size = 0.78 + (item[amountKey] / maxAmount) * 0.7;
         card.style.setProperty('--heat', getHeatColor(value, maxAbs));
         card.style.setProperty('--scale', String(size));
-        card.title = `${item.name} ${value >= 0 ? '+' : ''}${percentFormatter.format(value)}%，成交额 ${currencyFormatter.format(item[amountKey])}`;
+        card.title = `${item.name} ${value >= 0 ? '+' : ''}${percentFormatter.format(value)}%，成交额 ${currencyFormatter.format(item[amountKey])}${item.sourceDetail ? `；来源：${item.sourceDetail}` : ''}`;
         card.innerHTML = `
           <strong>${item.name}</strong>
           <span>${value >= 0 ? '+' : ''}${percentFormatter.format(value)}%</span>
@@ -702,10 +905,13 @@ import PageSidebar from '../../components/PageSidebar.astro';
 
         const totalAmount = sectors.reduce((sum, item) => sum + item.amount, 0) || 1;
         const latestTime = formatTimestamp(Math.max(...sectors.map((item) => Number(item.updatedAt) || 0)));
+        const latestDate = getDateFromTimestamp(Math.max(...sectors.map((item) => Number(item.updatedAt) || 0)));
+        saveSnapshot(latestDate, sectors);
         if (countEl) countEl.textContent = `${sectors.length}`;
         if (timeEl) timeEl.textContent = latestTime;
 
         if (heatmapEl) heatmapEl.innerHTML = '<p class="empty">正在按所选窗口计算涨跌幅...</p>';
+        if (historyHeatmapEl) historyHeatmapEl.innerHTML = '<p class="empty">正在生成历史交易日热力图...</p>';
         if (rankingBody) rankingBody.innerHTML = '<tr><td colspan="6">正在按所选窗口计算...</td></tr>';
 
         const topByPct = [...sectors].sort((a, b) => b.pct - a.pct).slice(0, 8);
@@ -773,6 +979,22 @@ import PageSidebar from '../../components/PageSidebar.astro';
           .filter((result) => result.status === 'fulfilled' && result.value[1]?.rows?.length)
           .map((result) => [result.value[0], result.value[1].rows]));
 
+        const existingDailySnapshots = readDailyHistorySnapshots();
+        const dailyWindowSize = existingDailySnapshots.length ? 48 : 16;
+        const dailySnapshotLimit = existingDailySnapshots.length ? 30 : 10;
+        setStatus(`正在读取全量板块日 K 线，${existingDailySnapshots.length ? '补齐缺失交易日' : '初始化最近10个交易日'}每日独立热力图...${listCacheLabel}`);
+        const dailyResults = await mapLimit(sectors, 5, async (sector) => [
+          sector.code,
+          await loadKline(`90.${sector.code}`, '101', dailyWindowSize),
+        ]);
+        const dailyHistories = new Map(dailyResults
+          .filter((result) => result.status === 'fulfilled' && result.value[1]?.rows?.length)
+          .map((result) => [result.value[0], result.value[1].rows]));
+        const generatedDailySnapshots = buildDailySnapshots(sectors, dailyHistories, dailySnapshotLimit, 30);
+        saveDailyHistorySnapshots(generatedDailySnapshots);
+        const dailyHistorySnapshots = readDailyHistorySnapshots();
+        renderDailyHistory(dailyHistorySnapshots.length ? dailyHistorySnapshots : generatedDailySnapshots);
+
         const windowSectors = mergeWindowStats(selected, histories);
         const rankingHead = document.querySelector('[data-ranking-return-head]');
         if (rankingHead) rankingHead.textContent = `${frequencyLabel}${windowSize}周期涨跌幅`;
@@ -784,11 +1006,16 @@ import PageSidebar from '../../components/PageSidebar.astro';
         renderRrgChart(windowSectors, histories, benchmarkRows);
 
         const failedCount = historyResults.filter((result) => result.status === 'rejected').length;
+        const dailyFailedCount = dailyResults.filter((result) => result.status === 'rejected').length;
         const cacheCount = historyResults.filter((result) => result.status === 'fulfilled' && result.value[1]?.source !== 'network').length;
+        const dailyCacheCount = dailyResults.filter((result) => result.status === 'fulfilled' && result.value[1]?.source !== 'network').length;
         const benchmarkCacheLabel = benchmarkResult.source === 'network' ? '' : '；基准使用本地缓存';
         const cacheLabel = cacheCount > 0 ? `；${cacheCount} 个板块使用本地缓存` : '';
+        const dailyHistoryLabel = dailyHistorySnapshots.length > 0 ? `；已保存 ${dailyHistorySnapshots.length} 个历史交易日` : '';
+        const dailyCacheLabel = dailyCacheCount > 0 ? `；日频历史 ${dailyCacheCount} 个板块使用本地缓存` : '';
         const failLabel = failedCount > 0 ? `；${failedCount} 个板块暂未返回` : '';
-        setStatus(`已按${frequencyLabel} ${windowSize} 个周期刷新。免费数据源：东方财富板块行情；最新时间 ${latestTime}${listCacheLabel}${benchmarkCacheLabel}${cacheLabel}${failLabel}。`);
+        const dailyFailLabel = dailyFailedCount > 0 ? `；日频历史 ${dailyFailedCount} 个板块暂未返回` : '';
+        setStatus(`已按${frequencyLabel} ${windowSize} 个周期刷新。免费数据源：东方财富板块行情；最新时间 ${latestTime}${listCacheLabel}${benchmarkCacheLabel}${cacheLabel}${dailyHistoryLabel}${dailyCacheLabel}${failLabel}${dailyFailLabel}。`);
       } catch (error) {
         console.warn(error);
         setStatus('免费数据暂时获取失败，且本地没有可用缓存：可能是接口限流、网络失败或浏览器阻止跨域请求。页面不会用模拟数据替代真实行情。', 'error');

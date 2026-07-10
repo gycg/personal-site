@@ -84,6 +84,13 @@ export const securities: Security[] = [
     note: '嘉实上证科创板芯片 ETF',
   },
   {
+    id: 'communication-etf',
+    name: '通信ETF',
+    code: '515880',
+    market: 'sh',
+    note: '国泰中证全指通信设备 ETF',
+  },
+  {
     id: 'rongda-photosensitive',
     name: '容大感光',
     code: '300576',
@@ -129,6 +136,51 @@ export const securities: Security[] = [
 
 export const trades: Trade[] = [
   {
+    executedAt: '2026-07-08 14:32:22',
+    securityId: 'robot-etf',
+    price: 1.536,
+    quantity: 6500,
+    amount: 9984.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-07-08 14:31:45',
+    securityId: 'communication-etf',
+    price: 0.763,
+    quantity: 13100,
+    amount: 9995.3,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-07-07 14:12:06',
+    securityId: 'power-grid-etf',
+    price: 2.045,
+    quantity: 4900,
+    amount: 10020.5,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-07-07 10:18:47',
+    securityId: 'dividend-etf',
+    price: 1.47,
+    quantity: 6800,
+    amount: 9996.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-07-06 13:05:14',
+    securityId: 'communication-etf',
+    price: 0.771,
+    quantity: 12900,
+    amount: 9945.9,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
     executedAt: '2026-06-30 13:56:35',
     securityId: 'dividend-etf',
     price: 1.404,
@@ -140,9 +192,9 @@ export const trades: Trade[] = [
   {
     executedAt: '2026-06-30 13:12:26',
     securityId: 'gold-etf',
-    price: 8.293,
+    price: 8.291,
     quantity: 2500,
-    amount: 20732.5,
+    amount: 20727.5,
     fee: 5.0,
     side: '买入',
   },
@@ -567,6 +619,7 @@ export function calculatePositions() {
     quoteSymbol: getQuoteSymbol(security),
     quantity: 0,
     cost: 0,
+    priceCost: 0,
     fees: 0,
     buyAmount: 0,
     sellAmount: 0,
@@ -587,6 +640,7 @@ export function calculatePositions() {
     if (trade.side === '买入') {
       position.quantity += trade.quantity;
       position.cost += trade.amount + trade.fee;
+      position.priceCost += trade.amount;
       position.buyAmount += trade.amount + trade.fee;
       continue;
     }
@@ -602,11 +656,14 @@ export function calculatePositions() {
     }
 
     const averageCost = position.quantity > 0 ? position.cost / position.quantity : 0;
+    const averagePriceCost = position.quantity > 0 ? position.priceCost / position.quantity : 0;
     const closingCost = averageCost * trade.quantity;
+    const closingPriceCost = averagePriceCost * trade.quantity;
     const proceeds = trade.amount - trade.fee - (trade.tax ?? 0);
 
     position.quantity -= trade.quantity;
     position.cost -= closingCost;
+    position.priceCost -= closingPriceCost;
     position.sellAmount += proceeds;
     position.realizedProfit += proceeds - closingCost;
   }

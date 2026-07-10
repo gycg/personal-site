@@ -3462,6 +3462,71 @@ p {
   opacity: 0.78;
 }
 
+.sector-history-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.sector-date-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sector-date-tabs button {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: oklch(0.993 0.005 150 / 0.82);
+  color: var(--muted);
+  font: inherit;
+  font-family:
+    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+  font-size: 0.84rem;
+  padding: 6px 11px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.sector-date-tabs button strong {
+  color: inherit;
+  font-size: 0.84rem;
+  line-height: 1.1;
+}
+
+.sector-date-tabs button span {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.66rem;
+  line-height: 1.1;
+  opacity: 0.72;
+}
+
+.sector-date-tabs button:hover,
+.sector-date-tabs button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.sector-history-meta {
+  min-height: 24px;
+  border-left: 3px solid var(--accent);
+  padding: 3px 0 3px 10px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.sector-heatmap.is-history {
+  padding-top: 2px;
+}
+
 .sector-chart-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

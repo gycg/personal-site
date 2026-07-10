@@ -551,7 +551,7 @@ const industryPlanMarkdown = [
                     </div>
                     <div>
                       <dt>成本价</dt>
-                      <dd>{formatAverageCost(position.cost, position.quantity)}</dd>
+                      <dd>{formatAverageCost(position.priceCost, position.quantity)}</dd>
                     </div>
                     <div>
                       <dt>现价</dt>
@@ -704,7 +704,7 @@ const industryPlanMarkdown = [
                   </td>
                   <td>{position.code}</td>
                   <td>{formatNumber.format(position.quantity)}</td>
-                  <td>{formatAverageCost(position.cost, position.quantity)}</td>
+                  <td>{formatAverageCost(position.priceCost, position.quantity)}</td>
                   <td>{formatCurrency.format(position.cost)}</td>
                   <td data-current-price>--</td>
                   <td data-market-value>--</td>
