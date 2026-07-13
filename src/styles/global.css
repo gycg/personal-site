@@ -2429,11 +2429,36 @@ p {
   line-height: 1.45;
 }
 
-.position-visual-head strong {
+.position-visual-badges {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 5px;
+  justify-items: end;
+  text-align: right;
+}
+
+.position-visual-badges strong {
   flex: 0 0 auto;
   color: var(--accent-strong);
   font-family:
     "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+}
+
+.position-visual-badges span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: oklch(0.97 0.012 150 / 0.82);
+  padding: 3px 8px;
+  color: var(--muted);
+  font-family:
+    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .position-visual-stats {
@@ -2469,7 +2494,19 @@ p {
   color: oklch(0.38 0.11 145);
 }
 
+.position-visual-card.is-profit [data-chart-profit-rate] {
+  border-color: oklch(0.78 0.08 145);
+  background: oklch(0.95 0.035 145 / 0.88);
+  color: oklch(0.34 0.12 145);
+}
+
 .position-visual-card.is-loss [data-chart-profit] {
+  color: oklch(0.45 0.12 28);
+}
+
+.position-visual-card.is-loss [data-chart-profit-rate] {
+  border-color: oklch(0.8 0.08 28);
+  background: oklch(0.96 0.035 28 / 0.9);
   color: oklch(0.45 0.12 28);
 }
 
@@ -3055,102 +3092,6 @@ p {
 .holding-calendar-day.has-trade p {
   color: var(--accent-strong);
   font-weight: 700;
-}
-
-.trade-timeline {
-  display: grid;
-  gap: 10px;
-  min-width: 0;
-  padding-left: 10px;
-  border-left: 1px solid var(--border);
-}
-
-.trade-event {
-  position: relative;
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-}
-
-.trade-event::before {
-  content: "";
-  position: absolute;
-  left: -16px;
-  top: 14px;
-  width: 10px;
-  height: 10px;
-  border: 2px solid var(--surface);
-  border-radius: 999px;
-  background: var(--accent-strong);
-  box-shadow: 0 0 0 1px var(--border);
-}
-
-.trade-event.is-sell::before {
-  background: oklch(0.45 0.12 28);
-}
-
-.trade-event time {
-  color: var(--muted);
-  font-family:
-    "Fira Code", "SFMono-Regular", "Cascadia Code", "Menlo", monospace;
-  font-size: 0.78rem;
-  line-height: 1.6;
-}
-
-.trade-event-main {
-  min-width: 0;
-  border: 1px solid var(--border-soft);
-  border-radius: 8px;
-  background: oklch(0.993 0.005 150 / 0.62);
-  padding: 12px 14px;
-}
-
-.trade-event-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.trade-event-head strong {
-  color: var(--text);
-}
-
-.trade-event-head span {
-  color: var(--accent-strong);
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
-.trade-event.is-sell .trade-event-head span {
-  color: oklch(0.45 0.12 28);
-}
-
-.trade-event-bar {
-  height: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--accent-soft);
-}
-
-.trade-event-bar i {
-  display: block;
-  width: var(--bar);
-  height: 100%;
-  border-radius: inherit;
-  background: var(--accent-strong);
-}
-
-.trade-event.is-sell .trade-event-bar i {
-  background: oklch(0.45 0.12 28);
-}
-
-.trade-event-main p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 0.8rem;
-  line-height: 1.55;
 }
 
 .holding-table-wrap {
@@ -4368,11 +4309,6 @@ p {
     border-bottom: 0;
   }
 
-  .trade-event {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
   .holding-calendar-month {
     padding: 12px;
   }
@@ -4393,12 +4329,6 @@ p {
 
   .holding-calendar-day p {
     display: none;
-  }
-
-  .trade-event-head {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 2px;
   }
 
   .line-chart-head {

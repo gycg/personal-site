@@ -424,8 +424,8 @@ export const targetAllocations: TargetAllocation[] = [
     market: 'sh',
     code: '510300',
     name: '沪深300ETF华泰柏瑞',
-    amount: 100000,
-    weight: 0.1,
+    amount: 120000,
+    weight: 0.12,
     feeRate: '0.15% + 0.05%',
   },
   {
@@ -451,8 +451,8 @@ export const targetAllocations: TargetAllocation[] = [
     market: 'sh',
     code: '513500',
     name: '标普500ETF博时',
-    amount: 300000,
-    weight: 0.3,
+    amount: 350000,
+    weight: 0.35,
     feeRate: '0.60% + 0.20%',
   },
   {
@@ -469,8 +469,8 @@ export const targetAllocations: TargetAllocation[] = [
     market: 'sh',
     code: '513100',
     name: '纳指ETF国泰',
-    amount: 150000,
-    weight: 0.15,
+    amount: 100000,
+    weight: 0.1,
     feeRate: '0.60% + 0.20%',
   },
   {
@@ -498,15 +498,6 @@ export const targetAllocations: TargetAllocation[] = [
     name: '华安黄金ETF',
     amount: 100000,
     weight: 0.1,
-    feeRate: '0.50% + 0.10%',
-  },
-  {
-    category: '沙特股票',
-    market: 'sh',
-    code: '520830',
-    name: '沙特ETF华泰柏瑞',
-    amount: 20000,
-    weight: 0.02,
     feeRate: '0.50% + 0.10%',
   },
   {
