@@ -105,6 +105,13 @@ export const securities: Security[] = [
     note: '华泰柏瑞沪深300 ETF',
   },
   {
+    id: 'csi-1000-etf',
+    name: '中证1000ETF南方',
+    code: '512100',
+    market: 'sh',
+    note: '南方中证1000 ETF',
+  },
+  {
     id: 'dividend-etf',
     name: '红利ETF',
     code: '515080',
@@ -135,6 +142,43 @@ export const securities: Security[] = [
 ];
 
 export const trades: Trade[] = [
+  {
+    executedAt: '2026-07-21 10:59:53',
+    securityId: 'csi-1000-etf',
+    price: 2.85,
+    quantity: 10500,
+    amount: 29925.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-07-15 13:31:27',
+    securityId: 'star-chip-etf',
+    price: 4.216,
+    quantity: 2400,
+    amount: 10118.4,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-07-14 09:52:52',
+    securityId: 'csi-300-etf',
+    price: 4.743,
+    quantity: 4200,
+    amount: 19920.6,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-07-15 09:30:00',
+    securityId: 'power-grid-etf',
+    price: 0,
+    quantity: 19200,
+    amount: 0,
+    fee: 0,
+    side: '红股入账',
+    note: '电网ETF 159320 份额分拆，权益登记日 2026-07-14，除权日 2026-07-15，分拆比例 1:3.0000；原 9600 份新增 19200 份，成本金额不变。',
+  },
   {
     executedAt: '2026-07-08 14:32:22',
     securityId: 'robot-etf',

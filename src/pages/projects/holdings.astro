@@ -14,8 +14,8 @@ import {
 } from '../../data/holdings';
 
 const positions = calculatePositions();
-const activePositions = positions.filter((position) => position.quantity !== 0);
-const summary = calculatePortfolioSummary();
+let activePositions = positions.filter((position) => position.quantity !== 0);
+let summary = calculatePortfolioSummary();
 const displayTrades = [...trades].sort((a, b) => b.executedAt.localeCompare(a.executedAt));
 const chronologicalTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
 const eastmoneySecids = securities.map(getEastmoneySecid);
@@ -49,8 +49,13 @@ const targetEastmoneySecids = targetAllocations.map((item) => `${item.market ===
 const cashEventSides = new Set(['现金分红', '利息归本', '红利税补缴']);
 
 type KlineGroup = {
+  securityId: string;
   symbol: string;
   rows: Array<{
+    date: string;
+    close: number;
+  }>;
+  qfqRows?: Array<{
     date: string;
     close: number;
   }>;
@@ -65,11 +70,17 @@ type DailyPortfolioPoint = {
   trades: typeof trades;
 };
 
+type SplitEvent = {
+  securityId: string;
+  date: string;
+  ratio: number;
+};
+
 function getTradeDate(trade: (typeof trades)[number]) {
   return trade.executedAt.slice(0, 10);
 }
 
-function normalizeKlinePayload(payload: any): KlineGroup | null {
+function normalizeKlinePayload(payload: any, position: (typeof positions)[number], adjustment: 'raw' | 'qfq' = 'raw'): KlineGroup | null {
   const data = payload.data;
   if (!data?.klines?.length) return null;
 
@@ -83,12 +94,15 @@ function normalizeKlinePayload(payload: any): KlineGroup | null {
     })
     .filter(Boolean);
 
-  return rows.length ? { symbol, rows } : null;
+  if (!rows.length) return null;
+  return adjustment === 'qfq'
+    ? { securityId: position.id, symbol, rows: [], qfqRows: rows }
+    : { securityId: position.id, symbol, rows };
 }
 
 function normalizeTencentKlinePayload(payload: any, position: (typeof positions)[number]): KlineGroup | null {
   const symbol = getQuoteSymbol(position);
-  const rows = payload.data?.[symbol]?.qfqday ?? payload.data?.[symbol]?.day ?? [];
+  const rows = payload.data?.[symbol]?.day ?? payload.data?.[symbol]?.qfqday ?? [];
   const normalizedRows = rows
     .map((row: string[]) => {
       const close = Number(row[2]);
@@ -97,13 +111,13 @@ function normalizeTencentKlinePayload(payload: any, position: (typeof positions)
     })
     .filter(Boolean);
 
-  return normalizedRows.length ? { symbol, rows: normalizedRows } : null;
+  return normalizedRows.length ? { securityId: position.id, symbol, rows: normalizedRows } : null;
 }
 
 async function fetchTencentKlineGroup(position: (typeof positions)[number]): Promise<KlineGroup | null> {
   const symbol = getQuoteSymbol(position);
   const start = chronologicalTrades[0]?.executedAt.slice(0, 10) ?? '2026-04-16';
-  const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${symbol},day,${start},2050-01-01,1600,qfq`;
+  const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${symbol},day,${start},2050-01-01,1600`;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
@@ -124,15 +138,26 @@ async function fetchKlineGroup(position: (typeof positions)[number]): Promise<Kl
   const fields1 = 'f1,f2,f3,f4,f5,f6';
   const fields2 = 'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61';
   const secid = getEastmoneySecid(position);
-  const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=${fields1}&fields2=${fields2}&klt=101&fqt=1&beg=${firstTradeDate}&end=20500101`;
+  const makeUrl = (fqt: 0 | 1) => `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=${fields1}&fields2=${fields2}&klt=101&fqt=${fqt}&beg=${firstTradeDate}&end=20500101`;
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const response = await fetch(`${url}&_=${Date.now()}-${attempt}`);
+      const response = await fetch(`${makeUrl(0)}&_=${Date.now()}-${attempt}`);
       if (!response.ok) continue;
 
-      const kline = normalizeKlinePayload(await response.json());
-      if (kline) return kline;
+      const kline = normalizeKlinePayload(await response.json(), position);
+      if (kline) {
+        try {
+          const qfqResponse = await fetch(`${makeUrl(1)}&_=${Date.now()}-${attempt}`);
+          if (qfqResponse.ok) {
+            const qfqKline = normalizeKlinePayload(await qfqResponse.json(), position, 'qfq');
+            kline.qfqRows = qfqKline?.qfqRows ?? [];
+          }
+        } catch {
+          // Raw prices are enough to render the page; qfq prices are only used to infer splits.
+        }
+        return kline;
+      }
     } catch {
       // The upstream endpoint occasionally drops connections. Retry and keep build resilient.
     }
@@ -141,11 +166,159 @@ async function fetchKlineGroup(position: (typeof positions)[number]): Promise<Kl
   return fetchTencentKlineGroup(position);
 }
 
-function calculateDailyPortfolioPoints(klineGroups: KlineGroup[]): DailyPortfolioPoint[] {
+function inferSplitEvents(klineGroups: KlineGroup[]): SplitEvent[] {
+  const splitEvents: SplitEvent[] = [];
+  const normalizeSplitRatio = (ratio: number) => {
+    const nearestInteger = Math.round(ratio);
+    if (nearestInteger > 1 && Math.abs(ratio - nearestInteger) <= 0.02) return nearestInteger;
+    return Math.round(ratio * 10000) / 10000;
+  };
+
+  for (const group of klineGroups) {
+    if (!group.qfqRows?.length) continue;
+
+    const qfqCloseByDate = new Map(group.qfqRows.map((row) => [row.date, row.close]));
+    let previousFactor: number | null = null;
+
+    for (const row of group.rows) {
+      const qfqClose = qfqCloseByDate.get(row.date);
+      if (!qfqClose || qfqClose <= 0) continue;
+
+      const factor = row.close / qfqClose;
+      if (previousFactor && previousFactor / factor >= 1.5) {
+        const ratio = normalizeSplitRatio(previousFactor / factor);
+        if (ratio > 1) splitEvents.push({ securityId: group.securityId, date: row.date, ratio });
+      }
+      previousFactor = factor;
+    }
+  }
+
+  return splitEvents;
+}
+
+function calculatePositionsWithSplitEvents(splitEvents: SplitEvent[]) {
+  const eventsBySecurityId = new Map<string, SplitEvent[]>();
+  for (const event of splitEvents) {
+    const events = eventsBySecurityId.get(event.securityId) ?? [];
+    events.push(event);
+    eventsBySecurityId.set(event.securityId, events);
+  }
+
+  for (const events of eventsBySecurityId.values()) {
+    events.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  const adjustedPositions = securities.map((security) => ({
+    ...security,
+    quoteSymbol: getQuoteSymbol(security),
+    quantity: 0,
+    cost: 0,
+    priceCost: 0,
+    fees: 0,
+    buyAmount: 0,
+    sellAmount: 0,
+    realizedProfit: 0,
+    lastTradePrice: 0,
+  }));
+  const positionById = new Map(adjustedPositions.map((position) => [position.id, position]));
+  const chronologicalTradesForPositions = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
+  const appliedSplitIndexById = new Map<string, number>();
+
+  const applyDueSplits = (securityId: string, date: string) => {
+    const events = eventsBySecurityId.get(securityId) ?? [];
+    const position = positionById.get(securityId);
+    if (!position) return;
+
+    let index = appliedSplitIndexById.get(securityId) ?? 0;
+    while (index < events.length && events[index].date <= date) {
+      position.quantity *= events[index].ratio;
+      index += 1;
+    }
+    appliedSplitIndexById.set(securityId, index);
+  };
+
+  for (const trade of chronologicalTradesForPositions) {
+    const position = positionById.get(trade.securityId);
+    if (!position) continue;
+
+    applyDueSplits(trade.securityId, getTradeDate(trade));
+
+    position.fees += trade.fee;
+    position.lastTradePrice = trade.price;
+
+    if (trade.side === '买入') {
+      position.quantity += trade.quantity;
+      position.cost += trade.amount + trade.fee;
+      position.priceCost += trade.amount;
+      position.buyAmount += trade.amount + trade.fee;
+      continue;
+    }
+
+    if (trade.side === '红股入账') {
+      if (!eventsBySecurityId.has(trade.securityId)) position.quantity += trade.quantity;
+      continue;
+    }
+
+    if (cashEventSides.has(trade.side)) {
+      position.realizedProfit += trade.amount;
+      continue;
+    }
+
+    const averageCost = position.quantity > 0 ? position.cost / position.quantity : 0;
+    const averagePriceCost = position.quantity > 0 ? position.priceCost / position.quantity : 0;
+    const closingCost = averageCost * trade.quantity;
+    const closingPriceCost = averagePriceCost * trade.quantity;
+    const proceeds = trade.amount - trade.fee - (trade.tax ?? 0);
+
+    position.quantity -= trade.quantity;
+    position.cost -= closingCost;
+    position.priceCost -= closingPriceCost;
+    position.sellAmount += proceeds;
+    position.realizedProfit += proceeds - closingCost;
+  }
+
+  for (const security of securities) {
+    for (const event of eventsBySecurityId.get(security.id) ?? []) {
+      const appliedIndex = appliedSplitIndexById.get(security.id) ?? 0;
+      const eventIndex = eventsBySecurityId.get(security.id)?.indexOf(event) ?? -1;
+      if (eventIndex >= appliedIndex) positionById.get(security.id)!.quantity *= event.ratio;
+    }
+  }
+
+  return adjustedPositions.filter((position) => position.quantity !== 0 || position.realizedProfit !== 0);
+}
+
+function summarizePositions(calculatedPositions: ReturnType<typeof calculatePositions>) {
+  const activeRealizedProfit = calculatedPositions
+    .filter((position) => position.quantity !== 0)
+    .reduce((sum, position) => sum + position.realizedProfit, 0);
+  const closedRealizedProfit = calculatedPositions
+    .filter((position) => position.quantity === 0)
+    .reduce((sum, position) => sum + position.realizedProfit, 0);
+
+  return {
+    totalCost: calculatedPositions.reduce((sum, position) => sum + position.cost, 0),
+    totalQuantity: calculatedPositions.reduce((sum, position) => sum + position.quantity, 0),
+    totalFees: trades.reduce((sum, trade) => sum + trade.fee + (trade.tax ?? 0), 0),
+    totalBuyAmount: calculatedPositions.reduce((sum, position) => sum + position.buyAmount, 0),
+    realizedProfit: calculatedPositions.reduce((sum, position) => sum + position.realizedProfit, 0),
+    activeRealizedProfit,
+    closedRealizedProfit,
+  };
+}
+
+function calculateDailyPortfolioPoints(klineGroups: KlineGroup[], splitEvents: SplitEvent[]): DailyPortfolioPoint[] {
   const klineBySymbol = new Map(klineGroups.map((group) => [group.symbol, group.rows]));
   const allDates = [...new Set(klineGroups.flatMap((group) => group.rows.map((row) => row.date)))].sort();
   const sortedTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
   const stateById = new Map(positions.map((position) => [position.id, { quantity: 0, cost: 0, realizedProfit: 0 }]));
+  const splitEventsByDate = new Map<string, SplitEvent[]>();
+  for (const event of splitEvents) {
+    const events = splitEventsByDate.get(event.date) ?? [];
+    events.push(event);
+    splitEventsByDate.set(event.date, events);
+  }
+  const splitSecurityIds = new Set(splitEvents.map((event) => event.securityId));
   const latestCloseBySymbol = new Map<string, number>();
   let tradeIndex = 0;
   let previousProfit: number | null = null;
@@ -157,6 +330,11 @@ function calculateDailyPortfolioPoints(klineGroups: KlineGroup[]): DailyPortfoli
         if (row) latestCloseBySymbol.set(symbol, row.close);
       }
 
+      for (const event of splitEventsByDate.get(date) ?? []) {
+        const state = stateById.get(event.securityId);
+        if (state) state.quantity *= event.ratio;
+      }
+
       while (tradeIndex < sortedTrades.length && getTradeDate(sortedTrades[tradeIndex]) <= date) {
         const trade = sortedTrades[tradeIndex];
         const state = stateById.get(trade.securityId);
@@ -166,7 +344,7 @@ function calculateDailyPortfolioPoints(klineGroups: KlineGroup[]): DailyPortfoli
             state.quantity += trade.quantity;
             state.cost += trade.amount + trade.fee;
           } else if (trade.side === '红股入账') {
-            state.quantity += trade.quantity;
+            if (!splitSecurityIds.has(trade.securityId)) state.quantity += trade.quantity;
           } else if (cashEventSides.has(trade.side)) {
             state.realizedProfit += trade.amount;
           } else {
@@ -214,7 +392,13 @@ const dailyKlineResults = await Promise.allSettled(activePositions.map(fetchKlin
 const dailyKlineGroups = dailyKlineResults
   .filter((result): result is PromiseFulfilledResult<KlineGroup> => result.status === 'fulfilled' && Boolean(result.value))
   .map((result) => result.value);
-const dailyPortfolioPoints = calculateDailyPortfolioPoints(dailyKlineGroups);
+const splitEvents = inferSplitEvents(dailyKlineGroups);
+if (splitEvents.length) {
+  const adjustedPositions = calculatePositionsWithSplitEvents(splitEvents);
+  activePositions = adjustedPositions.filter((position) => position.quantity !== 0);
+  summary = summarizePositions(adjustedPositions);
+}
+const dailyPortfolioPoints = calculateDailyPortfolioPoints(dailyKlineGroups, splitEvents);
 
 const formatCurrency = new Intl.NumberFormat('zh-CN', {
   style: 'currency',
@@ -745,7 +929,7 @@ const industryPlanMarkdown = [
     />
   </div>
 
-<script define:vars={{ positions, activePositions, summary, trades, firstTradeDate, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
+<script define:vars={{ positions, activePositions, summary, trades, splitEvents, firstTradeDate, eastmoneySecids, tencentSymbols, targetAllocations, targetEastmoneySecids }}>
   const cashEventSides = new Set(['现金分红', '利息归本', '红利税补缴']);
   const copyTableButtons = document.querySelectorAll('[data-copy-table]');
   const copyPlainText = async (value) => {
@@ -845,7 +1029,7 @@ const industryPlanMarkdown = [
     return trade.executedAt.slice(0, 10);
   }
 
-  function normalizeBrowserKlinePayload(payload) {
+  function normalizeBrowserKlinePayload(payload, position, adjustment = 'raw') {
     const data = payload.data;
     if (!data?.klines?.length) return null;
 
@@ -858,11 +1042,14 @@ const industryPlanMarkdown = [
       })
       .filter(Boolean);
 
-    return rows.length ? { symbol, rows } : null;
+    if (!rows.length) return null;
+    return adjustment === 'qfq'
+      ? { securityId: position.id, symbol, rows: [], qfqRows: rows }
+      : { securityId: position.id, symbol, rows };
   }
 
   function normalizeBrowserTencentKlinePayload(payload, position) {
-    const rows = payload.data?.[position.quoteSymbol]?.qfqday ?? payload.data?.[position.quoteSymbol]?.day ?? [];
+    const rows = payload.data?.[position.quoteSymbol]?.day ?? payload.data?.[position.quoteSymbol]?.qfqday ?? [];
     const normalizedRows = rows
       .map((row) => {
         const close = Number(row[2]);
@@ -870,16 +1057,16 @@ const industryPlanMarkdown = [
       })
       .filter(Boolean);
 
-    return normalizedRows.length ? { symbol: position.quoteSymbol, rows: normalizedRows } : null;
+    return normalizedRows.length ? { securityId: position.id, symbol: position.quoteSymbol, rows: normalizedRows } : null;
   }
 
   async function loadBrowserKlineGroup(position) {
     const marketPrefix = position.market === 'sh' ? '1' : '0';
     const fields1 = 'f1,f2,f3,f4,f5,f6';
     const fields2 = 'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61';
-    const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${marketPrefix}.${position.code}&fields1=${fields1}&fields2=${fields2}&klt=101&fqt=1&beg=${firstTradeDate}&end=20500101`;
+    const makeUrl = (fqt) => `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${marketPrefix}.${position.code}&fields1=${fields1}&fields2=${fields2}&klt=101&fqt=${fqt}&beg=${firstTradeDate}&end=20500101`;
     const start = getTradeDate([...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt))[0]);
-    const tencentUrl = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${position.quoteSymbol},day,${start},2050-01-01,1600,qfq`;
+    const tencentUrl = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${position.quoteSymbol},day,${start},2050-01-01,1600`;
 
     try {
       const response = await fetch(`${tencentUrl}&_=${Date.now()}`, { cache: 'no-store' });
@@ -894,9 +1081,22 @@ const industryPlanMarkdown = [
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     try {
-      const response = await fetch(`${url}&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal });
+      const response = await fetch(`${makeUrl(0)}&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal });
       if (!response.ok) return null;
-      return normalizeBrowserKlinePayload(await response.json());
+      const kline = normalizeBrowserKlinePayload(await response.json(), position);
+      if (!kline) return null;
+
+      try {
+        const qfqResponse = await fetch(`${makeUrl(1)}&_=${Date.now()}`, { cache: 'no-store' });
+        if (qfqResponse.ok) {
+          const qfqKline = normalizeBrowserKlinePayload(await qfqResponse.json(), position, 'qfq');
+          kline.qfqRows = qfqKline?.qfqRows ?? [];
+        }
+      } catch (error) {
+        console.warn(`Eastmoney qfq kline failed for ${position.code}`, error);
+      }
+
+      return kline;
     } catch (error) {
       console.warn(`Eastmoney kline failed for ${position.code}`, error);
       return null;
@@ -910,6 +1110,13 @@ const industryPlanMarkdown = [
     const allDates = [...new Set(klineGroups.flatMap((group) => group.rows.map((row) => row.date)))].sort();
     const sortedTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
     const stateById = new Map(positions.map((position) => [position.id, { quantity: 0, cost: 0, realizedProfit: 0 }]));
+    const splitEventsByDate = new Map();
+    for (const event of splitEvents) {
+      const events = splitEventsByDate.get(event.date) ?? [];
+      events.push(event);
+      splitEventsByDate.set(event.date, events);
+    }
+    const splitSecurityIds = new Set(splitEvents.map((event) => event.securityId));
     const latestCloseBySymbol = new Map();
     let tradeIndex = 0;
     let previousProfit = null;
@@ -918,6 +1125,11 @@ const industryPlanMarkdown = [
       for (const [symbol, rows] of klineBySymbol.entries()) {
         const row = rows.find((item) => item.date === date);
         if (row) latestCloseBySymbol.set(symbol, row.close);
+      }
+
+      for (const event of splitEventsByDate.get(date) ?? []) {
+        const state = stateById.get(event.securityId);
+        if (state) state.quantity *= event.ratio;
       }
 
       while (tradeIndex < sortedTrades.length && getTradeDate(sortedTrades[tradeIndex]) <= date) {
@@ -929,7 +1141,7 @@ const industryPlanMarkdown = [
             state.quantity += trade.quantity;
             state.cost += trade.amount + trade.fee;
           } else if (trade.side === '红股入账') {
-            state.quantity += trade.quantity;
+            if (!splitSecurityIds.has(trade.securityId)) state.quantity += trade.quantity;
           } else if (cashEventSides.has(trade.side)) {
             state.realizedProfit += trade.amount;
           } else {
