@@ -10,7 +10,11 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "check": "astro check",
     "check:content": "node scripts/check-content.mjs",
+    "images:optimize": "node scripts/optimize-images.mjs",
+    "test": "vitest run",
+    "trade:add": "node scripts/add-trade.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -20,6 +24,8 @@
     "astro": "5.18.1"
   },
   "devDependencies": {
-    "typescript": "5.7.2"
+    "@astrojs/check": "^0.9.10",
+    "typescript": "5.7.2",
+    "vitest": "^3.2.4"
   }
 }

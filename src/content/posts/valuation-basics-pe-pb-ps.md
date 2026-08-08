@@ -52,7 +52,7 @@ draft: false
 
 这就是估值思维。
 
-![估值是什么：比较公司质量和买入价格，判断值不值得买](/images/posts/valuation-basics-pe-pb-ps/valuation-price-value-overview.png)
+![估值是什么：比较公司质量和买入价格，判断值不值得买](/images/posts/valuation-basics-pe-pb-ps/valuation-price-value-overview.webp)
 
 所以，投资不能只问：
 
@@ -109,7 +109,7 @@ PE 是 Price to Earnings Ratio，中文叫市盈率。
 
 这表示，如果公司未来每年都赚 10 亿元，不考虑增长、不考虑分红、不考虑利润变化，投资者相当于用 20 年利润买下这家公司。
 
-![PE 市盈率计算：总市值 200 亿元除以净利润 10 亿元等于 PE 20 倍](/images/posts/valuation-basics-pe-pb-ps/pe-calculation.png)
+![PE 市盈率计算：总市值 200 亿元除以净利润 10 亿元等于 PE 20 倍](/images/posts/valuation-basics-pe-pb-ps/pe-calculation.webp)
 
 所以，PE 可以简单理解为：
 
@@ -172,7 +172,7 @@ PE 越高，说明市场愿意为每 1 元利润支付更高价格。PE 越低�
 
 一旦增长不及预期，股价可能大幅下跌。成长型公司、科技公司、创新药公司、消费龙头，在某些阶段都可能拥有较高 PE，但它们也需要持续兑现增长。
 
-![低 PE 与高 PE 误区：低不一定便宜，高不一定贵，关键看未来](/images/posts/valuation-basics-pe-pb-ps/low-high-pe-misconceptions.png)
+![低 PE 与高 PE 误区：低不一定便宜，高不一定贵，关键看未来](/images/posts/valuation-basics-pe-pb-ps/low-high-pe-misconceptions.webp)
 
 低估值是线索，不是结论。高估值也不是原罪，关键看未来增长、利润、现金流和风险能不能支撑当前价格。
 
@@ -220,7 +220,7 @@ ROE 是净资产收益率，代表公司用净资产赚钱的能力。
 
 如果一家公司 PB 低，但 ROE 很低甚至亏损，说明资产赚钱能力差，低 PB 未必是机会。
 
-![PB 不能单独看，要和 ROE、资产质量一起看](/images/posts/valuation-basics-pe-pb-ps/pb-roe-combination.png)
+![PB 不能单独看，要和 ROE、资产质量一起看](/images/posts/valuation-basics-pe-pb-ps/pb-roe-combination.webp)
 
 PB 高也不一定代表一定贵。
 
@@ -387,7 +387,7 @@ EV/EBITDA 常用于重资产行业、并购估值、跨公司比较，比如制�
 
 不同公司，适合的估值工具不一样。
 
-![不同估值指标适合看什么公司：PE、PB、PS、PEG、股息率和 EV/EBITDA 的适用场景](/images/posts/valuation-basics-pe-pb-ps/valuation-metric-fit.png)
+![不同估值指标适合看什么公司：PE、PB、PS、PEG、股息率和 EV/EBITDA 的适用场景](/images/posts/valuation-basics-pe-pb-ps/valuation-metric-fit.webp)
 
 **PE 市盈率** 适合盈利稳定、净利润比较正常的公司。比如消费、制造、医药、部分金融和成熟企业。
 
@@ -427,7 +427,7 @@ EV/EBITDA 常用于重资产行业、并购估值、跨公司比较，比如制�
 
 第一次看一家公司估值，可以按一个顺序逐层验证。
 
-![新手看估值的顺序：估值不是看一个数字，而是逐层验证价格是否合理](/images/posts/valuation-basics-pe-pb-ps/valuation-reading-order.png)
+![新手看估值的顺序：估值不是看一个数字，而是逐层验证价格是否合理](/images/posts/valuation-basics-pe-pb-ps/valuation-reading-order.webp)
 
 第一，看市值。
 

@@ -51,6 +51,38 @@ npm run build
 npm run preview
 ```
 
+## 录入持仓交易
+
+买入或卖出交易使用命令录入，脚本会校验证券代码、时间、价格和数量，自动计算成交金额，并阻止重复记录：
+
+```bash
+npm run trade:add -- \
+  --code 513650 \
+  --date 08030935 \
+  --price 1.907 \
+  --quantity 15700
+```
+
+日期支持 `MMDDHHmm`、`MMDDHHmmss` 和带年份格式；省略年份时使用当前年份，省略秒时记为 `00`。默认方向为“买入”、手续费为 5 元。卖出时可以增加 `--side 卖出 --tax 14.97`，特殊手续费使用 `--fee` 覆盖。录入后依次运行：
+
+```bash
+npm test
+npm run check
+npm run build
+```
+
+提交并推送到远程仓库后，Vercel 会使用最新交易记录重新部署站点。
+
+## 优化文章图片
+
+文章原图放入 `public/images/posts/` 后运行：
+
+```bash
+npm run images:optimize -- --delete-source
+```
+
+脚本会生成 WebP、同步更新 Markdown 引用，并在全部转换成功后删除原图。
+
 ## 新增文章
 
 复制 `docs/post-template.md`，改成新的文件名，例如：
@@ -75,7 +107,7 @@ draft: false
 
 ## 开启评论
 
-文章页底部已经接入可选的 Giscus 评论模块。默认关闭，未配置时不会渲染评论区，也不会影响构建。
+文章页底部已经接入 Giscus 评论模块。当前配置为开启；如果关闭或配置不完整，不会渲染评论区，也不会影响构建。
 
 开启前需要准备：
 
@@ -129,8 +161,8 @@ https://cphxnotes.com
 public/
 src/
   content/
-    config.ts
     posts/
+  content.config.ts
   layouts/
   pages/
   styles/

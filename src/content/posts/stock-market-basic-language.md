@@ -16,7 +16,7 @@ draft: false
 
 再往下看，还有指数、行业板块、概念板块、资金流向、龙虎榜、K 线图。
 
-![行情软件界面总览](/images/posts/stock-market-basic-language/market-quotes-interface-overview.png)
+![行情软件界面总览](/images/posts/stock-market-basic-language/market-quotes-interface-overview.webp)
 
 如果不先搞清楚这些基础语言，很容易陷入两个误区。
 
@@ -64,7 +64,7 @@ draft: false
 
 这说明它当天有过上涨，也有过回落。最终收盘价高于开盘价，说明当天市场表现偏强。
 
-![一天里的四个关键价格](/images/posts/stock-market-basic-language/open-close-high-low-prices.png)
+![一天里的四个关键价格](/images/posts/stock-market-basic-language/open-close-high-low-prices.webp)
 
 不过，单看一天的价格变化意义有限。更重要的是结合成交量、趋势、公司消息和市场环境一起看。
 
@@ -84,7 +84,7 @@ draft: false
 
 也就是说，这只股票今天涨了 5%。
 
-![涨跌幅计算示例](/images/posts/stock-market-basic-language/price-change-percent-calculation.png)
+![涨跌幅计算示例](/images/posts/stock-market-basic-language/price-change-percent-calculation.webp)
 
 如果今天收盘价是 9.5 元，那么就是下跌 0.5 元，跌幅也是 5%。
 
@@ -192,7 +192,7 @@ draft: false
 
 所以，换手率同样不能孤立看。它要结合公司质地、股价位置、成交量变化和市场环境一起判断。
 
-![成交量、成交额和换手率对比](/images/posts/stock-market-basic-language/volume-turnover-rate-comparison.png)
+![成交量、成交额和换手率对比](/images/posts/stock-market-basic-language/volume-turnover-rate-comparison.webp)
 
 ## 指数怎么看
 
@@ -286,7 +286,7 @@ draft: false
 
 这样更容易判断：这只股票是自己强，还是跟着板块强；是自己弱，还是被市场整体拖累。
 
-![指数、板块和个股关系](/images/posts/stock-market-basic-language/index-sector-stock-relationship.png)
+![指数、板块和个股关系](/images/posts/stock-market-basic-language/index-sector-stock-relationship.webp)
 
 ## 牛市和熊市是什么
 
@@ -306,7 +306,7 @@ draft: false
 
 牛市和熊市通常是一段时间内的市场整体趋势。
 
-![牛市和熊市对比](/images/posts/stock-market-basic-language/bull-market-bear-market-comparison.png)
+![牛市和熊市对比](/images/posts/stock-market-basic-language/bull-market-bear-market-comparison.webp)
 
 ## 新手看行情，可以按什么顺序
 

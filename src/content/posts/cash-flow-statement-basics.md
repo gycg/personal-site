@@ -48,7 +48,7 @@ draft: false
 
 **账面上赚钱，现实中缺钱。**
 
-![利润和现金流的区别：收入确认不等于现金到账](/images/posts/cash-flow-statement-basics/profit-vs-cash-flow.png)
+![利润和现金流的区别：收入确认不等于现金到账](/images/posts/cash-flow-statement-basics/profit-vs-cash-flow.webp)
 
 这就是利润和现金流的区别。
 
@@ -80,7 +80,7 @@ draft: false
 **投资活动现金流**
 **筹资活动现金流**
 
-![现金流量表三大部分：经营、投资和筹资](/images/posts/cash-flow-statement-basics/cash-flow-statement-overview.png)
+![现金流量表三大部分：经营、投资和筹资](/images/posts/cash-flow-statement-basics/cash-flow-statement-overview.webp)
 
 简单理解：
 
@@ -100,7 +100,7 @@ draft: false
 
 常见经营现金流出包括：支付供应商货款、支付员工工资、支付税费、支付日常经营费用。
 
-![经营活动现金流：经营流入减去经营流出](/images/posts/cash-flow-statement-basics/operating-cash-flow.png)
+![经营活动现金流：经营流入减去经营流出](/images/posts/cash-flow-statement-basics/operating-cash-flow.webp)
 
 如果一家公司的经营活动现金流长期为正，说明它的主业能够持续带来现金。
 
@@ -179,7 +179,7 @@ draft: false
 
 比如建厂房、买设备、建设生产线、购买土地使用权、建设数据中心、升级门店、购买长期使用的软件系统。
 
-![投资活动现金流和资本开支：为未来长期经营投入的钱](/images/posts/cash-flow-statement-basics/investing-cash-flow-capex.png)
+![投资活动现金流和资本开支：为未来长期经营投入的钱](/images/posts/cash-flow-statement-basics/investing-cash-flow-capex.webp)
 
 资本开支和费用不一样。
 
@@ -211,7 +211,7 @@ draft: false
 
 常见筹资现金流出包括：偿还债务支付现金、支付利息、现金分红、回购股票。
 
-![筹资活动现金流：融资流入和偿债分红流出](/images/posts/cash-flow-statement-basics/financing-cash-flow.png)
+![筹资活动现金流：融资流入和偿债分红流出](/images/posts/cash-flow-statement-basics/financing-cash-flow.webp)
 
 筹资活动现金流可以帮助我们判断：
 
@@ -248,7 +248,7 @@ draft: false
 
 **100 亿元 - 40 亿元 = 60 亿元**
 
-![自由现金流计算：经营现金流减去资本开支](/images/posts/cash-flow-statement-basics/free-cash-flow-calculation.png)
+![自由现金流计算：经营现金流减去资本开支](/images/posts/cash-flow-statement-basics/free-cash-flow-calculation.webp)
 
 这 60 亿元可以用来分红、回购股票、还债、继续投资，或者留作现金储备。
 
@@ -284,7 +284,7 @@ draft: false
 
 这就要警惕：利润质量可能不高。
 
-![净现比计算：经营现金流净额除以净利润](/images/posts/cash-flow-statement-basics/cash-conversion-ratio.png)
+![净现比计算：经营现金流净额除以净利润](/images/posts/cash-flow-statement-basics/cash-conversion-ratio.webp)
 
 一般来说，净现比长期大于 1，说明公司利润转化为现金的能力较好。
 
@@ -442,7 +442,7 @@ draft: false
 
 它能帮你看穿“利润好看但缺现金”的风险。
 
-![现金流风险信号清单](/images/posts/cash-flow-statement-basics/cash-flow-risk-checklist.png)
+![现金流风险信号清单](/images/posts/cash-flow-statement-basics/cash-flow-risk-checklist.webp)
 
 ## 新手阅读顺序与总结
 

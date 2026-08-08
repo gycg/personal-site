@@ -7,10 +7,11 @@ import { comparePostsNewest, estimateReadingMinutes, getPostUrl } from '../lib/p
 
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(comparePostsNewest);
 const posts = allPosts.slice(0, 5);
+const latestPost = posts[0];
+const recentPosts = posts.slice(1);
 const investmentCount = allPosts.filter((post) => post.data.tags.includes('投资研究')).length;
-const llmCount = allPosts.filter((post) =>
-  post.data.tags.some((tag) => ['LLM', '大模型', '算法工程', 'AI工程'].includes(tag))
-).length;
+const stockBasicsCount = allPosts.filter((post) => post.data.series === '从零看懂股票').length;
+const techResearchCount = allPosts.filter((post) => post.data.series === 'A股科技与未来产业研究路线').length;
 const tagCount = new Set(allPosts.flatMap((post) => post.data.tags)).size;
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
@@ -47,124 +48,89 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
         </div>
       </section>
 
+      <section class="content-section home-priority-section" aria-labelledby="latest-posts">
+        <div class="section-head">
+          <h2 id="latest-posts">最新研究</h2>
+          <a href="/posts/">查看全部文章</a>
+        </div>
+        <div class="home-latest-grid">
+          {
+            latestPost && (
+              <article class="home-featured-post">
+                <p class="post-meta">{dateFormatter.format(latestPost.data.pubDate)} · 约 {estimateReadingMinutes(latestPost)} 分钟读完</p>
+                <h3><a href={getPostUrl(latestPost)}>{latestPost.data.title}</a></h3>
+                <p>{latestPost.data.description}</p>
+                <div class="tags">
+                  {latestPost.data.tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
+                </div>
+              </article>
+            )
+          }
+          <div class="home-recent-list" aria-label="近期文章">
+            {recentPosts.map((post, index) => (
+              <article>
+                <span>{String(index + 2).padStart(2, '0')}</span>
+                <div>
+                  <p class="post-meta">{dateFormatter.format(post.data.pubDate)}</p>
+                  <h3><a href={getPostUrl(post)}>{post.data.title}</a></h3>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section class="content-section" aria-labelledby="reading-paths">
         <div class="section-head">
-          <h2 id="reading-paths">全部板块</h2>
-          <span>按用途选择入口</span>
+          <h2 id="reading-paths">专题路线</h2>
+          <a href="/series/">查看全部专题</a>
         </div>
-        <div class="section-directory">
-          <a class="section-card is-primary" href="/posts/">
-            <span>Archive</span>
-            <strong>文章归档</strong>
-            <p>所有公开文章的时间线入口，适合查看最新更新、历史记录和不同主题的完整列表。</p>
-            <em>{allPosts.length} 篇</em>
+        <div class="home-route-list">
+          <a href="/series/stock-basics/">
+            <span>01</span>
+            <div><strong>从零看懂股票</strong><p>股票、财报、商业模式与估值的顺序阅读路径。</p></div>
+            <em>{stockBasicsCount} 篇</em>
           </a>
-          <a class="section-card" href="/series/">
-            <span>Series</span>
-            <strong>专题路线</strong>
-            <p>把需要按顺序阅读的内容组织成路线，包括股票入门、A 股科技研究等长期专题。</p>
-            <em>结构化阅读</em>
-          </a>
-          <a class="section-card" href="/projects/">
-            <span>Projects</span>
-            <strong>项目与系统</strong>
-            <p>展示投资研究路线、金融学自学、持仓复盘、内容工作流和长期维护的工具项目。</p>
-            <em>工具 / 路线 / 复盘</em>
-          </a>
-          <a class="section-card" href="/tags/投资研究/">
-            <span>Investment</span>
-            <strong>投资研究</strong>
-            <p>记录股票入门、公司研究、财报拆解、商业模式、估值框架和风险跟踪。</p>
-            <em>{investmentCount} 篇</em>
-          </a>
-          <a class="section-card" href="/search/?q=LLM">
-            <span>LLM Engineering</span>
-            <strong>LLM 算法工程</strong>
-            <p>面向 LLM 算法工程师的技术博客，覆盖模型、RAG、Agent、评测、推理优化、训练数据与行业技术趋势。</p>
-            <em>{llmCount > 0 ? `${llmCount} 篇` : '建设中'}</em>
-          </a>
-          <a class="section-card" href="/about/#method">
-            <span>Principles</span>
-            <strong>方法与边界</strong>
-            <p>说明研究方法、资料来源、AI 使用边界、投资内容边界和联系方式。</p>
-            <em>先读这个</em>
+          <a href="/series/a-share-tech-research/">
+            <span>02</span>
+            <div><strong>A股科技与未来产业研究</strong><p>从公司研究进入产业、财务结构和竞争壁垒。</p></div>
+            <em>{techResearchCount} 篇</em>
           </a>
         </div>
       </section>
 
-      <section class="content-section" aria-labelledby="topic-map">
+      <section class="content-section" aria-labelledby="active-projects">
         <div class="section-head">
-          <h2 id="topic-map">两条主线</h2>
+          <h2 id="active-projects">当前项目</h2>
+          <a href="/projects/">查看全部项目</a>
         </div>
-        <div class="topic-map">
-          <article>
-            <p class="post-meta">Investment Research</p>
-            <h3>投研与资产积累</h3>
-            <p>从“看懂股票”开始，逐步进入公司研究、财报分析、商业模式、估值训练、组合跟踪和财务自由路线。强调可复盘、可验证，不荐股。</p>
-            <div class="topic-links">
-              <a class="tag" href="/series/stock-basics/">从零看懂股票</a>
-              <a class="tag" href="/series/a-share-tech-research/">A股科技研究</a>
-              <a class="tag" href="/projects/financial-freedom-roadmap/">财务自由路线</a>
-            </div>
-          </article>
-          <article>
-            <p class="post-meta">LLM Industry & Technology</p>
-            <h3>LLM 算法工程与行业研究</h3>
-            <p>后续会系统整理大模型技术研究、算法工程实践和行业观察，包括模型能力、数据工程、RAG/Agent、评测体系、推理部署和应用落地。</p>
-            <div class="topic-links">
-              <a class="tag" href="/search/?q=LLM">LLM 搜索</a>
-              <a class="tag" href="/search/?q=大模型">大模型</a>
-              <a class="tag" href="/search/?q=AI算力">AI 算力</a>
-            </div>
-          </article>
+        <div class="home-project-links">
+          <a href="/projects/holdings/"><span>Portfolio Tracker</span><strong>持仓复盘</strong><p>交易、成本、分拆和组合收益的持续记录。</p></a>
+          <a href="/projects/a-share-sector-rotation/"><span>Market Monitor</span><strong>A股行业轮动</strong><p>观察行业强弱、热力和相对动量变化。</p></a>
+          <a href="/projects/financial-freedom-roadmap/"><span>Execution System</span><strong>财务自由路线</strong><p>用阶段、规则和复盘验证长期投资能力。</p></a>
         </div>
-      </section>
-
-      <section class="content-section" aria-labelledby="latest-posts">
-        <div class="section-head">
-          <h2 id="latest-posts">最新文章</h2>
-          <a href="/posts/">查看全部</a>
-        </div>
-        <ul class="post-list">
-          {
-            posts.map((post) => (
-              <li class="post-card">
-                <p class="post-meta">{dateFormatter.format(post.data.pubDate)} · 约 {estimateReadingMinutes(post)} 分钟读完</p>
-                <h3><a href={getPostUrl(post)}>{post.data.title}</a></h3>
-                <p>{post.data.description}</p>
-                <div class="tags">
-                  {post.data.tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
-                </div>
-              </li>
-            ))
-          }
-        </ul>
       </section>
     </div>
 
     <PageSidebar
       title="站点导航"
       compact
-      intro="投资研究与 LLM 算法工程并行更新：一边研究资产和公司，一边沉淀大模型技术与行业观察。"
+      intro="先读最新研究，再沿专题深入；项目页保留正在运行的投资工具与执行记录。"
       sections={[
         {
-          title: '主要入口',
+          title: '建议顺序',
           items: [
-            { label: '文章归档', href: '/posts/' },
-            { label: '专题路线', href: '/series/' },
-            { label: '项目页', href: '/projects/' },
-            { label: '搜索', href: '/search/' },
-            { label: '关于页', href: '/about/' },
+            { label: '最新研究', href: '#latest-posts' },
+            { label: '专题路线', href: '#reading-paths' },
+            { label: '当前项目', href: '#active-projects' },
           ],
         },
         {
-          title: '内容主线',
+          title: '研究入口',
           items: [
-            { label: '投资研究', href: '/tags/投资研究/' },
             { label: '从零看懂股票', href: '/series/stock-basics/' },
             { label: 'A股科技研究', href: '/series/a-share-tech-research/' },
-            { label: 'LLM 算法工程', href: '/search/?q=LLM' },
-            { label: 'AI 算力与大模型产业', href: '/search/?q=AI算力' },
+            { label: '全部投资研究', href: '/tags/投资研究/' },
             { label: '研究方法', href: '/about/#method' },
           ],
         },

@@ -2,6 +2,15 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 import {
+  calculateDailyPortfolioPoints as calculateCoreDailyPortfolioPoints,
+  calculateLedgerPositions,
+  inferSplitEvents as inferCoreSplitEvents,
+  summarizePortfolio,
+  type DailyPortfolioPoint,
+  type KlineGroup,
+  type SplitEvent,
+} from '../../lib/portfolio';
+import {
   calculatePortfolioSummary,
   calculatePositions,
   getEastmoneySecid,
@@ -17,6 +26,7 @@ const positions = calculatePositions();
 let activePositions = positions.filter((position) => position.quantity !== 0);
 let summary = calculatePortfolioSummary();
 const displayTrades = [...trades].sort((a, b) => b.executedAt.localeCompare(a.executedAt));
+const lastLedgerUpdate = displayTrades[0]?.executedAt ?? '--';
 const chronologicalTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
 const eastmoneySecids = securities.map(getEastmoneySecid);
 const tencentSymbols = securities.map(getQuoteSymbol);
@@ -47,38 +57,6 @@ const targetAllocationGroups = [...targetAllocations.reduce((groups, item) => {
 }, new Map<string, { category: string; amount: number; weight: number; funds: typeof targetAllocations }>()).values()];
 const targetEastmoneySecids = targetAllocations.map((item) => `${item.market === 'sh' ? '1' : '0'}.${item.code}`);
 const cashEventSides = new Set(['现金分红', '利息归本', '红利税补缴']);
-
-type KlineGroup = {
-  securityId: string;
-  symbol: string;
-  rows: Array<{
-    date: string;
-    close: number;
-  }>;
-  qfqRows?: Array<{
-    date: string;
-    close: number;
-  }>;
-};
-
-type DailyPortfolioPoint = {
-  date: string;
-  marketValue: number;
-  cost: number;
-  profit: number;
-  dailyChange: number;
-  trades: typeof trades;
-};
-
-type SplitEvent = {
-  securityId: string;
-  date: string;
-  ratio: number;
-};
-
-function getTradeDate(trade: (typeof trades)[number]) {
-  return trade.executedAt.slice(0, 10);
-}
 
 function normalizeKlinePayload(payload: any, position: (typeof positions)[number], adjustment: 'raw' | 'qfq' = 'raw'): KlineGroup | null {
   const data = payload.data;
@@ -167,225 +145,22 @@ async function fetchKlineGroup(position: (typeof positions)[number]): Promise<Kl
 }
 
 function inferSplitEvents(klineGroups: KlineGroup[]): SplitEvent[] {
-  const splitEvents: SplitEvent[] = [];
-  const normalizeSplitRatio = (ratio: number) => {
-    const nearestInteger = Math.round(ratio);
-    if (nearestInteger > 1 && Math.abs(ratio - nearestInteger) <= 0.02) return nearestInteger;
-    return Math.round(ratio * 10000) / 10000;
-  };
-
-  for (const group of klineGroups) {
-    if (!group.qfqRows?.length) continue;
-
-    const qfqCloseByDate = new Map(group.qfqRows.map((row) => [row.date, row.close]));
-    let previousFactor: number | null = null;
-
-    for (const row of group.rows) {
-      const qfqClose = qfqCloseByDate.get(row.date);
-      if (!qfqClose || qfqClose <= 0) continue;
-
-      const factor = row.close / qfqClose;
-      if (previousFactor && previousFactor / factor >= 1.5) {
-        const ratio = normalizeSplitRatio(previousFactor / factor);
-        if (ratio > 1) splitEvents.push({ securityId: group.securityId, date: row.date, ratio });
-      }
-      previousFactor = factor;
-    }
-  }
-
-  return splitEvents;
+  return inferCoreSplitEvents(klineGroups);
 }
 
 function calculatePositionsWithSplitEvents(splitEvents: SplitEvent[]) {
-  const eventsBySecurityId = new Map<string, SplitEvent[]>();
-  for (const event of splitEvents) {
-    const events = eventsBySecurityId.get(event.securityId) ?? [];
-    events.push(event);
-    eventsBySecurityId.set(event.securityId, events);
-  }
-
-  for (const events of eventsBySecurityId.values()) {
-    events.sort((a, b) => a.date.localeCompare(b.date));
-  }
-
-  const adjustedPositions = securities.map((security) => ({
-    ...security,
-    quoteSymbol: getQuoteSymbol(security),
-    quantity: 0,
-    cost: 0,
-    priceCost: 0,
-    fees: 0,
-    buyAmount: 0,
-    sellAmount: 0,
-    realizedProfit: 0,
-    lastTradePrice: 0,
-  }));
-  const positionById = new Map(adjustedPositions.map((position) => [position.id, position]));
-  const chronologicalTradesForPositions = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
-  const appliedSplitIndexById = new Map<string, number>();
-
-  const applyDueSplits = (securityId: string, date: string) => {
-    const events = eventsBySecurityId.get(securityId) ?? [];
-    const position = positionById.get(securityId);
-    if (!position) return;
-
-    let index = appliedSplitIndexById.get(securityId) ?? 0;
-    while (index < events.length && events[index].date <= date) {
-      position.quantity *= events[index].ratio;
-      index += 1;
-    }
-    appliedSplitIndexById.set(securityId, index);
-  };
-
-  for (const trade of chronologicalTradesForPositions) {
-    const position = positionById.get(trade.securityId);
-    if (!position) continue;
-
-    applyDueSplits(trade.securityId, getTradeDate(trade));
-
-    position.fees += trade.fee;
-    position.lastTradePrice = trade.price;
-
-    if (trade.side === '买入') {
-      position.quantity += trade.quantity;
-      position.cost += trade.amount + trade.fee;
-      position.priceCost += trade.amount;
-      position.buyAmount += trade.amount + trade.fee;
-      continue;
-    }
-
-    if (trade.side === '红股入账') {
-      if (!eventsBySecurityId.has(trade.securityId)) position.quantity += trade.quantity;
-      continue;
-    }
-
-    if (cashEventSides.has(trade.side)) {
-      position.realizedProfit += trade.amount;
-      continue;
-    }
-
-    const averageCost = position.quantity > 0 ? position.cost / position.quantity : 0;
-    const averagePriceCost = position.quantity > 0 ? position.priceCost / position.quantity : 0;
-    const closingCost = averageCost * trade.quantity;
-    const closingPriceCost = averagePriceCost * trade.quantity;
-    const proceeds = trade.amount - trade.fee - (trade.tax ?? 0);
-
-    position.quantity -= trade.quantity;
-    position.cost -= closingCost;
-    position.priceCost -= closingPriceCost;
-    position.sellAmount += proceeds;
-    position.realizedProfit += proceeds - closingCost;
-  }
-
-  for (const security of securities) {
-    for (const event of eventsBySecurityId.get(security.id) ?? []) {
-      const appliedIndex = appliedSplitIndexById.get(security.id) ?? 0;
-      const eventIndex = eventsBySecurityId.get(security.id)?.indexOf(event) ?? -1;
-      if (eventIndex >= appliedIndex) positionById.get(security.id)!.quantity *= event.ratio;
-    }
-  }
-
-  return adjustedPositions.filter((position) => position.quantity !== 0 || position.realizedProfit !== 0);
+  return calculateLedgerPositions(securities, trades, getQuoteSymbol, splitEvents);
 }
 
 function summarizePositions(calculatedPositions: ReturnType<typeof calculatePositions>) {
-  const activeRealizedProfit = calculatedPositions
-    .filter((position) => position.quantity !== 0)
-    .reduce((sum, position) => sum + position.realizedProfit, 0);
-  const closedRealizedProfit = calculatedPositions
-    .filter((position) => position.quantity === 0)
-    .reduce((sum, position) => sum + position.realizedProfit, 0);
-
-  return {
-    totalCost: calculatedPositions.reduce((sum, position) => sum + position.cost, 0),
-    totalQuantity: calculatedPositions.reduce((sum, position) => sum + position.quantity, 0),
-    totalFees: trades.reduce((sum, trade) => sum + trade.fee + (trade.tax ?? 0), 0),
-    totalBuyAmount: calculatedPositions.reduce((sum, position) => sum + position.buyAmount, 0),
-    realizedProfit: calculatedPositions.reduce((sum, position) => sum + position.realizedProfit, 0),
-    activeRealizedProfit,
-    closedRealizedProfit,
-  };
+  return summarizePortfolio(calculatedPositions, trades);
 }
 
-function calculateDailyPortfolioPoints(klineGroups: KlineGroup[], splitEvents: SplitEvent[]): DailyPortfolioPoint[] {
-  const klineBySymbol = new Map(klineGroups.map((group) => [group.symbol, group.rows]));
-  const allDates = [...new Set(klineGroups.flatMap((group) => group.rows.map((row) => row.date)))].sort();
-  const sortedTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
-  const stateById = new Map(positions.map((position) => [position.id, { quantity: 0, cost: 0, realizedProfit: 0 }]));
-  const splitEventsByDate = new Map<string, SplitEvent[]>();
-  for (const event of splitEvents) {
-    const events = splitEventsByDate.get(event.date) ?? [];
-    events.push(event);
-    splitEventsByDate.set(event.date, events);
-  }
-  const splitSecurityIds = new Set(splitEvents.map((event) => event.securityId));
-  const latestCloseBySymbol = new Map<string, number>();
-  let tradeIndex = 0;
-  let previousProfit: number | null = null;
-
-  return allDates
-    .map((date) => {
-      for (const [symbol, rows] of klineBySymbol.entries()) {
-        const row = rows.find((item) => item.date === date);
-        if (row) latestCloseBySymbol.set(symbol, row.close);
-      }
-
-      for (const event of splitEventsByDate.get(date) ?? []) {
-        const state = stateById.get(event.securityId);
-        if (state) state.quantity *= event.ratio;
-      }
-
-      while (tradeIndex < sortedTrades.length && getTradeDate(sortedTrades[tradeIndex]) <= date) {
-        const trade = sortedTrades[tradeIndex];
-        const state = stateById.get(trade.securityId);
-
-        if (state) {
-          if (trade.side === '买入') {
-            state.quantity += trade.quantity;
-            state.cost += trade.amount + trade.fee;
-          } else if (trade.side === '红股入账') {
-            if (!splitSecurityIds.has(trade.securityId)) state.quantity += trade.quantity;
-          } else if (cashEventSides.has(trade.side)) {
-            state.realizedProfit += trade.amount;
-          } else {
-            const averageCost = state.quantity > 0 ? state.cost / state.quantity : 0;
-            const closingCost = averageCost * trade.quantity;
-            state.quantity -= trade.quantity;
-            state.cost -= closingCost;
-            state.realizedProfit += trade.amount - trade.fee - (trade.tax ?? 0) - closingCost;
-          }
-        }
-
-        tradeIndex += 1;
-      }
-
-      let marketValue = 0;
-      let cost = 0;
-      let realizedProfit = 0;
-
-      for (const position of positions) {
-        const state = stateById.get(position.id);
-        const close = latestCloseBySymbol.get(position.quoteSymbol);
-        if (!state || !close) continue;
-
-        marketValue += state.quantity * close;
-        cost += state.cost;
-        realizedProfit += state.realizedProfit;
-      }
-
-      if (marketValue <= 0 && cost <= 0) return null;
-
-      const profit = marketValue - cost + realizedProfit;
-      const dailyChange = previousProfit === null ? 0 : profit - previousProfit;
-      previousProfit = profit;
-
-      return { date, marketValue, cost, profit, dailyChange };
-    })
-    .filter(Boolean)
-    .map((point) => ({
-      ...point,
-      trades: sortedTrades.filter((trade) => getTradeDate(trade) === point.date),
-    }));
+function calculateDailyPortfolioPoints(
+  klineGroups: KlineGroup[],
+  splitEvents: SplitEvent[],
+): Array<DailyPortfolioPoint<(typeof trades)[number]>> {
+  return calculateCoreDailyPortfolioPoints(securities, trades, getQuoteSymbol, klineGroups, splitEvents);
 }
 
 const dailyKlineResults = await Promise.allSettled(activePositions.map(fetchKlineGroup));
@@ -464,7 +239,7 @@ const dailyCalendarMonths = (() => {
 
   return months;
 })();
-const getDailyTradeSummary = (point: DailyPortfolioPoint) => {
+const getDailyTradeSummary = (point: DailyPortfolioPoint<(typeof trades)[number]>) => {
   if (!point.trades.length) return '无交易';
 
   return point.trades
@@ -506,6 +281,7 @@ const industryPlanMarkdown = [
       <section class="holding-summary" aria-label="持仓总览" data-holdings-root>
         <div class="holding-status">
           <span data-quote-status>正在获取实时行情...</span>
+          <time datetime={lastLedgerUpdate === '--' ? undefined : lastLedgerUpdate.replace(' ', 'T')}>账本截至 {lastLedgerUpdate}</time>
           <time data-quote-time datetime="">--</time>
         </div>
 
@@ -545,6 +321,90 @@ const industryPlanMarkdown = [
             <strong>{formatCurrency.format(summary.totalFees)}</strong>
             <p>{formatNumber.format(summary.totalQuantity)} 份持仓</p>
           </article>
+        </div>
+      </section>
+
+      <section class="content-section intraday-section" aria-labelledby="intraday-title">
+        <div class="section-head intraday-section-head">
+          <div>
+            <h2 id="intraday-title">分钟行情</h2>
+            <p>按实际持仓份额汇总全部标的，展示组合最近一个交易日的分钟 K 线与成交额。</p>
+          </div>
+          <div class="intraday-controls is-total">
+            <button type="button" data-intraday-refresh title="刷新分钟行情" aria-label="刷新分钟行情">
+              <span aria-hidden="true">↻</span>
+              <em>刷新</em>
+            </button>
+          </div>
+        </div>
+
+        <div class="intraday-panel" data-intraday-root aria-busy="true">
+          <div class="intraday-quote-head">
+            <div>
+              <span data-intraday-code>{activePositions.length} 只当前持仓</span>
+              <h3 data-intraday-name>持仓组合</h3>
+            </div>
+            <p data-intraday-status role="status" aria-live="polite">正在读取分钟数据...</p>
+          </div>
+
+          <dl class="intraday-metrics">
+            <div>
+              <dt>最新市值</dt>
+              <dd data-intraday-latest>--</dd>
+            </div>
+            <div>
+              <dt>当日涨跌</dt>
+              <dd data-intraday-change>--</dd>
+            </div>
+            <div>
+              <dt>涨跌幅</dt>
+              <dd data-intraday-change-rate>--</dd>
+            </div>
+            <div>
+              <dt>开盘市值</dt>
+              <dd data-intraday-open>--</dd>
+            </div>
+            <div>
+              <dt>最高市值</dt>
+              <dd data-intraday-high>--</dd>
+            </div>
+            <div>
+              <dt>最低市值</dt>
+              <dd data-intraday-low>--</dd>
+            </div>
+          </dl>
+
+          <div class="intraday-chart-wrap" data-intraday-chart-wrap>
+            <div class="intraday-chart-legend" aria-hidden="true">
+              <span class="is-price">分钟 K</span>
+              <span class="is-average">持仓均价</span>
+              <span class="is-previous">前收</span>
+              <span class="is-turnover">成交额</span>
+            </div>
+            <svg
+              data-intraday-chart
+              viewBox="0 0 960 400"
+              preserveAspectRatio="none"
+              role="img"
+              aria-label="持仓组合分钟 K 线图，使用左右方向键查看分钟明细"
+              tabindex="0"
+            >
+              <g data-intraday-grid></g>
+              <g data-intraday-volume-bars></g>
+              <g data-intraday-candles></g>
+              <polyline data-intraday-average points=""></polyline>
+              <line data-intraday-previous></line>
+              <g data-intraday-axis></g>
+              <g data-intraday-focus style="display: none;">
+                <line class="intraday-crosshair-x"></line>
+                <line class="intraday-crosshair-y"></line>
+                <circle r="4"></circle>
+              </g>
+            </svg>
+            <div class="intraday-tooltip" data-intraday-tooltip hidden></div>
+            <div class="intraday-empty" data-intraday-empty>正在读取分钟数据...</div>
+          </div>
+          <p class="intraday-source">数据源：<span data-intraday-source>公开行情接口</span>。行情可能延迟，仅用于持仓复盘。</p>
         </div>
       </section>
 
@@ -918,6 +778,7 @@ const industryPlanMarkdown = [
           title: '入口',
           items: [
             { label: '项目页', href: '/projects/' },
+            { label: '分钟行情', href: '#intraday-title' },
             { label: '行业仓加仓计划', href: '#industry-plan-title' },
             { label: '目标投资结构', href: '#target-allocation-title' },
             { label: '每日持仓日历', href: '#daily-calendar-title' },
@@ -1024,6 +885,395 @@ const industryPlanMarkdown = [
   const positionById = new Map(positions.map((position) => [position.id, position]));
   let browserDailyPoints = [];
   let latestLiveQuotes = [];
+
+  const intradayRoot = document.querySelector('[data-intraday-root]');
+  const intradayRefresh = document.querySelector('[data-intraday-refresh]');
+  const intradayChart = document.querySelector('[data-intraday-chart]');
+  const intradayChartWrap = document.querySelector('[data-intraday-chart-wrap]');
+  const intradayTooltip = document.querySelector('[data-intraday-tooltip]');
+  const intradayEmpty = document.querySelector('[data-intraday-empty]');
+  const svgNamespace = 'http://www.w3.org/2000/svg';
+  let intradayPoints = [];
+  let intradayChartGeometry = null;
+  let intradayFocusIndex = -1;
+  let intradayRequest = null;
+
+  function setIntradayText(selector, value) {
+    const element = intradayRoot?.querySelector(selector);
+    if (element) element.textContent = value;
+  }
+
+  function createSvgElement(tag, attributes = {}) {
+    const element = document.createElementNS(svgNamespace, tag);
+    Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, String(value)));
+    return element;
+  }
+
+  function clearSvgGroup(selector) {
+    const group = intradayChart?.querySelector(selector);
+    if (group) group.replaceChildren();
+    return group;
+  }
+
+  function getShanghaiClock() {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Shanghai',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return {
+      date: `${values.year}-${values.month}-${values.day}`,
+      weekday: values.weekday,
+      minutes: Number(values.hour) * 60 + Number(values.minute),
+    };
+  }
+
+  function isShanghaiTradingTime() {
+    const clock = getShanghaiClock();
+    if (['Sat', 'Sun'].includes(clock.weekday)) return false;
+    return (clock.minutes >= 570 && clock.minutes <= 695) || (clock.minutes >= 775 && clock.minutes <= 905);
+  }
+
+  function normalizeSinaIntradayPayload(payload, position) {
+    if (!Array.isArray(payload) || !payload.length) return null;
+    const normalized = payload.map((row) => ({
+      timestamp: row.day,
+      date: row.day?.slice(0, 10),
+      time: row.day?.slice(11, 16),
+      open: Number(row.open),
+      close: Number(row.close),
+      high: Number(row.high),
+      low: Number(row.low),
+      volume: Number(row.volume) / 100,
+      amount: Number(row.amount),
+    })).filter((point) => point.timestamp && Object.values(point).slice(3).every(Number.isFinite));
+    if (!normalized.length) return null;
+
+    const latestDate = normalized.at(-1).date;
+    const latestRows = normalized.filter((point) => point.date === latestDate);
+    const previousRows = normalized.filter((point) => point.date < latestDate);
+    const previousClose = previousRows.at(-1)?.close ?? latestRows[0]?.open;
+    let cumulativeVolume = 0;
+    let cumulativeAmount = 0;
+    const rows = latestRows.map((point) => {
+      cumulativeVolume += point.volume * 100;
+      cumulativeAmount += point.amount;
+      return {
+        ...point,
+        average: cumulativeVolume > 0 ? cumulativeAmount / cumulativeVolume : point.close,
+      };
+    });
+
+    return rows.length ? {
+      position,
+      code: position.code,
+      name: position.name,
+      previousClose,
+      source: '新浪公开行情接口',
+      rows,
+    } : null;
+  }
+
+  function loadSinaIntraday(position, signal) {
+    return new Promise((resolve, reject) => {
+      const callbackName = `_intradayKline_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+      const script = document.createElement('script');
+      let settled = false;
+      const cleanup = () => {
+        script.remove();
+        try { delete window[callbackName]; } catch { window[callbackName] = undefined; }
+      };
+      const finish = (callback, value) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        callback(value);
+      };
+      const abort = () => finish(reject, new DOMException('Request aborted', 'AbortError'));
+      signal.addEventListener('abort', abort, { once: true });
+      script.async = true;
+      script.src = `https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20${callbackName}=/CN_MarketDataService.getKLineData?symbol=${position.quoteSymbol}&scale=1&ma=no&datalen=500&_=${Date.now()}`;
+      script.onload = () => {
+        signal.removeEventListener('abort', abort);
+        const data = normalizeSinaIntradayPayload(window[callbackName], position);
+        data ? finish(resolve, data) : finish(reject, new Error('Sina minute quote response is empty'));
+      };
+      script.onerror = () => {
+        signal.removeEventListener('abort', abort);
+        finish(reject, new Error('Sina minute quote script failed'));
+      };
+      document.head.append(script);
+    });
+  }
+
+  function aggregateIntradayGroups(groups) {
+    if (groups.length !== activePositions.length) {
+      throw new Error(`Only ${groups.length} of ${activePositions.length} positions returned minute data`);
+    }
+
+    const latestDate = groups.map((group) => group.rows.at(-1)?.date).filter(Boolean).sort().at(-1);
+    const currentGroups = groups.filter((group) => group.rows.at(-1)?.date === latestDate);
+    if (!latestDate || currentGroups.length !== activePositions.length) {
+      throw new Error('Position minute data is not from the same trading day');
+    }
+
+    const times = [...new Set(currentGroups.flatMap((group) => group.rows.map((point) => point.time)))].sort();
+    const state = currentGroups.map((group) => ({
+      group,
+      byTime: new Map(group.rows.map((point) => [point.time, point])),
+      previous: group.previousClose,
+    }));
+    const rows = times.map((time) => {
+      const aggregate = {
+        timestamp: `${latestDate} ${time}`,
+        date: latestDate,
+        time,
+        open: 0,
+        close: 0,
+        high: 0,
+        low: 0,
+        volume: 0,
+        amount: 0,
+        average: 0,
+      };
+
+      state.forEach((item) => {
+        const point = item.byTime.get(time);
+        const fallback = item.previous;
+        const quantity = item.group.position.quantity;
+        aggregate.open += (point?.open ?? fallback) * quantity;
+        aggregate.close += (point?.close ?? fallback) * quantity;
+        aggregate.high += (point?.high ?? fallback) * quantity;
+        aggregate.low += (point?.low ?? fallback) * quantity;
+        aggregate.average += (point?.average ?? fallback) * quantity;
+        aggregate.volume += point?.volume ?? 0;
+        aggregate.amount += point?.amount ?? 0;
+        if (point) item.previous = point.close;
+      });
+      return aggregate;
+    });
+
+    return {
+      code: `${activePositions.length} 只当前持仓`,
+      name: '持仓组合',
+      previousClose: currentGroups.reduce((sum, group) => sum + group.previousClose * group.position.quantity, 0),
+      source: '新浪公开行情接口',
+      rows,
+    };
+  }
+
+  function renderIntradayFocus(index, pointerX = null) {
+    if (!intradayChartGeometry || !intradayPoints.length || !intradayTooltip) return;
+    const safeIndex = Math.max(0, Math.min(index, intradayPoints.length - 1));
+    const point = intradayPoints[safeIndex];
+    const { xAt, yAt, priceTop, volumeBottom } = intradayChartGeometry;
+    const x = xAt(safeIndex);
+    const y = yAt(point.close);
+    const focus = intradayChart.querySelector('[data-intraday-focus]');
+    const [vertical, horizontal, dot] = focus.children;
+    vertical.setAttribute('x1', x);
+    vertical.setAttribute('x2', x);
+    vertical.setAttribute('y1', priceTop);
+    vertical.setAttribute('y2', volumeBottom);
+    horizontal.setAttribute('x1', 56);
+    horizontal.setAttribute('x2', 942);
+    horizontal.setAttribute('y1', y);
+    horizontal.setAttribute('y2', y);
+    dot.setAttribute('cx', x);
+    dot.setAttribute('cy', y);
+    focus.style.display = '';
+
+    const directionClass = point.close >= point.open ? 'is-up' : 'is-down';
+    intradayTooltip.className = `intraday-tooltip ${directionClass}`;
+    intradayTooltip.innerHTML = `<strong>${point.time} · ${currencyFormatter.format(point.close)}</strong><span>开 ${currencyFormatter.format(point.open)}　高 ${currencyFormatter.format(point.high)}</span><span>低 ${currencyFormatter.format(point.low)}　成交额 ${compactCurrencyFormatter.format(point.amount)}</span>`;
+    intradayTooltip.hidden = false;
+    const wrapWidth = intradayChartWrap?.clientWidth ?? 0;
+    const scaledX = pointerX ?? (x / 960) * wrapWidth;
+    intradayTooltip.style.left = `${Math.max(8, Math.min(scaledX, wrapWidth - 8))}px`;
+    intradayTooltip.classList.toggle('is-left', scaledX > wrapWidth * 0.62);
+    intradayFocusIndex = safeIndex;
+  }
+
+  function hideIntradayFocus() {
+    const focus = intradayChart?.querySelector('[data-intraday-focus]');
+    if (focus) focus.style.display = 'none';
+    if (intradayTooltip) intradayTooltip.hidden = true;
+  }
+
+  function renderIntradayChart(data) {
+    const rows = data.rows;
+    const previousClose = Number.isFinite(data.previousClose) ? data.previousClose : rows[0].open;
+    const grid = clearSvgGroup('[data-intraday-grid]');
+    const volumeBars = clearSvgGroup('[data-intraday-volume-bars]');
+    const candles = clearSvgGroup('[data-intraday-candles]');
+    const axis = clearSvgGroup('[data-intraday-axis]');
+    const averageLine = intradayChart.querySelector('[data-intraday-average]');
+    const previousLine = intradayChart.querySelector('[data-intraday-previous]');
+    const priceLeft = 56;
+    const priceRight = 942;
+    const priceTop = 20;
+    const priceBottom = 274;
+    const volumeTop = 306;
+    const volumeBottom = 365;
+    const rawMin = Math.min(previousClose, ...rows.map((point) => point.low));
+    const rawMax = Math.max(previousClose, ...rows.map((point) => point.high));
+    const pricePadding = Math.max((rawMax - rawMin) * 0.08, previousClose * 0.002);
+    const minPrice = rawMin - pricePadding;
+    const maxPrice = rawMax + pricePadding;
+    const maxAmount = Math.max(...rows.map((point) => point.amount), 1);
+    const xAt = (index) => priceLeft + (index / Math.max(rows.length - 1, 1)) * (priceRight - priceLeft);
+    const yAt = (price) => priceBottom - ((price - minPrice) / (maxPrice - minPrice)) * (priceBottom - priceTop);
+    const candleWidth = Math.max(1.3, Math.min(4.2, ((priceRight - priceLeft) / rows.length) * 0.68));
+
+    for (let index = 0; index < 5; index += 1) {
+      const ratio = index / 4;
+      const y = priceTop + ratio * (priceBottom - priceTop);
+      grid.append(createSvgElement('line', { class: 'intraday-grid-line', x1: priceLeft, x2: priceRight, y1: y, y2: y }));
+      const value = maxPrice - ratio * (maxPrice - minPrice);
+      const label = createSvgElement('text', { class: 'intraday-y-label', x: priceLeft - 8, y: y + 4, 'text-anchor': 'end' });
+      label.textContent = compactCurrencyFormatter.format(value);
+      axis.append(label);
+    }
+
+    const preferredTimes = ['09:30', '10:30', '11:30', '14:00', '15:00'];
+    preferredTimes.forEach((time) => {
+      const index = rows.findIndex((point) => point.time === time);
+      if (index < 0) return;
+      const x = xAt(index);
+      grid.append(createSvgElement('line', { class: 'intraday-grid-line is-vertical', x1: x, x2: x, y1: priceTop, y2: volumeBottom }));
+      const label = createSvgElement('text', { class: 'intraday-x-label', x, y: 392, 'text-anchor': index === 0 ? 'start' : index === rows.length - 1 ? 'end' : 'middle' });
+      label.textContent = time;
+      axis.append(label);
+    });
+
+    rows.forEach((point, index) => {
+      const x = xAt(index);
+      const isUp = point.close >= point.open;
+      const className = isUp ? 'is-up' : 'is-down';
+      candles.append(createSvgElement('line', {
+        class: `intraday-wick ${className}`,
+        x1: x,
+        x2: x,
+        y1: yAt(point.high),
+        y2: yAt(point.low),
+      }));
+      const bodyTop = Math.min(yAt(point.open), yAt(point.close));
+      const bodyHeight = Math.max(Math.abs(yAt(point.open) - yAt(point.close)), 1.1);
+      candles.append(createSvgElement('rect', {
+        class: `intraday-candle ${className}`,
+        x: x - candleWidth / 2,
+        y: bodyTop,
+        width: candleWidth,
+        height: bodyHeight,
+      }));
+      const volumeHeight = (point.amount / maxAmount) * (volumeBottom - volumeTop);
+      volumeBars.append(createSvgElement('rect', {
+        class: `intraday-volume-bar ${className}`,
+        x: x - candleWidth / 2,
+        y: volumeBottom - volumeHeight,
+        width: candleWidth,
+        height: Math.max(volumeHeight, 0.5),
+      }));
+    });
+
+    averageLine.setAttribute('points', rows.map((point, index) => `${xAt(index)},${yAt(point.average)}`).join(' '));
+    const previousY = yAt(previousClose);
+    Object.entries({ x1: priceLeft, x2: priceRight, y1: previousY, y2: previousY }).forEach(([name, value]) => previousLine.setAttribute(name, value));
+    intradayPoints = rows;
+    intradayChartGeometry = { xAt, yAt, priceLeft, priceRight, priceTop, volumeBottom };
+    intradayFocusIndex = rows.length - 1;
+    intradayEmpty.hidden = true;
+  }
+
+  function renderIntradaySummary(data) {
+    const first = data.rows[0];
+    const last = data.rows.at(-1);
+    const previousClose = Number.isFinite(data.previousClose) ? data.previousClose : first.open;
+    const changeAmount = last.close - previousClose;
+    const changeRate = changeAmount / previousClose;
+    const isCurrentDay = last.date === getShanghaiClock().date;
+    setIntradayText('[data-intraday-code]', data.code);
+    setIntradayText('[data-intraday-name]', data.name);
+    setIntradayText('[data-intraday-status]', `${isCurrentDay ? '今日' : '最近交易日'} ${last.date} · 更新至 ${last.time} · 已汇总全部持仓`);
+    setIntradayText('[data-intraday-latest]', currencyFormatter.format(last.close));
+    setIntradayText('[data-intraday-change]', `${changeAmount >= 0 ? '+' : ''}${currencyFormatter.format(changeAmount)}`);
+    setIntradayText('[data-intraday-change-rate]', `${changeRate >= 0 ? '+' : ''}${percentFormatter.format(changeRate)}`);
+    setIntradayText('[data-intraday-open]', currencyFormatter.format(first.open));
+    setIntradayText('[data-intraday-high]', currencyFormatter.format(Math.max(...data.rows.map((point) => point.high))));
+    setIntradayText('[data-intraday-low]', currencyFormatter.format(Math.min(...data.rows.map((point) => point.low))));
+    setIntradayText('[data-intraday-source]', data.source);
+    intradayRoot.classList.toggle('is-up', changeAmount >= 0);
+    intradayRoot.classList.toggle('is-down', changeAmount < 0);
+  }
+
+  async function loadIntradayChart() {
+    if (!intradayRoot || !intradayChart || !activePositions.length) return;
+    intradayRequest?.abort();
+    const controller = new AbortController();
+    intradayRequest = controller;
+    const timeout = setTimeout(() => controller.abort(), 7000);
+    intradayRoot.setAttribute('aria-busy', 'true');
+    intradayRefresh.disabled = true;
+    intradayRefresh.classList.add('is-loading');
+    intradayEmpty.hidden = false;
+    intradayEmpty.textContent = '正在读取分钟数据...';
+    setIntradayText('[data-intraday-code]', `${activePositions.length} 只当前持仓`);
+    setIntradayText('[data-intraday-name]', '持仓组合');
+    setIntradayText('[data-intraday-status]', '正在读取分钟数据...');
+
+    try {
+      const groups = await Promise.all(activePositions.map((position) => loadSinaIntraday(position, controller.signal)));
+      const data = aggregateIntradayGroups(groups);
+      renderIntradaySummary(data);
+      renderIntradayChart(data);
+    } catch (error) {
+      if (controller.signal.aborted && intradayRequest !== controller) return;
+      console.warn('Portfolio minute chart failed', error);
+      setIntradayText('[data-intraday-status]', '组合分钟行情加载失败');
+      intradayEmpty.hidden = false;
+      intradayEmpty.textContent = '未能取得全部持仓的同日分钟行情，请稍后刷新。';
+    } finally {
+      clearTimeout(timeout);
+      if (intradayRequest === controller) {
+        intradayRoot.setAttribute('aria-busy', 'false');
+        intradayRefresh.disabled = false;
+        intradayRefresh.classList.remove('is-loading');
+      }
+    }
+  }
+
+  intradayRefresh?.addEventListener('click', loadIntradayChart);
+  intradayChart?.addEventListener('pointermove', (event) => {
+    if (!intradayChartGeometry || !intradayPoints.length) return;
+    const bounds = intradayChart.getBoundingClientRect();
+    const pointerX = event.clientX - bounds.left;
+    const svgX = (pointerX / bounds.width) * 960;
+    const ratio = (svgX - intradayChartGeometry.priceLeft) / (intradayChartGeometry.priceRight - intradayChartGeometry.priceLeft);
+    renderIntradayFocus(Math.round(ratio * (intradayPoints.length - 1)), pointerX);
+  });
+  intradayChart?.addEventListener('pointerleave', hideIntradayFocus);
+  intradayChart?.addEventListener('focus', () => renderIntradayFocus(intradayFocusIndex < 0 ? intradayPoints.length - 1 : intradayFocusIndex));
+  intradayChart?.addEventListener('blur', hideIntradayFocus);
+  intradayChart?.addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) || !intradayPoints.length) return;
+    event.preventDefault();
+    if (event.key === 'Home') intradayFocusIndex = 0;
+    if (event.key === 'End') intradayFocusIndex = intradayPoints.length - 1;
+    if (event.key === 'ArrowLeft') intradayFocusIndex = Math.max(0, intradayFocusIndex - 1);
+    if (event.key === 'ArrowRight') intradayFocusIndex = Math.min(intradayPoints.length - 1, intradayFocusIndex + 1);
+    renderIntradayFocus(intradayFocusIndex);
+  });
+
+  loadIntradayChart();
+  window.setInterval(() => {
+    if (!document.hidden && isShanghaiTradingTime()) loadIntradayChart();
+  }, 60_000);
 
   function getTradeDate(trade) {
     return trade.executedAt.slice(0, 10);
@@ -1451,6 +1701,7 @@ const industryPlanMarkdown = [
     const quoteBySymbol = new Map(quotes.map((quote) => [quote.symbol, quote]));
     let totalMarketValue = 0;
     let hasAllQuotes = true;
+    let returnedQuoteCount = 0;
 
     for (const position of activePositions) {
       const row = document.querySelector(`[data-position-row][data-symbol="${position.quoteSymbol}"]`);
@@ -1462,8 +1713,9 @@ const industryPlanMarkdown = [
         continue;
       }
 
+      returnedQuoteCount += 1;
       const marketValue = quote.price * position.quantity;
-      const profit = marketValue - position.cost + position.realizedProfit;
+      const profit = marketValue - position.cost;
       const profitRate = position.cost > 0 ? profit / position.cost : 0;
       totalMarketValue += marketValue;
 
@@ -1490,7 +1742,13 @@ const industryPlanMarkdown = [
     const brokerStyleProfit = totalUnrealizedProfit + summary.activeRealizedProfit;
     const brokerStyleProfitRate = summary.totalCost > 0 ? brokerStyleProfit / summary.totalCost : 0;
     const totalProfit = totalUnrealizedProfit + summary.realizedProfit;
-    const totalProfitRate = summary.totalCost > 0 ? totalProfit / summary.totalCost : 0;
+    const totalProfitRate = summary.totalBuyAmount > 0 ? totalProfit / summary.totalBuyAmount : 0;
+
+    if (!hasAllQuotes) {
+      setStatus(`部分行情未返回（${returnedQuoteCount}/${activePositions.length}），汇总收益未更新`);
+      updateQuoteTime(quotes);
+      return;
+    }
 
     setText('[data-total-market-value]', currencyFormatter.format(totalMarketValue));
     setText('[data-total-unrealized-profit]', currencyFormatter.format(totalUnrealizedProfit));
@@ -1498,7 +1756,7 @@ const industryPlanMarkdown = [
     setText('[data-broker-style-profit]', currencyFormatter.format(brokerStyleProfit));
     setText('[data-broker-style-profit-rate]', `收益率 ${percentFormatter.format(brokerStyleProfitRate)}`);
     setText('[data-total-profit]', currencyFormatter.format(totalProfit));
-    setText('[data-total-profit-rate]', `收益率 ${percentFormatter.format(totalProfitRate)}`);
+    setText('[data-total-profit-rate]', `累计收益率 ${percentFormatter.format(totalProfitRate)} · 按累计买入金额`);
     document.querySelector('[data-total-unrealized-profit]')?.classList.toggle('is-negative', totalUnrealizedProfit < 0);
     document.querySelector('[data-total-unrealized-profit]')?.classList.toggle('is-positive', totalUnrealizedProfit >= 0);
     document.querySelector('[data-broker-style-profit]')?.classList.toggle('is-negative', brokerStyleProfit < 0);
@@ -1506,7 +1764,7 @@ const industryPlanMarkdown = [
     document.querySelector('[data-total-profit]')?.classList.toggle('is-negative', totalProfit < 0);
     document.querySelector('[data-total-profit]')?.classList.toggle('is-positive', totalProfit >= 0);
 
-    setStatus(hasAllQuotes ? '实时行情已更新' : '部分行情未返回');
+    setStatus('实时行情已更新');
     updateQuoteTime(quotes);
     mergeLiveQuotesIntoCalendar(quotes);
   }

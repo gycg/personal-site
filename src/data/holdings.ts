@@ -1,3 +1,5 @@
+import { calculateLedgerPositions, summarizePortfolio } from '../lib/portfolio';
+
 export type Security = {
   id: string;
   name: string;
@@ -143,6 +145,33 @@ export const securities: Security[] = [
 
 export const trades: Trade[] = [
   {
+    executedAt: '2026-08-03 09:35:00',
+    securityId: 'sp500-etf',
+    price: 1.907,
+    quantity: 15700,
+    amount: 29939.9,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-08-03 09:35:00',
+    securityId: 'gold-etf',
+    price: 8.396,
+    quantity: 1100,
+    amount: 9235.6,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-07-31 14:46:08',
+    securityId: 'star-chip-etf',
+    price: 1.12,
+    quantity: 13400,
+    amount: 15008.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
     executedAt: '2026-07-21 10:59:53',
     securityId: 'csi-1000-etf',
     price: 2.85,
@@ -150,6 +179,16 @@ export const trades: Trade[] = [
     amount: 29925.0,
     fee: 5.0,
     side: '买入',
+  },
+  {
+    executedAt: '2026-07-21 09:30:00',
+    securityId: 'star-chip-etf',
+    price: 0,
+    quantity: 10600,
+    amount: 0,
+    fee: 0,
+    side: '红股入账',
+    note: '科创芯片ETF 588200 份额拆分，权益登记日 2026-07-20，除权日 2026-07-21，拆分比例 1:3；原 5300 份新增 10600 份，成本金额不变。',
   },
   {
     executedAt: '2026-07-15 13:31:27',
@@ -649,79 +688,9 @@ export function getEastmoneySecid(security: Security) {
 }
 
 export function calculatePositions() {
-  const positions = securities.map((security) => ({
-    ...security,
-    quoteSymbol: getQuoteSymbol(security),
-    quantity: 0,
-    cost: 0,
-    priceCost: 0,
-    fees: 0,
-    buyAmount: 0,
-    sellAmount: 0,
-    realizedProfit: 0,
-    lastTradePrice: 0,
-  }));
-
-  const positionById = new Map(positions.map((position) => [position.id, position]));
-  const chronologicalTrades = [...trades].sort((a, b) => a.executedAt.localeCompare(b.executedAt));
-
-  for (const trade of chronologicalTrades) {
-    const position = positionById.get(trade.securityId);
-    if (!position) continue;
-
-    position.fees += trade.fee;
-    position.lastTradePrice = trade.price;
-
-    if (trade.side === '买入') {
-      position.quantity += trade.quantity;
-      position.cost += trade.amount + trade.fee;
-      position.priceCost += trade.amount;
-      position.buyAmount += trade.amount + trade.fee;
-      continue;
-    }
-
-    if (trade.side === '红股入账') {
-      position.quantity += trade.quantity;
-      continue;
-    }
-
-    if (trade.side === '现金分红' || trade.side === '利息归本' || trade.side === '红利税补缴') {
-      position.realizedProfit += trade.amount;
-      continue;
-    }
-
-    const averageCost = position.quantity > 0 ? position.cost / position.quantity : 0;
-    const averagePriceCost = position.quantity > 0 ? position.priceCost / position.quantity : 0;
-    const closingCost = averageCost * trade.quantity;
-    const closingPriceCost = averagePriceCost * trade.quantity;
-    const proceeds = trade.amount - trade.fee - (trade.tax ?? 0);
-
-    position.quantity -= trade.quantity;
-    position.cost -= closingCost;
-    position.priceCost -= closingPriceCost;
-    position.sellAmount += proceeds;
-    position.realizedProfit += proceeds - closingCost;
-  }
-
-  return positions.filter((position) => position.quantity !== 0 || position.realizedProfit !== 0);
+  return calculateLedgerPositions(securities, trades, getQuoteSymbol);
 }
 
 export function calculatePortfolioSummary() {
-  const positions = calculatePositions();
-  const activeRealizedProfit = positions
-    .filter((position) => position.quantity !== 0)
-    .reduce((sum, position) => sum + position.realizedProfit, 0);
-  const closedRealizedProfit = positions
-    .filter((position) => position.quantity === 0)
-    .reduce((sum, position) => sum + position.realizedProfit, 0);
-
-  return {
-    totalCost: positions.reduce((sum, position) => sum + position.cost, 0),
-    totalQuantity: positions.reduce((sum, position) => sum + position.quantity, 0),
-    totalFees: trades.reduce((sum, trade) => sum + trade.fee + (trade.tax ?? 0), 0),
-    totalBuyAmount: positions.reduce((sum, position) => sum + position.buyAmount, 0),
-    realizedProfit: positions.reduce((sum, position) => sum + position.realizedProfit, 0),
-    activeRealizedProfit,
-    closedRealizedProfit,
-  };
+  return summarizePortfolio(calculatePositions(), trades);
 }

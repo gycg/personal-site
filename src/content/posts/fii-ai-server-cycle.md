@@ -12,7 +12,7 @@ draft: false
 
 本文中的 Q1，指 **2026 年第一季度**。
 
-![工业富联财报分析：AI 服务器驱动新周期](/images/posts/fii-ai-server-cycle/fii-earnings-ai-server-cover.png)
+![工业富联财报分析：AI 服务器驱动新周期](/images/posts/fii-ai-server-cycle/fii-earnings-ai-server-cover.webp)
 
 ## 先看结论：2025 年是拐点，2026 年 Q1 是验证
 
@@ -26,7 +26,7 @@ draft: false
 
 利润翻倍增长，说明这不只是“接单变多”。产品结构、规模效应和回款质量都在发生变化。
 
-![工业富联关键财务数据](/images/posts/fii-ai-server-cycle/fii-key-financial-data.png)
+![工业富联关键财务数据](/images/posts/fii-ai-server-cycle/fii-key-financial-data.webp)
 
 ## 2025 年：AI 服务器把收入体量推上新台阶
 
@@ -62,7 +62,7 @@ Q1 云计算板块收入同比增长约 **1 倍**；AI GPU 机柜出货量同比
 
 AI 集群规模越大，对高速交换机、低延迟互联、CPO / NPO 等技术的需求越强。工业富联 2025 年 800G 以上高速交换机全年营收同比增长 **13 倍**，说明网络设备已经成为第二条增长曲线。[^cloud]
 
-![工业富联增长驱动与市场解读](/images/posts/fii-ai-server-cycle/fii-growth-drivers-market-view.png)
+![工业富联增长驱动与市场解读](/images/posts/fii-ai-server-cycle/fii-growth-drivers-market-view.webp)
 
 ## 财报里的隐忧：现金流、库存和估值预期
 

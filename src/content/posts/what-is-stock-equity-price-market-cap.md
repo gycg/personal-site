@@ -32,7 +32,7 @@ draft: false
 
 一家上市公司把自己的所有权拆成很多份，每一份就是一股股票。买入这家公司的股票，就意味着拥有了这家公司的一小部分。
 
-![股票代表公司所有权的一小部分](/images/posts/what-is-stock-equity-price-market-cap/stock-ownership-slices.png)
+![股票代表公司所有权的一小部分](/images/posts/what-is-stock-equity-price-market-cap/stock-ownership-slices.webp)
 
 当然，普通投资者买入的股份通常很少，可能只是几万分之一、几百万分之一，甚至更小。但无论比例多小，本质上都是股权。
 
@@ -48,7 +48,7 @@ draft: false
 
 不过，股东之间也有区别。创始人、大股东、机构投资者和普通投资者，持股比例可能差别很大。持股越多，对公司的影响力通常越大。
 
-![不同股东拥有不同持股比例](/images/posts/what-is-stock-equity-price-market-cap/shareholder-structure.png)
+![不同股东拥有不同持股比例](/images/posts/what-is-stock-equity-price-market-cap/shareholder-structure.webp)
 
 普通投资者买入股票后，通常会拥有几类权利。
 
@@ -174,7 +174,7 @@ IPO 对公司来说，是一次重要融资机会；对原始股东来说，也�
 
 **股价 × 总股本 = 总市值**
 
-![股价乘以总股本等于总市值](/images/posts/what-is-stock-equity-price-market-cap/market-cap-formula.png)
+![股价乘以总股本等于总市值](/images/posts/what-is-stock-equity-price-market-cap/market-cap-formula.webp)
 
 举个例子。
 
@@ -192,7 +192,7 @@ IPO 对公司来说，是一次重要融资机会；对原始股东来说，也�
 
 股价只是单股价格，市值才是市场对整家公司整体价值的定价。
 
-![股价高不等于公司更贵](/images/posts/what-is-stock-equity-price-market-cap/stock-price-vs-market-cap.png)
+![股价高不等于公司更贵](/images/posts/what-is-stock-equity-price-market-cap/stock-price-vs-market-cap.webp)
 
 ### 为什么市值比股价更重要
 
@@ -234,7 +234,7 @@ IPO 对公司来说，是一次重要融资机会；对原始股东来说，也�
 
 **股价买的是未来，不只是现在。**
 
-![股价反映市场对未来的预期](/images/posts/what-is-stock-equity-price-market-cap/stock-prices-future-expectations.png)
+![股价反映市场对未来的预期](/images/posts/what-is-stock-equity-price-market-cap/stock-prices-future-expectations.webp)
 
 这也是为什么有些公司当前利润不高，估值却很高；有些公司现在很赚钱，估值却很低。
 

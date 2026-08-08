@@ -94,7 +94,7 @@ draft: false
 
 核心业务是否稳定？成长业务是否真的在增长？新业务是否已经贡献利润，还是仍在投入期？公司是否过度依赖单一业务？收入结构有没有改善？
 
-![公司业务与收入结构图：核心业务、成长业务和新业务分别贡献收入、利润和增长](/images/posts/financial-report-reading-investment-judgment/business-revenue-structure.png)
+![公司业务与收入结构图：核心业务、成长业务和新业务分别贡献收入、利润和增长](/images/posts/financial-report-reading-investment-judgment/business-revenue-structure.webp)
 
 如果一家公司大部分收入来自一个产品，那它的风险可能集中在这个产品上。
 
@@ -168,7 +168,7 @@ draft: false
 
 收入增长和利润增长是否匹配？利润增长是否来自主营业务？扣非净利润是否同步增长？利润增长是否可持续？利润有没有被一次性收益美化？
 
-![利润质量判断图：归母净利润、扣非归母净利润、经营现金流和主营业务逐层验证](/images/posts/financial-report-reading-investment-judgment/profit-quality-check.png)
+![利润质量判断图：归母净利润、扣非归母净利润、经营现金流和主营业务逐层验证](/images/posts/financial-report-reading-investment-judgment/profit-quality-check.webp)
 
 真正高质量的利润，不只是数字变大，而是来自主业、可持续，并且能被现金流验证。
 
@@ -248,7 +248,7 @@ ROE 是不是长期稳定？ROE 是不是明显高于同行？ROE 来自经营�
 
 货币资金少，但短期借款很多。应收账款增长远快于收入。存货增长远快于收入。商誉占净资产比例过高。资产负债率持续上升。固定资产扩张很快，但收入利润没跟上。
 
-![资产负债表风险图：现金少短债多、应收账款过快、存货过快、商誉过高、资产负债率上升](/images/posts/financial-report-reading-investment-judgment/balance-sheet-risk-map.png)
+![资产负债表风险图：现金少短债多、应收账款过快、存货过快、商誉过高、资产负债率上升](/images/posts/financial-report-reading-investment-judgment/balance-sheet-risk-map.webp)
 
 这些都是需要继续追问的风险信号。
 
@@ -530,7 +530,7 @@ PS 高不一定离谱，可能是未来利润率会提升。
 
 如果你第一次读一份年报，可以按这个顺序来：
 
-![财报阅读总流程图：从业务到财务，从现金流到估值，最后形成判断](/images/posts/financial-report-reading-investment-judgment/financial-report-reading-flow.png)
+![财报阅读总流程图：从业务到财务，从现金流到估值，最后形成判断](/images/posts/financial-report-reading-investment-judgment/financial-report-reading-flow.webp)
 
 **第一步，看公司是做什么的。**
 
@@ -614,7 +614,7 @@ PE、PB、PS、股息率等处于什么水平？和同行比贵还是便宜？�
 
 行业风险是什么？公司自身风险是什么？财务风险在哪里？估值有没有透支未来？
 
-![财报阅读笔记模板图：每读一家公司，都用同一套问题过一遍](/images/posts/financial-report-reading-investment-judgment/financial-report-notes-template.png)
+![财报阅读笔记模板图：每读一家公司，都用同一套问题过一遍](/images/posts/financial-report-reading-investment-judgment/financial-report-notes-template.webp)
 
 这份模板可以反复使用。
 

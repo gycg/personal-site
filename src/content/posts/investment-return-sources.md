@@ -26,7 +26,7 @@ draft: false
 
 资本利得来自股价上涨，分红来自公司把利润回馈给股东，复利来自时间、盈利增长和收益再投入的共同作用。
 
-![股票收益来源总览](/images/posts/investment-return-sources/return-sources-overview.png)
+![股票收益来源总览](/images/posts/investment-return-sources/return-sources-overview.webp)
 
 这一篇，把股票投资收益的来源讲清楚。
 
@@ -82,7 +82,7 @@ draft: false
 
 这 5000 元，就是资本利得。
 
-![资本利得计算示例](/images/posts/investment-return-sources/capital-gain-calculation.png)
+![资本利得计算示例](/images/posts/investment-return-sources/capital-gain-calculation.webp)
 
 资本利得可以来自很多原因。
 
@@ -140,7 +140,7 @@ draft: false
 
 这就是现金分红。
 
-![分红流程图](/images/posts/investment-return-sources/dividend-process.png)
+![分红流程图](/images/posts/investment-return-sources/dividend-process.webp)
 
 分红体现的是股东回报。
 
@@ -224,7 +224,7 @@ draft: false
 
 总价值理论上没有凭空增加。
 
-![除权除息示意图](/images/posts/investment-return-sources/ex-dividend-adjustment.png)
+![除权除息示意图](/images/posts/investment-return-sources/ex-dividend-adjustment.webp)
 
 当然，实际市场价格还会受到投资者情绪、公司前景、资金流动等因素影响，不一定刚好等于理论值。
 
@@ -332,7 +332,7 @@ draft: false
 
 30 年后，大约变成 174.5 万元。
 
-![复利增长曲线图](/images/posts/investment-return-sources/compound-growth-curve.png)
+![复利增长曲线图](/images/posts/investment-return-sources/compound-growth-curve.webp)
 
 这就是复利的力量。
 
@@ -412,7 +412,7 @@ draft: false
 
 亏 80%，需要上涨 400% 才能回本。
 
-![亏损与回本难度图](/images/posts/investment-return-sources/loss-recovery-difficulty.png)
+![亏损与回本难度图](/images/posts/investment-return-sources/loss-recovery-difficulty.webp)
 
 所以，投资不能只追求某一次高收益，更要重视风险控制和长期稳定性。
 

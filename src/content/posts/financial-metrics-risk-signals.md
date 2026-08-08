@@ -102,7 +102,7 @@ draft: false
 
 常见指标包括经营现金流、自由现金流、净现比。
 
-![财务指标四大类总览：盈利能力、运营效率、偿债能力和现金质量](/images/posts/financial-metrics-risk-signals/financial-metrics-categories-overview.png)
+![财务指标四大类总览：盈利能力、运营效率、偿债能力和现金质量](/images/posts/financial-metrics-risk-signals/financial-metrics-categories-overview.webp)
 
 这样分类以后，指标就不乱了。
 
@@ -123,7 +123,7 @@ draft: false
 ROE 看的是公司用股东的钱赚了多少利润。
 ROA 看的是公司用全部资产赚了多少利润。
 
-![盈利能力指标：毛利率、净利率、ROE 和 ROA](/images/posts/financial-metrics-risk-signals/profitability-metrics.png)
+![盈利能力指标：毛利率、净利率、ROE 和 ROA](/images/posts/financial-metrics-risk-signals/profitability-metrics.webp)
 
 毛利率公式是：
 
@@ -190,7 +190,7 @@ ROE 是非常重要的指标。很多长期优秀公司，都能长期保持较�
 
 第三，负债杠杆高。公司借了更多钱，用较少净资产撬动更大资产规模。
 
-![ROE 来源拆解：利润率、周转率和杠杆](/images/posts/financial-metrics-risk-signals/roe-source-breakdown.png)
+![ROE 来源拆解：利润率、周转率和杠杆](/images/posts/financial-metrics-risk-signals/roe-source-breakdown.webp)
 
 前两种通常比较健康，第三种要小心。
 
@@ -233,7 +233,7 @@ ROA 表示公司用全部资产赚取利润的能力。
 
 常见指标包括资产周转率、应收账款周转率、存货周转率。
 
-![运营效率指标：资产周转率、应收账款周转率和存货周转率](/images/posts/financial-metrics-risk-signals/operating-efficiency-metrics.png)
+![运营效率指标：资产周转率、应收账款周转率和存货周转率](/images/posts/financial-metrics-risk-signals/operating-efficiency-metrics.webp)
 
 资产周转率公式是：
 
@@ -294,7 +294,7 @@ ROA 表示公司用全部资产赚取利润的能力。
 
 常见指标包括资产负债率、流动比率、速动比率。
 
-![偿债能力指标：资产负债率、流动比率和速动比率](/images/posts/financial-metrics-risk-signals/solvency-metrics.png)
+![偿债能力指标：资产负债率、流动比率和速动比率](/images/posts/financial-metrics-risk-signals/solvency-metrics.webp)
 
 这类指标不是为了判断公司“有没有负债”。
 
@@ -373,7 +373,7 @@ ROA 表示公司用全部资产赚取利润的能力。
 扣除必要投资后，还有没有剩余现金？
 利润质量靠不靠谱？
 
-![现金质量指标：经营活动现金流、自由现金流和净现比](/images/posts/financial-metrics-risk-signals/cash-quality-metrics.png)
+![现金质量指标：经营活动现金流、自由现金流和净现比](/images/posts/financial-metrics-risk-signals/cash-quality-metrics.webp)
 
 经营活动现金流，反映公司日常经营产生的现金流入和流出。
 
@@ -424,7 +424,7 @@ ROA 表示公司用全部资产赚取利润的能力。
 
 财务指标真正有价值的地方，不是单个数字，而是组合起来看。
 
-![指标组合分析：单个指标只是线索，组合起来才接近真相](/images/posts/financial-metrics-risk-signals/metric-combination-analysis.png)
+![指标组合分析：单个指标只是线索，组合起来才接近真相](/images/posts/financial-metrics-risk-signals/metric-combination-analysis.webp)
 
 第一个组合是 **毛利率 + 净利率**。
 
@@ -494,7 +494,7 @@ ROE 低，资产负债率高，比较危险。说明公司借了很多钱，但�
 
 新手看财务指标时，可以重点留意这些风险信号。
 
-![财务风险信号清单：指标异常不是结论，而是提醒继续追问](/images/posts/financial-metrics-risk-signals/financial-risk-signal-checklist.png)
+![财务风险信号清单：指标异常不是结论，而是提醒继续追问](/images/posts/financial-metrics-risk-signals/financial-risk-signal-checklist.webp)
 
 第一，收入增长，但净利润不增长。
 
@@ -602,7 +602,7 @@ ROE 18%，看起来也不错。
 
 第一次看一家公司的财务指标，可以按这个顺序：
 
-![新手看财务指标顺序：先看增长和盈利，再看风险和现金质量](/images/posts/financial-metrics-risk-signals/financial-metrics-reading-order.png)
+![新手看财务指标顺序：先看增长和盈利，再看风险和现金质量](/images/posts/financial-metrics-risk-signals/financial-metrics-reading-order.webp)
 
 第一，看收入和净利润趋势。
 
