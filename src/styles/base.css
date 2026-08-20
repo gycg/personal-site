@@ -35,7 +35,7 @@
 
 html {
   font-family:
-    "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   scroll-behavior: smooth;
@@ -106,8 +106,12 @@ img {
 }
 
 .site-shell {
-  width: min(100% - 32px, var(--max-width));
+  width: min(calc(100% - 32px), var(--max-width));
   margin-inline: auto;
+}
+
+.mobile-search-link {
+  display: none;
 }
 
 .site-header {
@@ -150,7 +154,7 @@ img {
 .brand {
   color: var(--text);
   font-family:
-    "Noto Serif SC", "Songti SC", serif;
+    "Songti SC", "STSong", "Noto Serif CJK SC", serif;
   font-weight: 700;
   font-size: 1.48rem;
   letter-spacing: 0;
@@ -324,4 +328,3 @@ main {
   text-decoration: underline;
   text-underline-offset: 0.18em;
 }
-

@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 import { financeStudyCategories, financeStudyPath, financeTextbooks } from '../../data/finance-self-study';
 
@@ -9,7 +9,7 @@ const categoryCounts = financeStudyCategories.map((category) => ({
 }));
 ---
 
-<BaseLayout title="金融学自学" description="把金融学、公司金融、投资学、估值、计量和衍生品教材整理成一条可执行的自学路径。" canonicalPath="/projects/finance-self-study/">
+<ProjectLayout title="金融学自学" description="把金融学、公司金融、投资学、估值、计量和衍生品教材整理成一条可执行的自学路径。" canonicalPath="/projects/finance-self-study/">
   <div class="page-grid">
     <div>
       <section class="hero">
@@ -135,4 +135,4 @@ const categoryCounts = financeStudyCategories.map((category) => ({
       ]}
     />
   </div>
-</BaseLayout>
+</ProjectLayout>

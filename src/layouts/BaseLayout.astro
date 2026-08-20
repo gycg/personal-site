@@ -59,15 +59,11 @@ function isActiveNav(href: string) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <meta name="author" content={SITE_AUTHOR} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#f4f3ec" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="alternate" type="application/rss+xml" title={`${SITE_TITLE} RSS`} href={new URL('/rss.xml', SITE_URL).toString()} />
@@ -75,13 +71,16 @@ function isActiveNav(href: string) {
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={type} />
+    <meta property="og:locale" content="zh_CN" />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content={SITE_TITLE} />
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:alt" content={`${SITE_TITLE} 文章分享图`} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到正文</a>
@@ -97,6 +96,9 @@ function isActiveNav(href: string) {
               </a>
             ))
           }
+          <a class="mobile-search-link" href="/search/" aria-current={pathname.startsWith('/search/') ? 'page' : undefined}>
+            搜索
+          </a>
         </nav>
         <nav class="utility-links" aria-label="工具入口">
           <a href="/search/" aria-current={pathname.startsWith('/search/') ? 'page' : undefined}>搜索</a>
@@ -108,7 +110,7 @@ function isActiveNav(href: string) {
               <p data-rss-copy-status aria-live="polite">复制后粘贴到 RSS 阅读器。</p>
             </div>
           </details>
-          <a href="/about/#contact">反馈</a>
+          <a class="utility-feedback" href="/about/#contact">反馈</a>
         </nav>
       </div>
     </header>
@@ -164,7 +166,7 @@ function isActiveNav(href: string) {
     {
       type === 'article' && (
         <>
-          <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" />
+          <script is:inline async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" />
           <script is:inline>
             const progressBar = document.querySelector('.reading-progress span');
             const updateReadingProgress = () => {

@@ -1,25 +1,5 @@
+/* Loaded after project styles so route-specific grids keep their mobile layout. */
 @media (max-width: 900px) {
-  .article-header h1 {
-    font-size: 2.35rem;
-  }
-
-  .page-grid {
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-
-  .page-sidebar {
-    position: static;
-  }
-
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .path-grid,
-  .section-directory,
-  .topic-map,
-  .home-stats,
   .sector-toolbar,
   .sector-metric-grid,
   .rotation-framework-grid,
@@ -41,20 +21,8 @@
   .roadmap-table-grid,
   .finance-study-summary,
   .finance-category-grid,
-  .position-chart-grid,
-  .qr-grid,
-  .post-navigation {
+  .position-chart-grid {
     grid-template-columns: 1fr;
-  }
-
-  .path-card + .path-card {
-    border-left: 0;
-    border-top: 1px solid var(--border-soft);
-  }
-
-  .topic-map article + article {
-    border-left: 0;
-    border-top: 1px solid var(--border-soft);
   }
 
   .sector-heatmap {
@@ -64,94 +32,9 @@
   .sector-chart-panel.is-wide {
     grid-column: auto;
   }
-
-  .prose h2 {
-    margin-top: 42px;
-    padding-top: 14px;
-  }
 }
 
 @media (max-width: 640px) {
-  .site-shell {
-    width: min(calc(100% - 24px), var(--max-width));
-  }
-
-  .nav {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "brand"
-      "primary";
-    align-items: center;
-    gap: 7px 12px;
-    padding: 12px 0;
-  }
-
-  .brand {
-    grid-area: brand;
-    font-size: 1.28rem;
-  }
-
-  .prose th,
-  .prose td {
-    padding: 10px 12px;
-    font-size: 0.9rem;
-  }
-
-  .nav-links {
-    grid-area: primary;
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: none;
-    gap: 6px;
-  }
-
-  .nav-links::-webkit-scrollbar {
-    display: none;
-  }
-
-  .utility-links {
-    display: none;
-  }
-
-  .mobile-search-link {
-    display: block;
-  }
-
-  .rss-menu-panel {
-    left: 0;
-    right: auto;
-  }
-
-  .nav-links a,
-  .utility-links a,
-  .rss-menu summary {
-    flex: 0 0 auto;
-    padding: 6px 8px;
-    white-space: nowrap;
-  }
-
-  main {
-    padding-top: 42px;
-  }
-
-  .article-header {
-    margin-bottom: 36px;
-    padding-top: 14px;
-    padding-bottom: 24px;
-  }
-
-  .article-header .lead {
-    padding: 14px;
-  }
-
-  .section-head {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .intraday-controls {
     width: 100%;
     grid-template-columns: minmax(0, 1fr) 38px;
@@ -213,26 +96,8 @@
     padding: 0 16px 14px;
   }
 
-  .post-card {
-    padding: 20px 2px;
-  }
-
-  .sidebar-panel {
-    padding: 16px;
-  }
-
   .project-copy {
     padding: 22px 2px 24px;
-  }
-
-  .hero {
-    margin-bottom: 40px;
-  }
-
-  .home-masthead {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 3px;
   }
 
   .holding-status {
@@ -250,7 +115,9 @@
     padding: 18px 16px;
   }
 
-  .valuation-card-head {
+  .valuation-card-head,
+  .line-chart-head {
+    align-items: flex-start;
     flex-direction: column;
   }
 
@@ -318,11 +185,6 @@
     display: none;
   }
 
-  .line-chart-head {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .line-chart-head p {
     max-width: none;
     text-align: left;
@@ -353,10 +215,7 @@
     overflow-x: auto;
   }
 
-  .line-chart-axis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
+  .line-chart-axis,
   .daily-change-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -364,36 +223,5 @@
   .daily-change-row {
     grid-template-columns: 1fr;
     gap: 3px;
-  }
-
-  .back-to-top {
-    right: 16px;
-    bottom: 72px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
-}
-
-@media (max-width: 640px) {
-  h1 {
-    font-size: 2.4rem;
-  }
-
-  .article-header h1 {
-    font-size: 2rem;
-    line-height: 1.2;
   }
 }

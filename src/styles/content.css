@@ -55,7 +55,7 @@ h3 {
   line-height: 1.25;
   margin: 0 0 16px;
   font-family:
-    "Noto Serif SC", "Songti SC", "Source Han Serif SC", serif;
+    "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", serif;
   font-weight: 600;
 }
 
@@ -1036,4 +1036,3 @@ p {
   background: oklch(0.993 0.005 150 / 0.54);
   box-shadow: none;
 }
-

@@ -1,10 +1,10 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 import { projects } from '../../data/projects';
 ---
 
-<BaseLayout title="项目" description="投研工具、LLM 工程实践、内容工作流和长期写作系统。" canonicalPath="/projects/">
+<ProjectLayout title="项目" description="投研工具、LLM 工程实践、内容工作流和长期写作系统。" canonicalPath="/projects/">
   <div class="page-grid">
     <div>
       <section class="hero">
@@ -92,4 +92,4 @@ import { projects } from '../../data/projects';
       ]}
     />
   </div>
-</BaseLayout>
+</ProjectLayout>

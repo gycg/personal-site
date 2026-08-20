@@ -21,7 +21,8 @@
   "dependencies": {
     "@astrojs/mdx": "4.0.8",
     "@astrojs/sitemap": "3.2.1",
-    "astro": "5.18.1"
+    "astro": "5.18.1",
+    "gifenc": "^1.0.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

@@ -1,0 +1,17 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import '../styles/projects.css';
+import '../styles/project-responsive.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  ogImage?: string;
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+}
+---
+
+<BaseLayout {...Astro.props}>
+  <slot />
+</BaseLayout>

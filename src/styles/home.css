@@ -95,7 +95,7 @@
 
 .home-route-list strong {
   display: block;
-  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", serif;
   font-size: 1.22rem;
 }
 
@@ -151,7 +151,7 @@
 .home-project-links strong {
   display: block;
   margin-top: 8px;
-  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", serif;
   font-size: 1.18rem;
 }
 

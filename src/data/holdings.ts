@@ -107,6 +107,13 @@ export const securities: Security[] = [
     note: '华泰柏瑞沪深300 ETF',
   },
   {
+    id: 'csi-500-etf',
+    name: '中证500ETF南方',
+    code: '510500',
+    market: 'sh',
+    note: '南方中证500 ETF',
+  },
+  {
     id: 'csi-1000-etf',
     name: '中证1000ETF南方',
     code: '512100',
@@ -144,6 +151,15 @@ export const securities: Security[] = [
 ];
 
 export const trades: Trade[] = [
+  {
+    executedAt: '2026-08-20 13:59:21',
+    securityId: 'csi-500-etf',
+    price: 7.825,
+    quantity: 2600,
+    amount: 20345,
+    fee: 5,
+    side: '买入',
+  },
   {
     executedAt: '2026-08-03 09:35:00',
     securityId: 'sp500-etf',

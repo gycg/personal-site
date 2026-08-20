@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 import {
   annualResearchOutputs,
@@ -44,7 +44,7 @@ const executionSummaries = monthlyExecutions.map((month) => {
 const executionArticleRecords = executionSummaries.flatMap((month) => month.articleRecords);
 ---
 
-<BaseLayout
+<ProjectLayout
   title="A股科技与未来产业研究路线"
   description="一套按每周 6-8 小时设计的一年 A 股科技与未来产业研究项目，覆盖公司研究、产业学习、估值训练和博客输出。"
   canonicalPath="/projects/a-share-tech-research-roadmap/"
@@ -855,4 +855,4 @@ const executionArticleRecords = executionSummaries.flatMap((month) => month.arti
       }
     }
   </style>
-</BaseLayout>
+</ProjectLayout>

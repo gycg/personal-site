@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 import {
   calculateDailyPortfolioPoints as calculateCoreDailyPortfolioPoints,
@@ -267,7 +267,7 @@ const industryPlanMarkdown = [
 ].join('\n');
 ---
 
-<BaseLayout title="我的持仓（模拟）" description="公开记录模拟持仓、交易明细、持仓成本和实时估算盈亏。" canonicalPath="/projects/holdings/">
+<ProjectLayout title="我的持仓（模拟）" description="公开记录模拟持仓、交易明细、持仓成本和实时估算盈亏。" canonicalPath="/projects/holdings/">
   <div class="page-grid">
     <div>
       <section class="hero">
@@ -331,6 +331,10 @@ const industryPlanMarkdown = [
             <p>按实际持仓份额汇总全部标的，展示组合最近一个交易日的分钟 K 线与成交额。</p>
           </div>
           <div class="intraday-controls is-total">
+            <button type="button" data-intraday-download title="下载组合分钟行情 GIF" aria-label="下载组合分钟行情 GIF" disabled>
+              <span aria-hidden="true">↓</span>
+              <em data-intraday-download-label>下载 GIF</em>
+            </button>
             <button type="button" data-intraday-refresh title="刷新分钟行情" aria-label="刷新分钟行情">
               <span aria-hidden="true">↻</span>
               <em>刷新</em>
@@ -1189,6 +1193,24 @@ const industryPlanMarkdown = [
     intradayChartGeometry = { xAt, yAt, priceLeft, priceRight, priceTop, volumeBottom };
     intradayFocusIndex = rows.length - 1;
     intradayEmpty.hidden = true;
+    window.portfolioGifData = {
+      name: data.name,
+      positionCount: activePositions.length,
+      source: data.source,
+      previousClose,
+      rows: rows.map((point) => ({
+        date: point.date,
+        time: point.time,
+        open: point.open,
+        close: point.close,
+        high: point.high,
+        low: point.low,
+        amount: point.amount,
+        average: point.average,
+      })),
+    };
+    const downloadButton = document.querySelector('[data-intraday-download]');
+    if (downloadButton) downloadButton.disabled = false;
   }
 
   function renderIntradaySummary(data) {
@@ -1923,4 +1945,5 @@ const industryPlanMarkdown = [
   loadTargetMetrics();
   refreshDailyCalendar();
 </script>
-</BaseLayout>
+<script src="../../scripts/portfolio-gif.ts"></script>
+</ProjectLayout>

@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProjectLayout from '../../../layouts/ProjectLayout.astro';
 import PageSidebar from '../../../components/PageSidebar.astro';
 import { weeklyProgressTemplates } from '../../../data/financial-freedom-plan';
 
@@ -13,7 +13,7 @@ export function getStaticPaths() {
 const { template } = Astro.props;
 ---
 
-<BaseLayout title={template.title} description={`${template.title}的准备动作、阅读材料、产出清单和进展模板。`} canonicalPath={`/projects/financial-freedom-roadmap/week-${template.week}/`}>
+<ProjectLayout title={template.title} description={`${template.title}的准备动作、阅读材料、产出清单和进展模板。`} canonicalPath={`/projects/financial-freedom-roadmap/week-${template.week}/`}>
   <div class="page-grid">
     <div>
       <section class="hero">
@@ -124,4 +124,4 @@ const { template } = Astro.props;
       }
     });
   </script>
-</BaseLayout>
+</ProjectLayout>

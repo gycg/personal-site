@@ -1,9 +1,9 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 ---
 
-<BaseLayout
+<ProjectLayout
   title="A股行业轮动观察"
   description="用免费公开行情数据观察 A 股行业轮动：涨跌热力、相对强弱、RRG、上涨家数占比、成交额占比和资金流。"
   canonicalPath="/projects/a-share-sector-rotation/"
@@ -1031,4 +1031,4 @@ import PageSidebar from '../../components/PageSidebar.astro';
     windowSelect?.addEventListener('change', loadDashboard);
     loadDashboard();
   </script>
-</BaseLayout>
+</ProjectLayout>

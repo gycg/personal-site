@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
 import PageSidebar from '../../components/PageSidebar.astro';
 import { monthlyReviewFields, planPhases, riskRules, weeklyMilestones, weeklyTasks } from '../../data/financial-freedom-plan';
 
@@ -24,7 +24,7 @@ const ipsTemplate = `当前可投资资产：
 投资基准：`;
 ---
 
-<BaseLayout title="财务自由执行路线" description="把财务自由投资路线拆成阶段、产出物、风控规则和复盘模板。" canonicalPath="/projects/financial-freedom-roadmap/">
+<ProjectLayout title="财务自由执行路线" description="把财务自由投资路线拆成阶段、产出物、风控规则和复盘模板。" canonicalPath="/projects/financial-freedom-roadmap/">
   <div class="page-grid">
     <div>
       <section class="hero">
@@ -235,4 +235,4 @@ const ipsTemplate = `当前可投资资产：
       });
     });
   </script>
-</BaseLayout>
+</ProjectLayout>

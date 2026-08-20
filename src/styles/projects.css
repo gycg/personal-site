@@ -938,6 +938,17 @@
   outline-offset: 1px;
 }
 
+.intraday-controls button:disabled {
+  border-color: var(--border-soft);
+  color: var(--muted);
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.intraday-controls button:disabled:hover {
+  outline: 0;
+}
+
 .intraday-controls button span {
   display: block;
   font-size: 1.25rem;
