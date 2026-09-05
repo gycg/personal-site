@@ -152,6 +152,24 @@ export const securities: Security[] = [
 
 export const trades: Trade[] = [
   {
+    executedAt: '2026-09-01 09:34:59',
+    securityId: 'sp500-etf',
+    price: 2.035,
+    quantity: 14700,
+    amount: 29914.5,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
+    executedAt: '2026-09-01 09:34:59',
+    securityId: 'gold-etf',
+    price: 9.138,
+    quantity: 1000,
+    amount: 9138.0,
+    fee: 5.0,
+    side: '买入',
+  },
+  {
     executedAt: '2026-08-20 13:59:21',
     securityId: 'csi-500-etf',
     price: 7.825,
